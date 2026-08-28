@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
+import pandas as pd
+
 from waveforge.physics.validation import ValidationMetric
 
 
@@ -14,6 +16,7 @@ def write_gate1_report(
     output_path: Path,
     *,
     config_hash: str,
+    benchmark_frame: pd.DataFrame | None = None,
 ) -> Path:
     """Записать Gate 1 numerical report без изменения metrics."""
     status = "PASS" if passed else "FAIL"
@@ -45,6 +48,46 @@ def write_gate1_report(
             f"| {metric.category} | `{metric.name}` | {metric.grid} | "
             f"{metric.value:.8e} | {criterion} | {metric_status} |"
         )
+
+    if benchmark_frame is not None:
+        required_columns = {
+            "solver",
+            "resolution",
+            "time_steps",
+            "scenarios",
+            "mode",
+            "phase",
+            "runs",
+            "mean",
+            "median",
+            "p90",
+            "std",
+        }
+        missing = required_columns.difference(benchmark_frame.columns)
+        if missing:
+            raise ValueError(f"benchmark frame missing columns: {sorted(missing)}")
+        lines.extend(
+            (
+                "",
+                "## Solver benchmark",
+                "",
+                "Times указаны в seconds; plotting и file I/O исключены из "
+                "timed regions.",
+                "",
+                "| Solver | Grid | Steps | Scenarios | Mode | Phase | Runs | "
+                "Median | P90 | Mean | Std |",
+                "|---|---:|---:|---:|---|---|---:|---:|---:|---:|---:|",
+            )
+        )
+        for row in benchmark_frame.to_dict(orient="records"):
+            lines.append(
+                f"| {row['solver']} | {int(row['resolution'])}×"
+                f"{int(row['resolution'])} | {int(row['time_steps'])} | "
+                f"{int(row['scenarios'])} | {row['mode']} | {row['phase']} | "
+                f"{int(row['runs'])} | {float(row['median']):.6e} | "
+                f"{float(row['p90']):.6e} | {float(row['mean']):.6e} | "
+                f"{float(row['std']):.6e} |"
+            )
 
     lines.extend(("", "## Blocking failures", ""))
     if failed:

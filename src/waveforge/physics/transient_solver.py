@@ -7,12 +7,12 @@ from dataclasses import dataclass
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.sparse import identity
-from scipy.sparse.linalg import splu
+from scipy.sparse import csc_matrix, identity
+from scipy.sparse.linalg import SuperLU, splu
 
 from waveforge.physics.boundary_conditions import BoundaryConditions
 from waveforge.physics.grid import Grid2D
-from waveforge.physics.steady_solver import assemble_steady_system
+from waveforge.physics.steady_solver import AssembledSystem, assemble_steady_system
 
 SourceFunction = Callable[[float], NDArray[np.float64]]
 SourceSpecification = NDArray[np.float64] | SourceFunction
@@ -46,6 +46,25 @@ class TransientResult:
     temperatures: NDArray[np.float64]
 
 
+@dataclass(frozen=True)
+class TransientLinearSystem:
+    """Assembled implicit-Euler matrix до sparse factorization."""
+
+    grid: Grid2D
+    config: TransientConfig
+    steady_system: AssembledSystem
+    matrix: csc_matrix
+    mass_coefficient: float
+
+
+@dataclass(frozen=True)
+class PreparedTransientSystem:
+    """Fixed design/operator с reusable sparse factorization."""
+
+    linear_system: TransientLinearSystem
+    factorization: SuperLU
+
+
 def _evaluate_source(
     source: SourceSpecification,
     time: float,
@@ -60,23 +79,15 @@ def _evaluate_source(
     return source_array
 
 
-def solve_transient(
-    *,
+def assemble_transient_system(
     grid: Grid2D,
     conductivity: NDArray[np.float64],
-    source: SourceSpecification,
     bcs: BoundaryConditions,
-    initial_temperature: NDArray[np.float64],
     config: TransientConfig,
+    *,
     harmonic_epsilon: float = 1e-12,
-) -> TransientResult:
-    """Интегрировать trajectory с одной reusable sparse factorization."""
-    initial = np.asarray(initial_temperature, dtype=np.float64)
-    if initial.shape != grid.shape:
-        raise ValueError(f"initial temperature shape {initial.shape} != {grid.shape}")
-    if not np.all(np.isfinite(initial)):
-        raise ValueError("initial temperature must contain only finite values")
-
+) -> TransientLinearSystem:
+    """Собрать fixed-design implicit-Euler matrix без factorization."""
     zero_source = np.zeros(grid.shape, dtype=np.float64)
     steady_system = assemble_steady_system(
         grid,
@@ -89,7 +100,59 @@ def solve_transient(
     transient_matrix = steady_system.matrix + mass_coefficient * identity(
         grid.nx * grid.ny, format="csr"
     )
-    factorization = splu(transient_matrix.tocsc())
+    return TransientLinearSystem(
+        grid=grid,
+        config=config,
+        steady_system=steady_system,
+        matrix=transient_matrix.tocsc(),
+        mass_coefficient=mass_coefficient,
+    )
+
+
+def factorize_transient_system(
+    linear_system: TransientLinearSystem,
+) -> PreparedTransientSystem:
+    """Factorize assembled transient matrix один раз."""
+    return PreparedTransientSystem(
+        linear_system=linear_system,
+        factorization=splu(linear_system.matrix),
+    )
+
+
+def prepare_transient_system(
+    grid: Grid2D,
+    conductivity: NDArray[np.float64],
+    bcs: BoundaryConditions,
+    config: TransientConfig,
+    *,
+    harmonic_epsilon: float = 1e-12,
+) -> PreparedTransientSystem:
+    """Собрать и factorize fixed-design transient system."""
+    return factorize_transient_system(
+        assemble_transient_system(
+            grid,
+            conductivity,
+            bcs,
+            config,
+            harmonic_epsilon=harmonic_epsilon,
+        )
+    )
+
+
+def solve_transient_prepared(
+    prepared: PreparedTransientSystem,
+    source: SourceSpecification,
+    initial_temperature: NDArray[np.float64],
+) -> TransientResult:
+    """Интегрировать scenario с ранее подготовленной factorization."""
+    linear_system = prepared.linear_system
+    grid = linear_system.grid
+    config = linear_system.config
+    initial = np.asarray(initial_temperature, dtype=np.float64)
+    if initial.shape != grid.shape:
+        raise ValueError(f"initial temperature shape {initial.shape} != {grid.shape}")
+    if not np.all(np.isfinite(initial)):
+        raise ValueError("initial temperature must contain only finite values")
 
     flat_temperature = initial.ravel().copy()
     stored_times = [0.0]
@@ -98,9 +161,9 @@ def solve_transient(
     for step in range(1, config.n_steps + 1):
         time = step * config.dt
         source_at_step = _evaluate_source(source, time, grid.shape)
-        step_rhs = source_at_step.ravel() + steady_system.dirichlet_rhs
-        rhs = mass_coefficient * flat_temperature + step_rhs
-        flat_temperature = factorization.solve(rhs)
+        step_rhs = source_at_step.ravel() + linear_system.steady_system.dirichlet_rhs
+        rhs = linear_system.mass_coefficient * flat_temperature + step_rhs
+        flat_temperature = prepared.factorization.solve(rhs)
         if not np.all(np.isfinite(flat_temperature)):
             raise FloatingPointError("transient solution contains NaN or Inf")
         if step % config.store_every == 0 or step == config.n_steps:
@@ -111,3 +174,24 @@ def solve_transient(
         times=np.asarray(stored_times, dtype=np.float64),
         temperatures=np.stack(stored_temperatures),
     )
+
+
+def solve_transient(
+    *,
+    grid: Grid2D,
+    conductivity: NDArray[np.float64],
+    source: SourceSpecification,
+    bcs: BoundaryConditions,
+    initial_temperature: NDArray[np.float64],
+    config: TransientConfig,
+    harmonic_epsilon: float = 1e-12,
+) -> TransientResult:
+    """Собрать, factorize и интегрировать one-design trajectory."""
+    prepared = prepare_transient_system(
+        grid,
+        conductivity,
+        bcs,
+        config,
+        harmonic_epsilon=harmonic_epsilon,
+    )
+    return solve_transient_prepared(prepared, source, initial_temperature)

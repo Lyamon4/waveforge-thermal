@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pandas as pd
+
 from waveforge.physics.validation import ValidationMetric, run_gate1_validation
 from waveforge.reporting.summary import write_gate1_report
 from waveforge.reporting.tables import metrics_frame
@@ -59,6 +61,59 @@ def test_gate1_report_writes_russian_status_and_metric(tmp_path: Path) -> None:
     assert "Gate 1: PASS" in text
     assert "matrix_symmetry_max_abs" in text
     assert "abc123" in text
+
+
+def test_gate1_report_includes_warm_and_cold_benchmark(tmp_path: Path) -> None:
+    metric = ValidationMetric(
+        category="analytical",
+        name="linear_relative_l2",
+        grid="8x8",
+        value=0.0,
+        threshold=1e-11,
+        comparison="<=",
+        passed=True,
+    )
+    benchmark = pd.DataFrame(
+        [
+            {
+                "solver": "steady",
+                "resolution": 8,
+                "time_steps": 0,
+                "scenarios": 3,
+                "mode": "warm_reused",
+                "phase": "solve",
+                "runs": 20,
+                "mean": 0.1,
+                "median": 0.09,
+                "p90": 0.12,
+                "std": 0.01,
+            },
+            {
+                "solver": "steady",
+                "resolution": 8,
+                "time_steps": 0,
+                "scenarios": 3,
+                "mode": "cold_design",
+                "phase": "total_evaluation",
+                "runs": 20,
+                "mean": 0.2,
+                "median": 0.19,
+                "p90": 0.22,
+                "std": 0.02,
+            },
+        ]
+    )
+    output = tmp_path / "gate1_report.md"
+
+    write_gate1_report(
+        (metric,), True, output, config_hash="hash", benchmark_frame=benchmark
+    )
+
+    text = output.read_text(encoding="utf-8")
+    assert "## Solver benchmark" in text
+    assert "warm_reused" in text
+    assert "cold_design" in text
+    assert "total_evaluation" in text
 
 
 def test_gate1_runner_writes_required_numerical_artifacts(tmp_path: Path) -> None:

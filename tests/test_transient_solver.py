@@ -9,7 +9,9 @@ from waveforge.physics.manufactured_solutions import normalized_rectangular_sour
 from waveforge.physics.steady_solver import assemble_steady_system, solve_steady
 from waveforge.physics.transient_solver import (
     TransientConfig,
+    prepare_transient_system,
     solve_transient,
+    solve_transient_prepared,
 )
 from waveforge.physics.validation import relative_l2
 
@@ -64,6 +66,29 @@ def test_time_dependent_source_is_evaluated_at_implicit_step_time() -> None:
         config=TransientConfig(dt=0.05, n_steps=3, rho_c=1.0),
     )
     np.testing.assert_allclose(evaluated_times, [0.05, 0.1, 0.15])
+
+
+def test_prepared_system_matches_wrapper_for_multiple_sources() -> None:
+    """Factorization reuse не должна менять trajectory semantics."""
+    grid = Grid2D(nx=8, ny=8)
+    config = TransientConfig(dt=0.05, n_steps=4, rho_c=1.0)
+    conductivity = np.linspace(1.0, 2.0, grid.nx * grid.ny).reshape(grid.shape)
+    bcs = BoundaryConditions.production()
+    initial = np.zeros(grid.shape)
+    prepared = prepare_transient_system(grid, conductivity, bcs, config)
+
+    for source in (np.zeros(grid.shape), np.ones(grid.shape)):
+        reused = solve_transient_prepared(prepared, source, initial)
+        wrapped = solve_transient(
+            grid=grid,
+            conductivity=conductivity,
+            source=source,
+            bcs=bcs,
+            initial_temperature=initial,
+            config=config,
+        )
+        np.testing.assert_allclose(reused.times, wrapped.times)
+        np.testing.assert_allclose(reused.temperatures, wrapped.temperatures)
 
 
 def test_transient_rejects_non_finite_initial_temperature() -> None:

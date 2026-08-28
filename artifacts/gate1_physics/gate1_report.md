@@ -46,6 +46,48 @@ Metrics вычислены до plotting и file I/O. SciPy reference solver и�
 | transient | `timestep_half_to_coarse_error_ratio` | 32x32 | 4.72796004e-01 | <= 7.50000000e-01 | PASS |
 | transient | `timestep_common_time_error` | 32x32 | 0.00000000e+00 | <= 1.00000000e-14 | PASS |
 
+## Solver benchmark
+
+Times указаны в seconds; plotting и file I/O исключены из timed regions.
+
+| Solver | Grid | Steps | Scenarios | Mode | Phase | Runs | Median | P90 | Mean | Std |
+|---|---:|---:|---:|---|---|---:|---:|---:|---:|---:|
+| steady | 32×32 | 0 | 3 | warm_reused | solve | 20 | 2.005500e-04 | 2.067900e-04 | 2.016400e-04 | 3.241734e-06 |
+| steady | 32×32 | 0 | 3 | cold_design | assembly | 20 | 8.951000e-04 | 1.050080e-03 | 9.387400e-04 | 8.469244e-05 |
+| steady | 32×32 | 0 | 3 | cold_design | factorization | 20 | 1.181950e-03 | 1.384720e-03 | 1.238990e-03 | 1.331723e-04 |
+| steady | 32×32 | 0 | 3 | cold_design | solve | 20 | 1.562000e-04 | 2.031800e-04 | 1.672100e-04 | 2.531409e-05 |
+| steady | 32×32 | 0 | 3 | cold_design | total_evaluation | 20 | 2.309700e-03 | 2.564440e-03 | 2.344940e-03 | 1.683498e-04 |
+| steady | 64×64 | 0 | 3 | warm_reused | solve | 20 | 5.146000e-04 | 6.952100e-04 | 5.523900e-04 | 7.906203e-05 |
+| steady | 64×64 | 0 | 3 | cold_design | assembly | 20 | 3.432800e-03 | 3.702850e-03 | 3.553835e-03 | 4.953221e-04 |
+| steady | 64×64 | 0 | 3 | cold_design | factorization | 20 | 5.220750e-03 | 5.485930e-03 | 5.375015e-03 | 5.341349e-04 |
+| steady | 64×64 | 0 | 3 | cold_design | solve | 20 | 6.175500e-04 | 8.665700e-04 | 6.830400e-04 | 1.214731e-04 |
+| steady | 64×64 | 0 | 3 | cold_design | total_evaluation | 20 | 9.265450e-03 | 1.017198e-02 | 9.611890e-03 | 1.033796e-03 |
+| steady | 128×128 | 0 | 3 | warm_reused | solve | 20 | 2.858300e-03 | 3.091550e-03 | 2.869310e-03 | 1.818191e-04 |
+| steady | 128×128 | 0 | 3 | cold_design | assembly | 20 | 1.326200e-02 | 1.690160e-02 | 1.395652e-02 | 1.618958e-03 |
+| steady | 128×128 | 0 | 3 | cold_design | factorization | 20 | 2.921175e-02 | 3.203014e-02 | 2.972603e-02 | 1.626503e-03 |
+| steady | 128×128 | 0 | 3 | cold_design | solve | 20 | 3.557050e-03 | 4.150220e-03 | 3.736870e-03 | 5.605994e-04 |
+| steady | 128×128 | 0 | 3 | cold_design | total_evaluation | 20 | 4.633195e-02 | 5.091761e-02 | 4.741943e-02 | 2.866829e-03 |
+| steady | 256×256 | 0 | 3 | warm_reused | solve | 20 | 2.187740e-02 | 2.387506e-02 | 2.222046e-02 | 1.184845e-03 |
+| steady | 256×256 | 0 | 3 | cold_design | assembly | 20 | 6.928510e-02 | 1.014996e-01 | 7.920497e-02 | 1.724241e-02 |
+| steady | 256×256 | 0 | 3 | cold_design | factorization | 20 | 1.638452e-01 | 2.401349e-01 | 1.862651e-01 | 3.707580e-02 |
+| steady | 256×256 | 0 | 3 | cold_design | solve | 20 | 2.291840e-02 | 3.693111e-02 | 2.727493e-02 | 7.222461e-03 |
+| steady | 256×256 | 0 | 3 | cold_design | total_evaluation | 20 | 2.627439e-01 | 3.805262e-01 | 2.927450e-01 | 5.877360e-02 |
+| transient | 64×64 | 100 | 3 | warm_reused | trajectory | 20 | 9.212855e-02 | 9.252967e-02 | 9.239299e-02 | 1.496497e-03 |
+| transient | 64×64 | 100 | 3 | cold_design | assembly | 20 | 5.998450e-03 | 6.196270e-03 | 6.029310e-03 | 1.745434e-04 |
+| transient | 64×64 | 100 | 3 | cold_design | factorization | 20 | 7.745550e-03 | 7.855170e-03 | 9.149525e-03 | 6.367135e-03 |
+| transient | 64×64 | 100 | 3 | cold_design | trajectory | 20 | 9.246860e-02 | 9.628085e-02 | 9.331098e-02 | 2.704742e-03 |
+| transient | 64×64 | 100 | 3 | cold_design | total_evaluation | 20 | 1.062441e-01 | 1.099295e-01 | 1.084898e-01 | 8.468098e-03 |
+| transient | 128×128 | 100 | 3 | warm_reused | trajectory | 20 | 7.347850e-01 | 7.510316e-01 | 7.347559e-01 | 1.305366e-02 |
+| transient | 128×128 | 100 | 3 | cold_design | assembly | 20 | 2.324215e-02 | 2.352488e-02 | 2.327857e-02 | 2.431217e-04 |
+| transient | 128×128 | 100 | 3 | cold_design | factorization | 20 | 4.110305e-02 | 4.175338e-02 | 4.126368e-02 | 4.512293e-04 |
+| transient | 128×128 | 100 | 3 | cold_design | trajectory | 20 | 7.481516e-01 | 7.673551e-01 | 7.502845e-01 | 1.532440e-02 |
+| transient | 128×128 | 100 | 3 | cold_design | total_evaluation | 20 | 8.133657e-01 | 8.316925e-01 | 8.148268e-01 | 1.528946e-02 |
+| transient | 128×128 | 300 | 3 | warm_reused | trajectory | 20 | 2.284177e+00 | 2.308069e+00 | 2.285785e+00 | 2.934588e-02 |
+| transient | 128×128 | 300 | 3 | cold_design | assembly | 20 | 2.342960e-02 | 2.390791e-02 | 2.344913e-02 | 3.818684e-04 |
+| transient | 128×128 | 300 | 3 | cold_design | factorization | 20 | 4.112810e-02 | 4.205857e-02 | 4.136278e-02 | 8.126001e-04 |
+| transient | 128×128 | 300 | 3 | cold_design | trajectory | 20 | 2.246439e+00 | 2.308333e+00 | 2.258843e+00 | 4.708821e-02 |
+| transient | 128×128 | 300 | 3 | cold_design | total_evaluation | 20 | 2.312767e+00 | 2.373479e+00 | 2.323655e+00 | 4.701129e-02 |
+
 ## Blocking failures
 
 Численные PASS/FAIL criteria выполнены.

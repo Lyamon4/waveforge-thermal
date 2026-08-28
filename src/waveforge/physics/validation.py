@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+import pandas as pd
 import yaml
 from numpy.typing import NDArray
 
@@ -726,6 +727,11 @@ def run_gate1_validation(config_dir: Path, artifact_dir: Path) -> bool:
         bundle.passed,
         artifact_dir / "gate1_report.md",
         config_hash=bundle.config_hash,
+        benchmark_frame=(
+            pd.read_csv(artifact_dir.parent / "solver_benchmark.csv")
+            if (artifact_dir.parent / "solver_benchmark.csv").is_file()
+            else None
+        ),
     )
     return bundle.passed
 

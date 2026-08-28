@@ -28,3 +28,23 @@ interface, global energy balance и operator admissibility. Linear system
 обозначается `A T = b`, transient fixtures полностью зафиксированы, benchmark
 разделён на warm reused и cold changing-design regimes.
 
+## 2026-08-28 — Gate 1 solver benchmark
+
+- Timing protocol: 5 warmup runs, 20 measured runs, 3 source scenarios.
+- Timed regions не включают plotting, CSV serialization и generation входных
+  conductivity maps.
+- `warm_reused` измеряет solve/trajectory с уже собранной и factorized matrix.
+- `cold_design` на каждом run меняет conductivity map и отдельно измеряет
+  assembly, factorization, solve/trajectory и full objective evaluation.
+- Steady cases: `32×32`, `64×64`, `128×128`, `256×256`.
+- Transient cases: `64×64×100`, `128×128×100`, `128×128×300`.
+- Median cold total evaluation: `0.002310`, `0.009265`, `0.046332`,
+  `0.262744` s для steady cases соответственно; `0.106244`, `0.813366`,
+  `2.312767` s для transient cases соответственно.
+- Первая transient benchmark выборка была признана несопоставимой и отброшена:
+  seed ошибочно зависел от `time_steps`, поэтому cases `128×128×100` и
+  `128×128×300` получали разные conductivity families. После regression test
+  seed зафиксирован независимо от step count, в CSV добавлен
+  `conductivity_family_hash`, и вся pre-registered benchmark matrix перезапущена.
+- Исправленная median trajectory масштабируется с `0.748152` s для 100 steps до
+  `2.246439` s для 300 steps в одинаковой conductivity family.
