@@ -1,0 +1,112 @@
+{
+  "config_hash": "14d39bdb31e04da13a1b6e365047fb0531ea2f38842033e3f8bbd2d6c8a4ca01",
+  "input_hashes": {
+    "energy_conductivity": "cbad26bdf390923daec6a9758e28fa75697ad27973c7549ef587cd384e4cacb0",
+    "energy_source": "bb05ef88c8db4d6688f1fe2c0b6db1ab13f5588f428fc3fb9765b46ee40daf60",
+    "linear_exact": "ddc19ec77be16168d12c306632a9cc51f24970a0ba1e985bc1bffb36bee0ae29",
+    "manufactured_source_n128": "02bb82f433a367833f3e57e6aa8553be858e6119d0bec6712c8ac853f9921d6c",
+    "manufactured_source_n32": "017dfe425c2484cd35b1b1f05e2c6d6cbdd09b4bceb5764494d9cf3142e8b09b",
+    "manufactured_source_n64": "ea75907eb9dddd407ec35207696812c6c5c4cc26d1c3c0bd5191748802ffa9a7",
+    "timestep_initial": "408deb18a9a667a456c824346aec074d0399795ff73cee3d69afb835ce09652e",
+    "transient_initial": "6d11ea43f7b29da36a0dcf133e4b07e5dee94a99741a01b1838b28caa4f1ef26",
+    "transient_source": "b71ea6a8aecee52dda410fa1da8ab7d9fb709d78b866213a9d52d19f7602a599",
+    "two_layer_k_n128": "7742e5847d4c4817e1cf50e02e91c4c9c54903530c07d361234b79d17b88331d",
+    "two_layer_k_n32": "5189809e626436e13e2b48125a823d323e2c1f903c3bc1c85e00ecb9296d33a0",
+    "two_layer_k_n64": "26bd54c5e34194adff8a2abaea28dc0d0c73990c752358f9c5c57176b3065f37"
+  },
+  "steady_validation": {
+    "domain": {
+      "lx": 1.0,
+      "ly": 1.0
+    },
+    "dtype": "float64",
+    "grids": {
+      "benchmark": [
+        32,
+        64,
+        128,
+        256
+      ],
+      "validation": [
+        32,
+        64,
+        128
+      ]
+    },
+    "physics": {
+      "harmonic_epsilon": 1e-12,
+      "k_high": 20.0,
+      "k_low": 1.0,
+      "rho_c": 1.0
+    },
+    "production_boundary": {
+      "bottom": {
+        "kind": "dirichlet",
+        "value": 0.0
+      },
+      "left": {
+        "kind": "neumann",
+        "value": 0.0
+      },
+      "right": {
+        "kind": "neumann",
+        "value": 0.0
+      },
+      "top": {
+        "kind": "neumann",
+        "value": 0.0
+      }
+    },
+    "seed": 20260828,
+    "tolerances": {
+      "constant_absolute": 1e-11,
+      "energy_relative_imbalance": 1e-10,
+      "harmonic_relative": 1e-12,
+      "linear_relative_l2": 1e-11,
+      "manufactured_min_order": 1.5,
+      "manufactured_min_reduction": 1.5,
+      "matrix_min_eigenvalue": 1e-12,
+      "matrix_off_diagonal_max": 1e-14,
+      "matrix_symmetry_absolute": 1e-13,
+      "monotonicity_slack": 1e-12,
+      "symmetry_defect": 1e-10,
+      "two_layer_flux_relative": 1e-11,
+      "two_layer_relative_l2": 1e-11
+    }
+  },
+  "transient_validation": {
+    "steady_limit": {
+      "conductivity": 1.0,
+      "dt": 0.02,
+      "early_stopping": false,
+      "grid": 32,
+      "initial_temperature": 0.0,
+      "integrated_source": 1.0,
+      "maximum_steps": 200,
+      "relative_l2_tolerance": 0.0005,
+      "residual_tolerance": 0.0005,
+      "rho_c": 1.0,
+      "source_rectangle": [
+        0.4,
+        0.6,
+        0.65,
+        0.85
+      ],
+      "t_final": 4.0
+    },
+    "timestep_convergence": {
+      "comparison_time": 0.2,
+      "conductivity": 1.0,
+      "dt_coarse": 0.02,
+      "dt_half": 0.01,
+      "dt_reference": 0.00125,
+      "early_stopping": false,
+      "grid": 32,
+      "half_to_coarse_error_max_ratio": 0.75,
+      "initial_condition": "sin_pi_y_over_2",
+      "maximum_steps": 160,
+      "rho_c": 1.0,
+      "source": "zero"
+    }
+  }
+}

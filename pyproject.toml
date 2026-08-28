@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "waveforge-thermal"
+version = "0.1.0"
+description = "Solver-first inverse thermal design research system"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "matplotlib>=3.11,<3.12",
+    "numpy>=2.4,<2.5",
+    "pandas>=3.0,<3.1",
+    "psutil>=7.2,<7.3",
+    "pydantic>=2.13,<2.14",
+    "PyYAML>=6.0,<7",
+    "scipy>=1.17,<1.18",
+    "torch>=2.13,<2.14",
+    "tqdm>=4.70,<4.71",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1,<9.2",
+    "ruff>=0.16,<0.17",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --strict-config"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]
