@@ -24,4 +24,3 @@ timestep_convergence:
   maximum_steps: 160
   early_stopping: false
   half_to_coarse_error_max_ratio: 0.75
-

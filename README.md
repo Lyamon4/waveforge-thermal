@@ -38,4 +38,3 @@ python -m pip install -e ".[dev]"
 - lab journal: `docs/lab_journal.md`.
 
 Gate 2 не начинается до полного Gate 1 PASS и review.
-

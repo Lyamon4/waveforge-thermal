@@ -6,8 +6,10 @@ import pytest
 from waveforge.experiments.benchmark_solver import (
     benchmark_steady_case,
     benchmark_transient_case,
+    build_argument_parser,
     generate_conductivity_maps,
     summarize_timings,
+    validate_config_dir,
 )
 from waveforge.physics.grid import Grid2D
 from waveforge.reproducibility import content_hash
@@ -89,3 +91,20 @@ def test_transient_step_cases_use_same_conductivity_family() -> None:
     )
 
     assert short[0].conductivity_family_hash == long[0].conductivity_family_hash
+
+
+def test_benchmark_cli_accepts_registered_config_dir(tmp_path) -> None:
+    arguments = build_argument_parser().parse_args(
+        ["--config-dir", str(tmp_path), "--warmups", "1", "--runs", "2"]
+    )
+
+    assert arguments.config_dir == tmp_path
+    assert arguments.warmups == 1
+    assert arguments.runs == 2
+
+
+def test_config_dir_requires_both_gate1_configs(tmp_path) -> None:
+    (tmp_path / "steady_validation.yaml").write_text("seed: 1\n", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError, match=r"transient_validation\.yaml"):
+        validate_config_dir(tmp_path)

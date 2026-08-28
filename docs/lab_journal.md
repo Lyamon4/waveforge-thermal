@@ -48,3 +48,10 @@ interface, global energy balance и operator admissibility. Linear system
   `conductivity_family_hash`, и вся pre-registered benchmark matrix перезапущена.
 - Исправленная median trajectory масштабируется с `0.748152` s для 100 steps до
   `2.246439` s для 300 steps в одинаковой conductivity family.
+
+## 2026-08-28 — Gate 1 review checkpoint
+
+Review implementation против pre-registered plan выявил interface defect:
+benchmark CLI не принимал предусмотренный `--config-dir`. CLI дополнен проверкой
+наличия обоих Gate 1 config files и regression tests. Numerical model, benchmark
+inputs, tolerances и сохранённые timings при этом не изменялись.

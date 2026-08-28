@@ -408,17 +408,34 @@ def write_benchmark_csv(
     return output_path
 
 
-def main() -> int:
+def validate_config_dir(config_dir: Path) -> None:
+    """Проверить наличие locked Gate 1 validation configs."""
+    required = ("steady_validation.yaml", "transient_validation.yaml")
+    missing = [name for name in required if not (config_dir / name).is_file()]
+    if missing:
+        raise FileNotFoundError(
+            f"config directory is missing required files: {', '.join(missing)}"
+        )
+
+
+def build_argument_parser() -> argparse.ArgumentParser:
+    """Создать stable CLI parser для registered benchmark command."""
     parser = argparse.ArgumentParser(
         description="Benchmark WaveForge reference solvers"
     )
+    parser.add_argument("--config-dir", type=Path, default=Path("configs"))
     parser.add_argument(
         "--output", type=Path, default=Path("artifacts/solver_benchmark.csv")
     )
     parser.add_argument("--warmups", type=int, default=5)
     parser.add_argument("--runs", type=int, default=20)
     parser.add_argument("--seed", type=int, default=20260828)
-    arguments = parser.parse_args()
+    return parser
+
+
+def main() -> int:
+    arguments = build_argument_parser().parse_args()
+    validate_config_dir(arguments.config_dir)
     records = run_benchmark(
         warmup_runs=arguments.warmups,
         measured_runs=arguments.runs,
