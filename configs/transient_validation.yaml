@@ -1,0 +1,27 @@
+steady_limit:
+  grid: 32
+  conductivity: 1.0
+  rho_c: 1.0
+  initial_temperature: 0.0
+  source_rectangle: [0.4, 0.6, 0.65, 0.85]
+  integrated_source: 1.0
+  dt: 0.02
+  t_final: 4.0
+  maximum_steps: 200
+  early_stopping: false
+  relative_l2_tolerance: 5.0e-4
+  residual_tolerance: 5.0e-4
+timestep_convergence:
+  grid: 32
+  conductivity: 1.0
+  rho_c: 1.0
+  source: zero
+  initial_condition: sin_pi_y_over_2
+  comparison_time: 0.2
+  dt_coarse: 0.02
+  dt_half: 0.01
+  dt_reference: 0.00125
+  maximum_steps: 160
+  early_stopping: false
+  half_to_coarse_error_max_ratio: 0.75
+

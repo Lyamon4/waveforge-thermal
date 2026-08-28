@@ -1,0 +1,33 @@
+seed: 20260828
+dtype: float64
+domain:
+  lx: 1.0
+  ly: 1.0
+physics:
+  k_low: 1.0
+  k_high: 20.0
+  rho_c: 1.0
+  harmonic_epsilon: 1.0e-12
+production_boundary:
+  left: {kind: neumann, value: 0.0}
+  right: {kind: neumann, value: 0.0}
+  bottom: {kind: dirichlet, value: 0.0}
+  top: {kind: neumann, value: 0.0}
+grids:
+  validation: [32, 64, 128]
+  benchmark: [32, 64, 128, 256]
+tolerances:
+  constant_absolute: 1.0e-11
+  linear_relative_l2: 1.0e-11
+  manufactured_min_reduction: 1.5
+  manufactured_min_order: 1.5
+  harmonic_relative: 1.0e-12
+  two_layer_relative_l2: 1.0e-11
+  two_layer_flux_relative: 1.0e-11
+  energy_relative_imbalance: 1.0e-10
+  symmetry_defect: 1.0e-10
+  monotonicity_slack: 1.0e-12
+  matrix_symmetry_absolute: 1.0e-13
+  matrix_off_diagonal_max: 1.0e-14
+  matrix_min_eigenvalue: 1.0e-12
+
