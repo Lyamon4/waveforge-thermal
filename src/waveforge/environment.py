@@ -32,9 +32,7 @@ def collect_environment(torch_install_command: str) -> dict[str, Any]:
         "torch_cuda_build": torch.version.cuda,
         "cuda_available": cuda_available,
         "gpu": torch.cuda.get_device_name(0) if cuda_available else None,
-        "bf16_supported": (
-            torch.cuda.is_bf16_supported() if cuda_available else None
-        ),
+        "bf16_supported": (torch.cuda.is_bf16_supported() if cuda_available else None),
         "compute_capability": (
             list(torch.cuda.get_device_capability(0)) if cuda_available else None
         ),
@@ -64,4 +62,3 @@ def write_environment_report(
         encoding="utf-8",
     )
     return manifest
-
