@@ -55,3 +55,29 @@ Review implementation против pre-registered plan выявил interface de
 benchmark CLI не принимал предусмотренный `--config-dir`. CLI дополнен проверкой
 наличия обоих Gate 1 config files и regression tests. Numerical model, benchmark
 inputs, tolerances и сохранённые timings при этом не изменялись.
+
+## 2026-08-29 — Gate 1 remote checkpoint
+
+- Accepted merge SHA: `87b1e3d2a6a01c262191293f90a6e3257ea330f1`.
+- Annotated tag: `v0.1-gate1-physics-validated`.
+- `origin/master` и peeled tag проверены через remote refs и указывают на accepted
+  SHA.
+- GitHub repository `Lyamon4/waveforge-thermal` подтверждён как private.
+- После remote verification старая worktree `gate1-physics` и локальная feature
+  branch удалены; committed state восстановим из `master` или annotated tag.
+
+## 2026-08-29 — Explicit transient feasibility before Gate 2
+
+- Locked case: `64×64`, `k_max=20`, `rho_c=1`, production boundary conditions.
+- Из diagonal Gate 1 flux operator получено `dt_monotone=2.44140625e-6`;
+  measurement использует safety factor `0.9` и `dt=2.197265625e-6`.
+- Horizons `0.2`, `1.0`, `4.0` требуют соответственно `91,023`, `455,112`,
+  `1,820,445` steps.
+- Eager CUDA `float32` forward для трёх batched scenarios и `91,023` steps занял
+  `35.0877 s` на RTX 4060. Оценки для `t=1` и `t=4`: `175.44 s` и `701.75 s`.
+- Autograd peak memory рос на `146,944 bytes/step` в measured range `25–800`
+  steps (`R²=1.0`). Линейные оценки: `12.46 GiB`, `62.28 GiB`, `249.13 GiB`
+  для трёх horizons. Они не включают optimizer state и являются extrapolation.
+- Решение: uncheckpointed eager explicit differentiation не подходит для 8 GB
+  VRAM. Gate 2 начинается со steady multi-scenario Gate 2A; transient Gate 2B
+  требует отдельного выбора implicit-adjoint, matrix-free или checkpointed path.
