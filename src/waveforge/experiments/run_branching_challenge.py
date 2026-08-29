@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import json
@@ -11,10 +12,16 @@ from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 from numpy.typing import NDArray
 
+matplotlib.use("Agg")
+
+from matplotlib import pyplot as plt
+
 from waveforge.design.branching_baseline import (
+    SOURCE_CENTERS,
     BranchingTreeParameters,
     build_branching_tree,
     candidate_axes,
@@ -420,3 +427,139 @@ def run_comparison(
         encoding="utf-8",
     )
     return verdict
+
+
+def _write_artifact_hashes(output_dir: Path) -> None:
+    verdict_path = output_dir / "challenge_verdict.json"
+    payload = json.loads(verdict_path.read_text(encoding="utf-8"))
+    payload["artifact_hashes"] = {
+        path.name: _file_sha256(path)
+        for path in sorted(output_dir.iterdir(), key=lambda item: item.name)
+        if path.is_file()
+        and path.name != verdict_path.name
+        and not path.name.endswith(".tmp")
+    }
+    verdict_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def write_challenge_figures(
+    output_dir: Path,
+    search: SearchResult,
+    *,
+    evaluator: Evaluator = evaluate_frozen_binary_design,
+) -> None:
+    """Render winner geometry/temperatures without changing stored metrics."""
+    winner = search.winner
+    parameters = winner.parameters
+    design = build_branching_tree(parameters).design.copy()
+    figure, axis = plt.subplots(figsize=(6.4, 5.8), constrained_layout=True)
+    axis.imshow(
+        design,
+        origin="lower",
+        extent=(0.0, 1.0, 0.0, 1.0),
+        cmap="Greys",
+        vmin=0.0,
+        vmax=1.0,
+        interpolation="nearest",
+    )
+    junction = (parameters.x_junction, parameters.y_junction)
+    sink = (parameters.x_sink, 0.0)
+    for endpoint in (junction, *SOURCE_CENTERS):
+        start = sink if endpoint == junction else junction
+        axis.plot(
+            (start[0], endpoint[0]),
+            (start[1], endpoint[1]),
+            color="#d62728",
+            linewidth=1.0,
+            alpha=0.8,
+        )
+    source_x, source_y = zip(*SOURCE_CENTERS, strict=True)
+    axis.scatter(source_x, source_y, marker="x", color="#ffbf00", label="sources")
+    axis.scatter(*junction, marker="o", color="#d62728", label="junction")
+    axis.scatter(*sink, marker="v", color="#1f77b4", label="sink")
+    axis.set(
+        xlabel="x",
+        ylabel="y",
+        title=f"Best parametric branching tree: {parameters.candidate_id}",
+        xlim=(0.0, 1.0),
+        ylim=(0.0, 1.0),
+        aspect="equal",
+    )
+    axis.legend(loc="lower right")
+    figure.savefig(output_dir / "best_tree_design.png", dpi=180)
+    plt.close(figure)
+
+    solved = evaluator(
+        parameters.candidate_id,
+        design,
+        resolution=256,
+        include_temperature_fields=True,
+    )
+    if solved.temperature_fields is None or len(solved.temperature_fields) != 3:
+        raise RuntimeError("plotting evaluator did not return three temperature fields")
+    fields = tuple(
+        np.asarray(field, dtype=np.float64).copy()
+        for field in solved.temperature_fields
+    )
+    if not all(
+        field.shape == (256, 256) and np.all(np.isfinite(field)) for field in fields
+    ):
+        raise FloatingPointError("temperature figure fields are invalid")
+    color_minimum = min(float(np.min(field)) for field in fields)
+    color_maximum = max(float(np.max(field)) for field in fields)
+    figure, axes = plt.subplots(1, 3, figsize=(14.4, 4.5), constrained_layout=True)
+    image = None
+    for scenario_id, field, axis in zip(("A", "B", "C"), fields, axes, strict=True):
+        image = axis.imshow(
+            field,
+            origin="lower",
+            extent=(0.0, 1.0, 0.0, 1.0),
+            cmap="inferno",
+            vmin=color_minimum,
+            vmax=color_maximum,
+            aspect="equal",
+        )
+        axis.set(xlabel="x", ylabel="y", title=f"Scenario {scenario_id}")
+    if image is None:
+        raise RuntimeError("temperature figure has no image")
+    figure.colorbar(image, ax=axes, label="Temperature")
+    figure.suptitle("Best branching-tree temperatures, independent SciPy 256×256")
+    figure.savefig(output_dir / "best_tree_temperature_maps.png", dpi=180)
+    plt.close(figure)
+    _write_artifact_hashes(output_dir)
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=Path("artifacts/gate2a_challenge"),
+    )
+    return parser.parse_args()
+
+
+def main() -> int:
+    """Run the full registered search and post-selection comparison."""
+    arguments = _parse_args()
+    search = run_search(arguments.output)
+    verdict = run_comparison(arguments.output, search)
+    write_challenge_figures(arguments.output, search)
+    print(
+        json.dumps(
+            {
+                "status": verdict.status.value,
+                "winner": search.winner.parameters.candidate_id,
+                "winner_peak_256": search.winner.evaluation.worst_peak,
+            },
+            sort_keys=True,
+        )
+    )
+    return 2 if verdict.status is ChallengeStatus.INVALID_RUN else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

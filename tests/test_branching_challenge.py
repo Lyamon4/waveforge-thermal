@@ -22,6 +22,7 @@ from waveforge.experiments.run_branching_challenge import (
     SearchResult,
     run_comparison,
     run_search,
+    write_challenge_figures,
 )
 from waveforge.verification import challenge as challenge_module
 from waveforge.verification.challenge import (
@@ -352,3 +353,83 @@ def test_comparison_writes_three_nominal_and_eighty_four_robustness_rows(
     assert registry["post_result_challenge"] is True
     assert registry["candidate_count"] == 41055
     assert registry["search_counts"] == {"64": 24, "128": 20, "256": 5}
+
+
+def test_figures_do_not_mutate_metrics_and_verdict_hashes_final_artifacts(
+    tmp_path: Path,
+) -> None:
+    """Plot mutation or an incomplete artifact manifest must fail."""
+    output_dir = tmp_path / "challenge"
+    output_dir.mkdir()
+    final_names = (
+        "challenge_spec.md",
+        "candidate_registry.json",
+        "tree_search_64.csv",
+        "tree_finalists_128.csv",
+        "tree_finalists_256.csv",
+        "waveforge_vs_tree.csv",
+        "challenge_robustness.csv",
+        "challenge_morphology.csv",
+    )
+    for name in final_names:
+        (output_dir / name).write_text(f"fixture:{name}\n", encoding="utf-8")
+    (output_dir / "challenge_verdict.json").write_text(
+        json.dumps({"status": "CHALLENGE_COMPARABLE"}),
+        encoding="utf-8",
+    )
+    parameters = BranchingTreeParameters(0.5, 0.5, 0.3, 1.0)
+    evaluation = ChallengeEvaluation(
+        candidate_id=parameters.candidate_id,
+        resolution=256,
+        design_hash_64="tree-hash",
+        transferred_design_hash="tree-256-hash",
+        material_fraction=0.25,
+        scenario_peaks=(1.0, 0.9, 0.8),
+        scenario_residuals=(1e-12, 1e-12, 1e-12),
+        worst_peak=1.0,
+        average_peak=0.9,
+        maximum_residual=1e-12,
+        wall_seconds=0.01,
+    )
+    winner = SearchRecord(parameters, evaluation, rank=1)
+    search = SearchResult((winner,), (winner,), (winner,), winner)
+    metric_snapshot = evaluation
+
+    def plotting_evaluator(
+        candidate_id: str,
+        design: np.ndarray,
+        *,
+        resolution: int,
+        include_temperature_fields: bool = False,
+    ) -> ChallengeEvaluation:
+        fields = tuple(
+            np.full((resolution, resolution), value, dtype=np.float64)
+            for value in (1.0, 0.9, 0.8)
+        )
+        return ChallengeEvaluation(
+            candidate_id=candidate_id,
+            resolution=resolution,
+            design_hash_64="tree-hash",
+            transferred_design_hash="tree-256-hash",
+            material_fraction=float(design.mean()),
+            scenario_peaks=(1.0, 0.9, 0.8),
+            scenario_residuals=(1e-12, 1e-12, 1e-12),
+            worst_peak=1.0,
+            average_peak=0.9,
+            maximum_residual=1e-12,
+            wall_seconds=0.01,
+            temperature_fields=fields if include_temperature_fields else None,
+        )
+
+    write_challenge_figures(output_dir, search, evaluator=plotting_evaluator)
+
+    assert search.winner.evaluation == metric_snapshot
+    for name in ("best_tree_design.png", "best_tree_temperature_maps.png"):
+        assert (output_dir / name).read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
+    verdict = json.loads((output_dir / "challenge_verdict.json").read_text())
+    expected_hash_names = {
+        path.name
+        for path in output_dir.iterdir()
+        if path.is_file() and path.name != "challenge_verdict.json"
+    }
+    assert set(verdict["artifact_hashes"]) == expected_hash_names
