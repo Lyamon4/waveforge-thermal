@@ -157,8 +157,12 @@ def _read_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
-def _file_sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def _canonical_artifact_sha256(path: Path) -> str:
+    """Hash text with canonical LF endings and binary artifacts byte-for-byte."""
+    content = path.read_bytes()
+    if path.suffix.lower() in {".csv", ".json", ".md"}:
+        content = content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(content).hexdigest()
 
 
 def _git_sha() -> str:
@@ -231,7 +235,8 @@ def _write_candidate_registry(
     payload = {
         "schema_version": 1,
         "post_result_challenge": True,
-        "spec_sha256": _file_sha256(spec_path),
+        "spec_sha256": _canonical_artifact_sha256(spec_path),
+        "spec_hash_mode": "canonical_lf_text",
         "implementation_git_sha": _git_sha(),
         "candidate_count": 41055,
         "axes": {
@@ -432,8 +437,9 @@ def run_comparison(
 def _write_artifact_hashes(output_dir: Path) -> None:
     verdict_path = output_dir / "challenge_verdict.json"
     payload = json.loads(verdict_path.read_text(encoding="utf-8"))
+    payload["artifact_hash_mode"] = "canonical_lf_text_raw_binary"
     payload["artifact_hashes"] = {
-        path.name: _file_sha256(path)
+        path.name: _canonical_artifact_sha256(path)
         for path in sorted(output_dir.iterdir(), key=lambda item: item.name)
         if path.is_file()
         and path.name != verdict_path.name

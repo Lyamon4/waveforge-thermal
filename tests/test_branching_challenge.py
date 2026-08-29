@@ -20,6 +20,7 @@ from waveforge.design.branching_baseline import (
 from waveforge.experiments.run_branching_challenge import (
     SearchRecord,
     SearchResult,
+    _canonical_artifact_sha256,
     run_comparison,
     run_search,
     write_challenge_figures,
@@ -60,6 +61,24 @@ def test_reusable_factorization_evaluator_matches_public_verifier(
     assert actual.worst_peak == pytest.approx(expected.worst_peak, abs=1e-12)
     assert actual.maximum_residual <= 1e-10
     assert actual.material_fraction == 0.25
+
+
+def test_challenge_text_hashes_are_portable_across_windows_eol(
+    tmp_path: Path,
+) -> None:
+    lf = tmp_path / "metrics_lf.csv"
+    crlf = tmp_path / "metrics_crlf.csv"
+    binary_lf = tmp_path / "image_lf.png"
+    binary_crlf = tmp_path / "image_crlf.png"
+    lf.write_bytes(b"a,b\n1,2\n")
+    crlf.write_bytes(b"a,b\r\n1,2\r\n")
+    binary_lf.write_bytes(b"a\nb")
+    binary_crlf.write_bytes(b"a\r\nb")
+
+    assert _canonical_artifact_sha256(lf) == _canonical_artifact_sha256(crlf)
+    assert _canonical_artifact_sha256(binary_lf) != _canonical_artifact_sha256(
+        binary_crlf
+    )
 
 
 def test_evaluator_factorizes_once_for_three_source_scenarios(

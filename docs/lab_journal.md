@@ -272,6 +272,19 @@ design. Возможный будущий вклад может быть тол�
 multi-scenario worst-case objective, strict budget, independent verification,
 registered robustness и fair initializer/break-even comparison. Текущий
 teacher-fidelity NO-GO не даёт положительного ML claim.
+## 2026-08-29 — Challenge artifact EOL provenance correction
+
+Post-result verification выявил, что raw-byte SHA-256 text artifacts зависит
+от Windows CRLF checkout: часть expected hashes соответствовала working-tree
+bytes, часть committed LF blobs. Numerical CSV rows, arrays, PNG, designs,
+ranking и `STRONG_CHALLENGE_PASS` не изменились.
+
+Hash metadata исправлена без изменения scientific result: `.csv`, `.json` и
+`.md` канонизируются CRLF/CR→LF перед SHA-256, binary files хешируются raw.
+`challenge_verdict.json` теперь содержит
+`artifact_hash_mode=canonical_lf_text_raw_binary`, а candidate registry —
+`spec_hash_mode=canonical_lf_text`. Regression test подтверждает одинаковый
+text hash для LF и CRLF checkout.
 
 ## 2026-08-29 — Independent Gate 2A review and prospective challenge lock
 

@@ -1,16 +1,17 @@
 {
+  "artifact_hash_mode": "canonical_lf_text_raw_binary",
   "artifact_hashes": {
     "best_tree_design.png": "88275484d6859b92588b362206795149991e034cba16355de9b5a88fa319fa14",
     "best_tree_temperature_maps.png": "a016beb69d85d825785dda9e15bb1b4472049100a72288daf9a2c5d23825b9d3",
-    "candidate_registry.json": "495fbbeaf7013d6b51ba2582dcb893db2f0de3610ece0b0e915fc356e31fb317",
+    "candidate_registry.json": "5dda98e4e04aa003eb6e659f37cec1d8e5b2737062ebb0af147aeacfeb33e37e",
     "challenge_interpretation.md": "1c4ab24ec85ef97eca8dd1bc60fb450c91b0125ba222d65bca72869a45d2640d",
-    "challenge_morphology.csv": "b33a0d1041a06559e8ea7e90c1120a4637deae224d585ed4d947f52ded888b18",
-    "challenge_robustness.csv": "f48f659eda5e81a9fa336b0a23972c51f527717a41b5a8558cd9b19cb67f07bd",
+    "challenge_morphology.csv": "2f3ef39b0277a3dceef96f49e7dd74323427d31d68d627e8c0bb772e15e35127",
+    "challenge_robustness.csv": "edc86505ad904fd783d211ce7d2e6b0926b858087730652e6e14d757918a0703",
     "challenge_spec.md": "41c61b04bd4794f31f7b841513a1f382be542643d54ab737da1de8fdbdc0a947",
-    "tree_finalists_128.csv": "dd73e3ab4187010e0ec195033fe22dc3c91d1c206bbdcc7b0bc892ac92e45634",
-    "tree_finalists_256.csv": "4fc1f12a5c97e4b81526fb2bd727bc9d31877564ed3eb8e2f2de0315c2018635",
-    "tree_search_64.csv": "caa5e0a2ebbaf7cb26f93957894df01e122a235c1198eb2674c8561e1ff50bc9",
-    "waveforge_vs_tree.csv": "76def9e0556e1f2829785aea48ff4b7d10685f00363e342287e89305ee47dca0"
+    "tree_finalists_128.csv": "709d48ba66a1da2aa7319c28ad058000823efaa80905f7b317e704d9dd0ffda0",
+    "tree_finalists_256.csv": "ce9513ff92eadc46e18ecafb3b8234abb7b078f7835ee002f7a6620483d5b535",
+    "tree_search_64.csv": "f5662afd526caf7539490176e04d421c62306b10ef7c4a9f09bafddea7ce6e80",
+    "waveforge_vs_tree.csv": "1af7090ffb389e283a46c3661d47bcee2e803f6f62ec9d8af95a88322433c159"
   },
   "metrics": {
     "negative_seed_count": 0,
