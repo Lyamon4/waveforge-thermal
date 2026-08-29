@@ -257,6 +257,22 @@ artifacts. Согласно prospective amendment dataset generation, network tr
 и initializer evaluation не начинались. Break-even не вычисляется: без
 принятого teacher и обученной модели finite estimate не поддержан данными.
 
+## 2026-08-29 — Focused ML prior-art and claim review
+
+Primary-source search подтвердил существенный prior art для всех общих частей
+planned warm-start: thermal U-Net/CNN acceleration (2018), boundary-conditioned
+thermal generation (2019), physical-field-conditioned TopologyGAN (2021),
+warm-start thermal TopOpt с DE-DGM и direct refinement (2024), diffusion/NITO
+generation с несколькими physics-optimization steps, а также online ML для
+thermal topology optimization.
+
+Запрещены claims first learned warm-start, first source-conditioned thermal
+design, first physics-refined neural topology и first solver-verified neural
+design. Возможный будущий вклад может быть только узкой комбинацией
+multi-scenario worst-case objective, strict budget, independent verification,
+registered robustness и fair initializer/break-even comparison. Текущий
+teacher-fidelity NO-GO не даёт положительного ML claim.
+
 ## 2026-08-29 — Independent Gate 2A review and prospective challenge lock
 
 Independent review завершён verdict `REVIEW_PASS_WITH_MINOR_FINDINGS` и
