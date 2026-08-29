@@ -186,6 +186,22 @@ Manifest содержит config/environment/source/preflight hashes и initial-
 hashes всех трёх seeds для обоих scopes. На момент freeze production started:
 `false`.
 
+## 2026-08-29 — Single-scenario production baselines
+
+Три зарегистрированных `single_A` runs завершены без early stopping, по 600
+iterations каждый. Все initial-logit hashes совпали с production manifest; для
+каждого сохранены 600 metric rows, 1200 CG records, checkpoints и frozen
+continuous/binary arrays.
+
+| Seed | Final exact peak on A objective | Binary fraction | Step time sum, s |
+|---:|---:|---:|---:|
+| `20260828` | `0.1078955089249557` | `0.25048828125` | `509.8811073997349` |
+| `20260829` | `0.1078369974597577` | `0.250244140625` | `361.68361150022247` |
+| `20260830` | `0.1079502597917487` | `0.25048828125` | `354.0953565999662` |
+
+Эти значения являются low-fidelity optimization metrics только для scenario A;
+они не заменяют A/B/C high-fidelity baseline verification.
+
 ## 2026-08-29 — Ten-step numerical smoke optimization
 
 После PASS всех revised preflights выполнен зарегистрированный smoke run:
