@@ -206,6 +206,20 @@ WaveForge относительно сильного geometric family соста�
 Обе геометрии качественно являются толстыми Y-shaped trees; вклад WaveForge
 сейчас убедительнее как inverse-design automation, чем как новая topology.
 
+## 2026-08-29 — ML warm-start spike prospective lock
+
+Stage C разрешён только после `REVIEW_PASS_WITH_MINOR_FINDINGS` и
+`STRONG_CHALLENGE_PASS`. До task generation зафиксированы task distribution,
+OOD test region, source geometry, split seeds, `32×32`/`64×64` teacher
+protocols, eight-GPU-hour cost ceiling, fidelity acceptance, continuous-design
+training target, network architecture, initializer baselines, refinement
+budgets и machine verdict semantics.
+
+Raw teacher logits отклонены как training target до результатов: exact volume
+projection делает additive logit offset неидентифицируемым. Выбран target
+`teacher continuous design`. Dataset generation и network training ещё не
+начинались.
+
 ## 2026-08-29 — Independent Gate 2A review and prospective challenge lock
 
 Independent review завершён verdict `REVIEW_PASS_WITH_MINOR_FINDINGS` и
