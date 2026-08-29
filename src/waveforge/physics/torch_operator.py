@@ -25,10 +25,6 @@ def _validate_inputs(
         raise ValueError("temperature and conductivity must share a device")
     if temperature.dtype != conductivity.dtype:
         raise ValueError("temperature and conductivity must share a dtype")
-    if not torch.isfinite(temperature).all() or not torch.isfinite(conductivity).all():
-        raise ValueError("operator inputs must be finite")
-    if not torch.all(conductivity > 0.0):
-        raise ValueError("conductivity must be strictly positive")
 
 
 def _harmonic_faces(first: Tensor, second: Tensor) -> Tensor:
