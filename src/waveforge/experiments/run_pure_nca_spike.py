@@ -35,6 +35,7 @@ from waveforge.ml.nca_training import (
     model_state_sha256,
     run_nca_training,
 )
+from waveforge.reporting.nca_spike import generate_nca_report
 from waveforge.reproducibility import (
     artifact_sha256,
     configure_cuda_reproducibility,
@@ -561,6 +562,15 @@ def run_verification_phase(output_dir: Path) -> dict[str, Any]:
     return payload
 
 
+def run_report_phase(output_dir: Path) -> dict[str, Any]:
+    """Generate the registered report without changing scientific decisions."""
+    return generate_nca_report(
+        output_dir,
+        project_root=PROJECT_ROOT,
+        report_generation_git_sha=_git_sha(),
+    )
+
+
 def benchmark_complete_steps(
     *,
     sources: Tensor | object,
@@ -886,6 +896,8 @@ def main() -> None:
         run_production_phase(args.output, seed=args.seed)
     elif args.phase == "verification":
         run_verification_phase(args.output)
+    elif args.phase == "report":
+        run_report_phase(args.output)
     else:
         raise NotImplementedError(f"phase {args.phase} is not implemented yet")
 
