@@ -122,12 +122,19 @@ git commit -m "feat: add locked parametric branching baseline"
 
 ```python
 @pytest.mark.parametrize("resolution", [64, 128])
-def test_reusable_factorization_evaluator_matches_public_verifier(resolution: int) -> None:
+def test_reusable_factorization_evaluator_matches_public_verifier(
+    resolution: int,
+) -> None:
     design = build_branching_tree(BranchingTreeParameters(0.5, 0.5, 0.3, 1.0)).design
     actual = evaluate_frozen_binary_design("tree", design, resolution=resolution)
     fidelity = "low_64" if resolution == 64 else "reference_128"
     expected = verify_candidate("tree", design, fidelity=fidelity)
-    np.testing.assert_allclose(actual.scenario_peaks, [r.peak_temperature for r in expected.scenario_records], rtol=0.0, atol=1e-12)
+    np.testing.assert_allclose(
+        actual.scenario_peaks,
+        [r.peak_temperature for r in expected.scenario_records],
+        rtol=0.0,
+        atol=1e-12,
+    )
     assert actual.worst_peak == pytest.approx(expected.worst_peak, abs=1e-12)
     assert actual.maximum_residual <= 1e-10
 ```
@@ -153,8 +160,14 @@ Run: `pytest tests/test_branching_challenge.py -q`
 Cover:
 
 ```python
-assert classify_challenge(two_strong_one_comparable).status is ChallengeStatus.STRONG_CHALLENGE_PASS
-assert classify_challenge(three_small_positive).status is ChallengeStatus.CHALLENGE_COMPARABLE
+assert (
+    classify_challenge(two_strong_one_comparable).status
+    is ChallengeStatus.STRONG_CHALLENGE_PASS
+)
+assert (
+    classify_challenge(three_small_positive).status
+    is ChallengeStatus.CHALLENGE_COMPARABLE
+)
 assert classify_challenge(two_negative).status is ChallengeStatus.CHALLENGE_FAIL
 assert classify_challenge(nonfinite).status is ChallengeStatus.INVALID_RUN
 ```
