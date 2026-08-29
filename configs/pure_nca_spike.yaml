@@ -1,0 +1,112 @@
+schema_version: 1
+scope: pure_nca_fixed_abc_feasibility
+
+architecture:
+  grid: [64, 64]
+  mutable_channels: 16
+  material_channel: 0
+  hidden_channels: 15
+  condition_channels: 2
+  perception_width: 64
+  rollout_steps: 64
+  update_scale: 0.1
+  padding_mode: reflect
+  activation: SiLU
+  parameter_count: 11472
+  initial_state: zeros
+  final_layer_initialization: zeros
+
+conditioning:
+  source_aggregation: sum
+  fixed_source_scale: 25.0
+  sink_mask: bottom_cell_row
+  persistent_every_step: true
+  clamp_overlaps: false
+
+precision:
+  neural_dtype: float32
+  projection_dtype: float32
+  physics_dtype: float64
+  device: cuda
+
+physics:
+  scenarios: [A, B, C]
+  k_low: 1.0
+  k_high: 20.0
+  interpolation_power: 3.0
+  harmonic_epsilon: 1.0e-12
+  cg_relative_residual_tolerance: 1.0e-6
+  cg_maximum_iterations: 2000
+
+parameterization:
+  gaussian_sigma: 1.0
+  gaussian_radius: 3
+  gaussian_padding: reflect
+  gaussian_normalization: unit_sum
+  projection_bracket: [-40.0, 40.0]
+  projection_maximum_iterations: 80
+  projection_mean_tolerance: 1.0e-6
+  binary_threshold: 0.5
+
+objective:
+  projection_beta: 8.0
+  smooth_max_alpha: 500.0
+  tv_weight: 0.001
+  binarization_weight: 0.02
+  material_penalty: 0.0
+  target_material_fraction: 0.25
+
+optimizer:
+  name: Adam
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+
+qualification:
+  seed: 20260831
+  candidate_learning_rates: [0.0003, 0.001, 0.003]
+  iterations: 200
+  early_window: [20, 40]
+  late_window: [180, 200]
+  primary_score_tolerance: 1.0e-4
+  late_loss_relative_tolerance: 1.0e-4
+  volume_mean_tolerance: 1.0e-6
+  initial_gradient_threshold: 1.0e-12
+  maximum_absolute_delta: 0.100001
+  maximum_absolute_state: 6.4001
+  minimum_objective_learning_fraction: 0.01
+  minimum_late_material_std: 0.001
+
+production:
+  seeds: [20260901, 20260902, 20260903]
+  iterations: 2000
+  diagnostic_interval: 10
+  checkpoint_interval: 100
+  batch_size: 1
+  early_stopping: false
+  final_iteration_index: 1999
+
+verification:
+  primary_resolution: 256
+  secondary_resolution: 128
+  peak_threshold_256: 0.1721575074379424
+  binary_budget_minimum: 0.24
+  binary_budget_maximum: 0.26
+  passing_seeds_required: 2
+  waveforge_reference_seed: 20260828
+  waveforge_reference_peak: 0.156506824943584
+  tree_reference_peak: 0.1650978093408512
+  straight_path_reference_peak: 0.3169417981503212
+
+hashing:
+  mode: canonical_lf_text_raw_binary
+  text_extensions: [.md, .json, .csv, .yaml, .yml]
+
+statuses:
+  - NCA_FEASIBILITY_GO
+  - NCA_NO_GO_EFFECT
+  - NCA_SPIKE_INVALID_PRODUCTION_RUN
+  - NCA_SPIKE_INVALID_REPRODUCIBILITY
+  - NCA_SPIKE_INVALID_TRAINING_PATHOLOGY
+  - NCA_QUALIFICATION_NO_ELIGIBLE_LR

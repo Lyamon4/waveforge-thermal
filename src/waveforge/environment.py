@@ -11,8 +11,14 @@ from typing import Any
 import psutil
 import torch
 
+from waveforge.reproducibility import DeterminismSnapshot
 
-def collect_environment(torch_install_command: str) -> dict[str, Any]:
+
+def collect_environment(
+    torch_install_command: str,
+    *,
+    determinism: DeterminismSnapshot | None = None,
+) -> dict[str, Any]:
     """Собрать platform, PyTorch и CUDA facts без смешения их терминов."""
     nvidia_smi = subprocess.run(
         ["nvidia-smi"],
@@ -21,7 +27,7 @@ def collect_environment(torch_install_command: str) -> dict[str, Any]:
         text=True,
     ).stdout
     cuda_available = torch.cuda.is_available()
-    return {
+    manifest: dict[str, Any] = {
         "platform": platform.platform(),
         "windows_version": platform.version(),
         "python": platform.python_version(),
@@ -48,6 +54,16 @@ def collect_environment(torch_install_command: str) -> dict[str, Any]:
             "checked_at": "2026-08-28",
         },
     }
+    if determinism is not None:
+        manifest["determinism"] = {
+            "seed": determinism.seed,
+            "deterministic_algorithms": determinism.deterministic_algorithms,
+            "warn_only": determinism.warn_only,
+            "cudnn_benchmark": determinism.cudnn_benchmark,
+            "cudnn_deterministic": determinism.cudnn_deterministic,
+            "mode": determinism.mode,
+        }
+    return manifest
 
 
 def write_environment_report(
