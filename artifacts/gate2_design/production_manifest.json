@@ -1,0 +1,47 @@
+{
+  "schema_version": 2,
+  "status": "READY_FOR_PRODUCTION",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "run_namespace": "gate2a_mixed_precision_v1",
+  "implementation_sha_before_manifest": "8da050d36c27eddf2312639dd55419eac96c658e",
+  "worktree_clean_before_manifest": true,
+  "production_started": false,
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "environment_sha256": "5a5038eef410186004fa4241d2f571209fb15ccbf99aa519a20f2bb2c0becfc8",
+  "source_hashes": {
+    "A": "2a7498982a98bc364963bb9cfa47f760ec763e4d72c3246be34429114911768d",
+    "B": "93e1b6acfc80baa32dd0d2f336f5f448f61fd52ff1c4ddca26572745f41b8126",
+    "C": "90aa528e3b0d25b185da75e1e8a1e6076a713a1a50a42bc2c9a40d321a002108"
+  },
+  "initial_logits_hashes": {
+    "20260828": "ec405b9815dab810be8a3b5a3488be487771056607a91df667609d59bc10ef50",
+    "20260829": "e042d9f510dad8a537657eb2c0ab68a7f3625b748312bb1f508ab0c2690e6e1c",
+    "20260830": "2e9a6dcd5337ec5ecaa9b978afccc841d430206b370d488b18b12c3357dd566e"
+  },
+  "preflight_artifact_hashes": {
+    "full_iteration_benchmark.json": "551a3149df10c4f88349baab208379c9d592b7edeb93390e847f3595b6b6d9d6",
+    "gradient_validation_cpu.csv": "85c2c729d36e36340d974c82e2edec7ada0b258d8e32d541c5c3c613a9ff6fbb",
+    "gradient_validation_cpu.json": "267d99b765a750aca78d0b1ba893b7f68c1fb4828b20d4a27b9a3a6c25bea176",
+    "gradient_validation_cuda.csv": "07490773fe8a35f42513226f9ff58a5fe8bebbd4d8dd27c71e070dead501cc2c",
+    "gradient_validation_cuda.json": "72889234159edfeeb86df4ff6dd086bc689fa650813524b96fb85fc4f642d2b1",
+    "mixed_precision_cg_stress.csv": "b4f25f40e93f05bc4a43b5421f67bd1377d356355594da2dd6af22cc518dabf6",
+    "mixed_precision_cg_stress.json": "2bc07f50695f1f03b5aff7a090450ed7ec46c5382e5ae601a1f66ac30d23f6a7",
+    "mixed_precision_protocol_lock.json": "98ac10e857e8203ca96344e1453e9a9554be57b9ad580581970fe0bde7d183ee"
+  },
+  "registered_runs": [
+    {"scope": "single_A", "seed": 20260828, "source_ids": ["A"]},
+    {"scope": "single_A", "seed": 20260829, "source_ids": ["A"]},
+    {"scope": "single_A", "seed": 20260830, "source_ids": ["A"]},
+    {"scope": "robust", "seed": 20260828, "source_ids": ["A", "B", "C"]},
+    {"scope": "robust", "seed": 20260829, "source_ids": ["A", "B", "C"]},
+    {"scope": "robust", "seed": 20260830, "source_ids": ["A", "B", "C"]}
+  ],
+  "verification": {
+    "pytest": "138 passed",
+    "ruff_check": "PASS",
+    "ruff_format_check": "PASS",
+    "cuda_gradient_gate": "PASS",
+    "mixed_precision_cg_stress": "PASS",
+    "complete_step_benchmark": "PASS"
+  }
+}

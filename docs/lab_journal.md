@@ -177,6 +177,15 @@ preflight.
 
 Production optimization не запускалась.
 
+## 2026-08-29 — Production manifest freeze
+
+После `138 passed`, Ruff lint/format PASS и повторного complete-step benchmark
+зафиксирован production manifest. Implementation SHA до manifest commit:
+`8da050d36c27eddf2312639dd55419eac96c658e`; worktree была clean.
+Manifest содержит config/environment/source/preflight hashes и initial-logit
+hashes всех трёх seeds для обоих scopes. На момент freeze production started:
+`false`.
+
 ## 2026-08-29 — Ten-step numerical smoke optimization
 
 После PASS всех revised preflights выполнен зарегистрированный smoke run:
