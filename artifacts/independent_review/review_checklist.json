@@ -1,0 +1,385 @@
+{
+  "all_gate2_artifact_file_hashes": {
+    "artifacts/gate2_design/baseline_metrics.csv": "dda51ec3057bb225eb212791a66274ad1447645ecb450f22427b57a9fb498b4f",
+    "artifacts/gate2_design/design_initial.png": "c8e5d3cec0800154f7381d80becee279e11ad248c15957fb85a5afa4c95eadd2",
+    "artifacts/gate2_design/design_optimized_binary.png": "f15517eb0a9152ead916aa0b161420fb9752f9225bc2f7980a81211b4893d070",
+    "artifacts/gate2_design/design_optimized_continuous.png": "22f9aad90f6babeb9536be4d16bceba7eda8e4d5b2390e06bca9d84311fa1275",
+    "artifacts/gate2_design/gate2_report.md": "edec0399968665db0a9d4da1c44edb9df90719774dabb4ed92a889fce9d87960",
+    "artifacts/gate2_design/gate2_verdict.json": "a927bdc3793b9d00cc57c4dcc74c7f288d6e6f579ff02786b19a74fb10d86b81",
+    "artifacts/gate2_design/material_fraction_curve.png": "021929ca2c44c7931f03943617a819ac49de80874f31de3564608f4208db72c8",
+    "artifacts/gate2_design/morphology_metrics.csv": "67fed23cde97c3caf1d293be2ff3312fd51942d6eae9a0dfed200f3a5a778e9c",
+    "artifacts/gate2_design/objective_curve.png": "7ba417a9c35b4aa505f09803a283e4300748e12b38eb6863c51bc7784cb5e077",
+    "artifacts/gate2_design/optimization_animation.gif": "60e603c2776622e07fa5bf56e837600d37de1d9890a5233a887948e11a2f0d51",
+    "artifacts/gate2_design/optimized_metrics.csv": "d40f856e60a155f70e73da27ba44b24232b1e12678843a70f37dbf09bbe5ab97",
+    "artifacts/gate2_design/preflight/cuda_float32_residual_floor.json": "c7b82fd136cd53daa4a9d39fe53c2dcb2df564d331cd9a8284f6965d0b98292a",
+    "artifacts/gate2_design/preflight/full_iteration_benchmark.json": "811c51ca0147a795bcc5e4491431b8e0fd2ee7f936c7d4a641deb00e061f9022",
+    "artifacts/gate2_design/preflight/gradient_validation_cpu.csv": "e378a5be25d787fdb92a461116cdc8943ef476ab00b7bc582bc7a7d05c95f974",
+    "artifacts/gate2_design/preflight/gradient_validation_cpu.json": "2a5d7e792ed304bb0aa053078251ae9a1a234769f862f9bed49255b8a7de742b",
+    "artifacts/gate2_design/preflight/gradient_validation_cuda.csv": "75cabae95b86f68e27adad658d92b313c768ab7c38059e2be4cb68af84d25abe",
+    "artifacts/gate2_design/preflight/gradient_validation_cuda.json": "600a630cc26e8df4f28d0b72ef397bec153078e492e4223d3069f319b0f7a247",
+    "artifacts/gate2_design/preflight/mixed_precision_cg_stress.csv": "18bded2351027e3f93862a7ec1ac49502364f44a5349115ed72628990a2701ed",
+    "artifacts/gate2_design/preflight/mixed_precision_cg_stress.json": "6919f4fecfd3a1d43b1cd76fc99f5dd9ae16ee62203a735b99c4e53154a101eb",
+    "artifacts/gate2_design/preflight/mixed_precision_protocol_lock.json": "98ac10e857e8203ca96344e1453e9a9554be57b9ad580581970fe0bde7d183ee",
+    "artifacts/gate2_design/production/robust/20260828/cg_records.csv": "75a180abf7c9f5964a3c3c3a256b21069a075d3938be23911fca25638d22e3ef",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0050.pt": "e3f60317670607c8fabd7360e22acbb06244dbf5bf82259c97158b4b7ff2c4a0",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0100.pt": "3e05b93d454340722e480392ab59153668bbdd46399cba81270e5af099572456",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0150.pt": "c15d994b068f40e5763f42967d87ae5b52c020e789a0353121975ad83cc82c13",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0200.pt": "7093f9896b5b57f262be588975467d75a666ba4b7e818f8fe5607009fd7f95d0",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0250.pt": "87f8e948a5c6e1d83b186daaaa60ad94973de9806307b33d896b1c48e18520dc",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0300.pt": "d12b6e28053eba720a660ca5673835312097d0d4e670df7d1f94a336785fa0f8",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0350.pt": "58ab5b668288e393fbef56aecb21e9e50b00be2b33021ad787dd0c0abb64b100",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0400.pt": "f80cb2bc7b5be15b75fd6ae91535c052262e138a3f3e24c5586ccd264e31a65b",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0450.pt": "f7a275903424f553c8cd096cadef28e71d6c43a748e57094a88ff4652094ce99",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0500.pt": "cb14e600d3020118ddf4f43fb1ce4f5eb1f39f1f02eaf1a20c0b388ccecd4652",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0550.pt": "db207470753a7af71f961758fd8e19b6efec8df696934d741f6183c6b06ddc53",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_0600.pt": "1d5fa5a8ad8d591c1dcd9b5ddbf7a2ccfff0fdb7e6d76c536ece77bcef56189b",
+    "artifacts/gate2_design/production/robust/20260828/checkpoint_final.pt": "e1cf4ae5edfd9be0e45d63e1d796ca7bd653d6aed4f447afa12e981d2900940b",
+    "artifacts/gate2_design/production/robust/20260828/design_binary_64.npy": "e52dcc6c6deb52becacb60f02c5055fa1aab67dec2db02aae5014140780c408b",
+    "artifacts/gate2_design/production/robust/20260828/design_continuous_64.npy": "80e45d48b6cd82ab6e6adc498994507a7c764314d9696dbaab2269d21755101c",
+    "artifacts/gate2_design/production/robust/20260828/initial_logits.pt": "2bbb06f562e18bf95b41c79927fed086e7a9a17c6d51b072a648992d22e3422a",
+    "artifacts/gate2_design/production/robust/20260828/optimization_metrics.csv": "81cda648ff38b53430585085f779fb973a48cf442abd2814aec31da88b4f089e",
+    "artifacts/gate2_design/production/robust/20260828/optimization_result.json": "b03e0be1e4ef5b4840a36e1bdd5de4709e5082038fe26eac96b50d4c2229e205",
+    "artifacts/gate2_design/production/robust/20260829/cg_records.csv": "330bbedc9a1b28cbc1ea6b6a2031964f0e3d774166380084cc57a4a77920f6f5",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0050.pt": "52a9833bd4244806c0967e4cd248d72d30041c6bbb0ee6295f3f1379e1f3255e",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0100.pt": "629cb7b66a5ae4905986fcb77ba734bf4638376085372aa8ebefd5a49b79e059",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0150.pt": "41e788ee06be8675e00ba730ce29063c015f3857d5a858b39204f78f8d13a823",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0200.pt": "756fb578142eaf342fb2d4d2166e7a134b824a6ded5cc458b35ee57606515652",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0250.pt": "6e0647a8d38e1ed082d2c8ef21d6d491fb1e6b6affb3e99144ac05b8b6d86429",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0300.pt": "f9786cb5527de2626aec4130f2102bcacff9adae2c38cea09a354f9ea4d694a4",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0350.pt": "28acac2d92bda0a2c5cba037454f3aa9675d44e648ca4404e9e44a6b18cdf860",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0400.pt": "1e5fd807057362592756a25deb89d7deb12c107d909dab923ece908711d2a36d",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0450.pt": "2f493afc60e7e932705a67b7fc6e7ba6cecb1c4eb3781c4aae492b1f6f9dc9e7",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0500.pt": "5335ad732bbc37f0f6585b64baaaacd1cbf65f218143a28fa70678f1ce9e41fb",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0550.pt": "3beb29b4a6f8a391bf55fd390b53d7b5c29be76d80e8467c21ed46a00c11ac48",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_0600.pt": "48347c753dd194c6056e66af0d564e94d73c92a0d644bc11d88fc52a3f21d05b",
+    "artifacts/gate2_design/production/robust/20260829/checkpoint_final.pt": "d76ebaad7efbba5ade7c271de0a3a1c17659dc1897b4e50ca4fbe594a99dab95",
+    "artifacts/gate2_design/production/robust/20260829/design_binary_64.npy": "479db5cab602be80e3f5d8afb2f4ea7ca2bea3f7123d1ec3a2e0d8d82cb66e23",
+    "artifacts/gate2_design/production/robust/20260829/design_continuous_64.npy": "98d4c3149b3dd434c7e7d7fc47f5050e5903c9e50fc3579e31dd0008f867fa12",
+    "artifacts/gate2_design/production/robust/20260829/initial_logits.pt": "32e7c7df4ea323e5caf8d9d527be0ac23f0451bab33e056acfc70f88cf0af25e",
+    "artifacts/gate2_design/production/robust/20260829/optimization_metrics.csv": "39f7500614cff03e391d85cdf9fd6cce0ac3e7b0a45267dc27137308a211e665",
+    "artifacts/gate2_design/production/robust/20260829/optimization_result.json": "11f2bb1c6226096a76c1c14fffeecd5ef7e7d6c84baa216a08bf3211bc8f78dc",
+    "artifacts/gate2_design/production/robust/20260830/cg_records.csv": "146210e1a6e41be3a28ee93597afff919ea66f313afce3a797885246f27bd4af",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0050.pt": "499d8d0d9d325da385bd4d86939cdce961fa9f419838a2c64b7aea4bf7df3c45",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0100.pt": "6ebf0e0f91685da5c009fe670e155553cf3d5dbabd9ca57c90df30c4e1b36f6d",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0150.pt": "c74c6504fc2f069a49249bd15ed2291c729e402bfa513f61d4fdd9c85251943b",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0200.pt": "a321b19212f0cd62462a768226ffad4d2a94a5a137ce33a86566de9dca641069",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0250.pt": "2ba147a91d4004594e03c072880c87794a9d6a9c4a942e4f335d4920d758c674",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0300.pt": "5d004915e2203a693bc054288d143824d5a477c197713943e35a8040d5c88495",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0350.pt": "fb8b866c99134b728b2e6f87c212cb9a1a276d0239016bd70fffc69f3eec16d0",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0400.pt": "ca7de68acb68d3bb981121955cae1f226222af923880ee56ea2e40dd17cc365e",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0450.pt": "372381d4df560058844ef5799ed1a8847833c9cdc942c86943b23bdd318b2612",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0500.pt": "7030c681bd4167d363a2f3d4b70c48b014b3e84a67dd20be12b0bc2f74238139",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0550.pt": "aa7ee8f4b620d2a2705c88aef5453fdb3786b92b20dcd27f8db7139dee2e26a2",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_0600.pt": "5d8a23dc84c5d09b1643a8b1d9c09c4fb155992773933a6d4dc20d93cb187a50",
+    "artifacts/gate2_design/production/robust/20260830/checkpoint_final.pt": "ab0b4cf133de102073c175d908962832d7d26622415933f48a9eaf8cc26ace27",
+    "artifacts/gate2_design/production/robust/20260830/design_binary_64.npy": "16034d47d1fec83091c4097b1d5edcef9b76c88b9d35caa91025d81701d57346",
+    "artifacts/gate2_design/production/robust/20260830/design_continuous_64.npy": "a4b40b1665c51769a4b0fbaac7b2193bc370d9d35c72574750a292bb4f7ee2cc",
+    "artifacts/gate2_design/production/robust/20260830/initial_logits.pt": "758ce21c23e49729cef41354962187c6137627bb89d57d4c5458fdea0517df58",
+    "artifacts/gate2_design/production/robust/20260830/optimization_metrics.csv": "49d65e69ae59583e4c6ab0ce36c8ce4533c65769fbec6d5f06d6b3b31719c6ff",
+    "artifacts/gate2_design/production/robust/20260830/optimization_result.json": "323bd968a4161c5685faf35e1416d19a33a6446f668481947ee7ff5a8477c24f",
+    "artifacts/gate2_design/production/single_A/20260828/cg_records.csv": "76d29735ad850fa369e9ec0299050807286a175c802813c1d9d674b2f6296565",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0050.pt": "4a9e273600a3f8abb7c02524820098c6ed8c393fd1baea3c15b934787378d716",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0100.pt": "11822dafcf4a75a58a79a3be0a006173900cc6cc3dc9b0c3c81f342ac2973679",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0150.pt": "d4ff2247e0431dc3a40f57dda93db36b20cedb8946bb44a459a1faad0678c1da",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0200.pt": "a431c343c9ba7afebc23a54bbb2337e3e28dab869038e51cf677b68ac84b9d9a",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0250.pt": "21582ce8677d701d0e048b5f11ba0f7dedf8f98a8fd5e3c3c459fe18a127dc9b",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0300.pt": "0b0a7243e57cee621429fd79752843dd323c97747c41e151e7a9542b609dbecf",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0350.pt": "8f6c53a1400c37a034fda514779faaccf7bffdc087ed428916294a13e271a95c",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0400.pt": "525cbaf8c8954689b5894062b6591ae2eee06a64637c2f3a399f53da1990aaf0",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0450.pt": "d1042130a42d6c00bc1712741cd522c66fbda9a4e1ccaffc0d4875286a1b8ad5",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0500.pt": "bf4230c7f27f925b6df53a61c837e4380b71886555cffd84c302754c7fc762ce",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0550.pt": "26210be9b15331e00a89dfbd22739fe6b22baed0b5446aa69ad281066825f993",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_0600.pt": "a8cb1ec5a545b5a33b478d05a89fb1fa20b711b68053129f46a5ae3e4367b954",
+    "artifacts/gate2_design/production/single_A/20260828/checkpoint_final.pt": "641b7fa032d2eb00b4153b59ef9585111f213180d8197171f606c50692a6364c",
+    "artifacts/gate2_design/production/single_A/20260828/design_binary_64.npy": "726085ed6377d6484e5c792908d37f0eac551defb34fafee82ef8a8ff59fee73",
+    "artifacts/gate2_design/production/single_A/20260828/design_continuous_64.npy": "c9a9c7d38e89701a40e92b66e88946179c2444f47a9c4f424bbabc5b5b32a149",
+    "artifacts/gate2_design/production/single_A/20260828/initial_logits.pt": "2bbb06f562e18bf95b41c79927fed086e7a9a17c6d51b072a648992d22e3422a",
+    "artifacts/gate2_design/production/single_A/20260828/optimization_metrics.csv": "2cbc196a616c0efcb8ba17878c01d26e8627bdb2d5c356588ee7a569d0f8668f",
+    "artifacts/gate2_design/production/single_A/20260828/optimization_result.json": "0ddb22b4bc5b99b484424c2769fe436f184b5a7616e8473e8193f5a1d213078e",
+    "artifacts/gate2_design/production/single_A/20260829/cg_records.csv": "6237d2b8ff42341b2649ec58ad2964957df707c524906ca47680b9e355881c7d",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0050.pt": "a39f32b3bbd17232e7ed3d9f9b4b40bef158b3768162cd375c92f52d6b0defb7",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0100.pt": "3182ba86d7522d4c442a90a480b6d0f5e428073eb152fd24f270b669429c2123",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0150.pt": "e7981c931524913ba14ceedade6ea68bba93c3ff8b6fbbdd70a15469b63ae4cb",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0200.pt": "3ce5548deab29a073f9da329ad69b655f3df5d469c6363587103468853c69c19",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0250.pt": "1748cd796ffb70bc4b8d5db7f0c904a2a2f25d2a7f0b5990eae22ed81e71996b",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0300.pt": "e10ee069867c1ad20e1a10c6182c257fdb9ef5e62566f24568bc99821f639a4b",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0350.pt": "dbe7e6cd64c672950e985ee2ee2edb99859636e9db832ab562e5e04dbabd3ff0",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0400.pt": "283104eba0198520b9d81e2632b00b1053333da3c3481e2c83da470bb8fa2734",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0450.pt": "ccf013f388b32f7ab7f6deee89d9a83f17e29deda2b4e369210f227e84100d57",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0500.pt": "03620f34d21f3ac0910430e38edceebd11c387a244a0ea181412da3b16f2001a",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0550.pt": "2aa19c2c1ba5dafad075ed9ff16a4c3981af70220fdd378df2d92d9279993bad",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_0600.pt": "27bedcc9c6a1a2456440ef98331cc91a248deee3601a0a96ab3273e5b7a98a36",
+    "artifacts/gate2_design/production/single_A/20260829/checkpoint_final.pt": "2969f818eed6dfe15c2e4fc30ef953a86beba05102db213cc56fabd89b4e865b",
+    "artifacts/gate2_design/production/single_A/20260829/design_binary_64.npy": "837b526958a47a601c306cd0c00a1755bdf62e0c11b0a31f3db7ac5f68bee536",
+    "artifacts/gate2_design/production/single_A/20260829/design_continuous_64.npy": "c81906323c60b03c6bb7a89650276017011c914d7b7b29155e1f4de5fb44fbe5",
+    "artifacts/gate2_design/production/single_A/20260829/initial_logits.pt": "32e7c7df4ea323e5caf8d9d527be0ac23f0451bab33e056acfc70f88cf0af25e",
+    "artifacts/gate2_design/production/single_A/20260829/optimization_metrics.csv": "7e0f9e25fa0517c0c49a4fc3e0e311768d3bd4edf8e2bf085184b79b20dd7752",
+    "artifacts/gate2_design/production/single_A/20260829/optimization_result.json": "296b3650c7c0d510acc6af9f21bdaa27436cb1b505b8b3bd39c2efa6ff3f82bd",
+    "artifacts/gate2_design/production/single_A/20260830/cg_records.csv": "c8744ed854279c872f6d90effa6642bedbce79fa5b85e81a6ac112289bbcd478",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0050.pt": "ee0578d2b91cf3f40ca8520a4aad9b17206da7ae359ff136d8eb9056c97e7bdc",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0100.pt": "cc37a103eb34cc152b49396383720a33aacc26ca36259a14d5bf8d2d85808917",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0150.pt": "da60c5ff69740b9039ba7f5c9ffc79d1f0fbde36fcb106f4efa4f74aa3fe3e3d",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0200.pt": "aa9918a2d31aab5fe8798953c76dd57fa3e058e62346820966cad34a7529edd9",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0250.pt": "0a16f4ff26d7fd410e5cd16751a6e35973a827e907d4c968239517989ddcba4f",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0300.pt": "fe2e76e09afb6e7984291f270a5c337250812d7199f727bd921309c1bbc1f79e",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0350.pt": "9fee1e7745964f368077a7175068d4d6cc8bb3af70e75caa0d88c739baa790ad",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0400.pt": "8716bcd23a85b0d0d98187067540cfce35fc37d364d081d616583868fe9102bd",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0450.pt": "94094805ba729911c0da6d6a08f5ccafcc45853a5d7122049a6d772904585cf6",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0500.pt": "527bb0bb9b2923a3db7048ccfcc0b94bb5b2c0eda061a279328d623c0bad7c8c",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0550.pt": "ac3bbff629866583bace93e52e56e5f5ff250b8795d1a5cb8dc62979e8be02f7",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_0600.pt": "7d5308a213b5ba559db097d3d94833027a3cfe7e034f53debe5506b2809a2f51",
+    "artifacts/gate2_design/production/single_A/20260830/checkpoint_final.pt": "c7b9ebb694e90417c37e00decd21fdef7aa9485227418b377ba66cea267a3051",
+    "artifacts/gate2_design/production/single_A/20260830/design_binary_64.npy": "3a987abc1352e7f6e52a9b5d55fbe0f356c19f5fcc4fcced9f2a97629656e29a",
+    "artifacts/gate2_design/production/single_A/20260830/design_continuous_64.npy": "eeda32ba4fe87044e1f7f4d334bab47d656211eb4012d39f0a0d730012a84489",
+    "artifacts/gate2_design/production/single_A/20260830/initial_logits.pt": "758ce21c23e49729cef41354962187c6137627bb89d57d4c5458fdea0517df58",
+    "artifacts/gate2_design/production/single_A/20260830/optimization_metrics.csv": "1879b937399ab5b45746c9f02e3a28246acb25dea298fccb8414aed55e56c8f3",
+    "artifacts/gate2_design/production/single_A/20260830/optimization_result.json": "e0cd52057c4dc8ae17764a49b52c0768a0bd183882cc9c1f413466b47a4e9be2",
+    "artifacts/gate2_design/production_manifest.json": "eac141e151c3647b9fe1045d46939281710b3831f04cdfa2727cbb4406d6b64f",
+    "artifacts/gate2_design/robustness_metrics.csv": "23355d9bdee05ef8ae4fef7c7a7815f6db0578a4c178e4e009c987dc486ff29e",
+    "artifacts/gate2_design/smoke/cg_records.csv": "ae08058d2889b420c140cea72216ef2e8efb016f208eff7c86a321b48e524478",
+    "artifacts/gate2_design/smoke/checkpoint_final.pt": "e4e998966b0e13f0c353e5fca6618ecad036fe8ba0b2e583e51f39d36e6a43b8",
+    "artifacts/gate2_design/smoke/initial_logits.pt": "2bbb06f562e18bf95b41c79927fed086e7a9a17c6d51b072a648992d22e3422a",
+    "artifacts/gate2_design/smoke/optimization_metrics.csv": "ae3121d6611b2ca3716608f277b83f502bf131fcd6932850a72db3f67ff5eb51",
+    "artifacts/gate2_design/smoke/optimization_result.json": "2165b44a4c63b4f18c3fd78c80ec4481040003ed913203e6a9833bc42f9af7f3",
+    "artifacts/gate2_design/temperature_baseline_scenarios.png": "40f609d0123f6f06865c8ec031921897ac336ca0fdceae3f6536665a2bd5cb10",
+    "artifacts/gate2_design/temperature_optimized_scenarios.png": "9906472bc6e9536a1db7d53b98328e667a45fa976ea16f259729e2641b96dce2",
+    "artifacts/gate2_design/verification/morphology_metrics.csv": "ab3e119b6a3df1e2a8fb012368c895444354c9e674bc2296631716bc92622261",
+    "artifacts/gate2_design/verification/nominal_binary_verification.csv": "28523a32c8553b28ee99248f22074163d01253ae977e2945f604fbed6741a1fc",
+    "artifacts/gate2_design/verification/nominal_continuous_verification.csv": "645b8cc4d785a1fa1e4a94bc9291b2a5fad90b39e66c7068fbd668074e5da76c",
+    "artifacts/gate2_design/verification/nominal_scenario_records.csv": "79eb6978933863a1491d550e7cb70272df67ac51d206680dc6dd1c088566ed3d",
+    "artifacts/gate2_design/verification/nominal_verdicts.json": "243b716288e67f0ef38cee4a6fb17fa1041af428cbc4d294137c2c3d8a09b3b9",
+    "artifacts/gate2_design/verification/perturbation_evaluations.csv": "304d9fd5ee2d53466f90c5e7698ce2cb4d13dec1cc7f6095e3c0ef674fd5df9e",
+    "artifacts/gate2_design/verification/perturbation_registry.json": "49b165f1bbd562ead76724616eb40ed66785af0701cf0043667d0db0054459e7",
+    "artifacts/gate2_design/verification/robustness_metrics.csv": "9026928330ecf5cdfdd56fe007d2da91981b0b017ce46c23ec377191fab6254f",
+    "artifacts/gate2_design/verification/robustness_verdicts.json": "1f4534ec61b5f43543a2506ca508df3a5f1002c61aeb922fb3bacd061a4acf68"
+  },
+  "checks": {
+    "all_seed_robustness_thresholds_pass": true,
+    "baseline_re_evaluated_per_case": true,
+    "binary_budget_all_seeds": true,
+    "complete_locked_baseline_set_per_seed": true,
+    "config_hash_matches": true,
+    "declared_artifact_hashes_match_after_eol_normalization": true,
+    "declared_preflight_artifact_hashes_match": false,
+    "declared_report_artifact_hashes_match": false,
+    "exact_replication_artifact_hashes": true,
+    "exact_replication_code": true,
+    "final_sha_matches": true,
+    "no_quantile_or_posthoc_volume_code": true,
+    "nominal_metrics_recomputed_match": true,
+    "one_production_seed_scientific_pass_reproduced": true,
+    "protocol_tag_exists_and_is_ancestor": true,
+    "registered_case_count_exactly_28": true,
+    "reproduced_binary_design_exact": true,
+    "reproduced_continuous_design_exact": false,
+    "robustness_28x3_recomputed_match": true,
+    "scipy_solver_independent_of_torch_operator": true,
+    "strict_threshold_artifact_identity": true,
+    "strict_threshold_code": true
+  },
+  "config_sha256_actual": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "config_sha256_declared": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "counts": {
+    "nominal_binary_rows": 33,
+    "perturbation_cases": 28,
+    "perturbation_evaluation_rows": 308,
+    "recomputed_robustness_rows": 84
+  },
+  "design_integrity": {
+    "20260828": {
+      "binary_file_sha256": "e52dcc6c6deb52becacb60f02c5055fa1aab67dec2db02aae5014140780c408b",
+      "binary_optimization_hash": "2c630fc46336914f5802719073679c00272bce4a362946e95ed51b93253cb309",
+      "continuous_file_sha256": "80e45d48b6cd82ab6e6adc498994507a7c764314d9696dbaab2269d21755101c",
+      "continuous_optimization_hash": "80405a72a5783278c3617e528c4b3bc4f0206ad035963579fa73bc7152a03d00",
+      "exact_threshold_identity": true,
+      "optimization_hashes_match": true,
+      "replication_checks": {
+        "reference_128": true,
+        "reference_256": true
+      },
+      "strict_binary": true,
+      "verification_binary_hash": "f37d26b6f37ecf0a1e8831d1a8ec583d22c852a33bbeccd99a9c7052e38d0a99"
+    },
+    "20260829": {
+      "binary_file_sha256": "479db5cab602be80e3f5d8afb2f4ea7ca2bea3f7123d1ec3a2e0d8d82cb66e23",
+      "binary_optimization_hash": "ab141788e504d462ba95ec3dcddfd55db83a418dfdbfbcbec82b0dabab3721ee",
+      "continuous_file_sha256": "98d4c3149b3dd434c7e7d7fc47f5050e5903c9e50fc3579e31dd0008f867fa12",
+      "continuous_optimization_hash": "17d7df95b62b0ba18bf2cafb4c40cfcb9fb90d680b93588a7e0cafb6d2a97caf",
+      "exact_threshold_identity": true,
+      "optimization_hashes_match": true,
+      "replication_checks": {
+        "reference_128": true,
+        "reference_256": true
+      },
+      "strict_binary": true,
+      "verification_binary_hash": "934d30af2703bd5357fbccaa7ae73c7f864bf016860b291a62fec01d06459387"
+    },
+    "20260830": {
+      "binary_file_sha256": "16034d47d1fec83091c4097b1d5edcef9b76c88b9d35caa91025d81701d57346",
+      "binary_optimization_hash": "19d003c4f130686c719a821decf5cde0cab398131056681d84c925a8a8ecd612",
+      "continuous_file_sha256": "a4b40b1665c51769a4b0fbaac7b2193bc370d9d35c72574750a292bb4f7ee2cc",
+      "continuous_optimization_hash": "bd6652db90902c046228f5528948015a185ee27e3f5e04077ffc33ec1308de91",
+      "exact_threshold_identity": true,
+      "optimization_hashes_match": true,
+      "replication_checks": {
+        "reference_128": true,
+        "reference_256": true
+      },
+      "strict_binary": true,
+      "verification_binary_hash": "acedf86e13b27f0476e96abd9fdb41e0559eeee92171e6cc653610115510d915"
+    }
+  },
+  "expected_final_sha": "e99a0022d0a331505ca4078c2fff0863c14cb845",
+  "findings": [
+    {
+      "description_ru": "config_sha256 \u0437\u0430\u0432\u0438\u0441\u0438\u0442 \u043e\u0442 LF/CRLF; clean Windows checkout \u0441 core.autocrlf=true \u043f\u043e\u043b\u0443\u0447\u0430\u0435\u0442 \u0434\u0440\u0443\u0433\u043e\u0439 raw-byte hash.",
+      "id": "CONFIG_HASH_EOL_SENSITIVE",
+      "severity": "minor"
+    },
+    {
+      "description_ru": "declared SHA-256 \u0442\u0435\u043a\u0441\u0442\u043e\u0432\u044b\u0445 artifacts \u0437\u0430\u0432\u0438\u0441\u044f\u0442 \u043e\u0442 \u0441\u043c\u0435\u0448\u0430\u043d\u043d\u044b\u0445 LF/CRLF; mismatch \u0432 clean LF checkout \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e \u043e\u0431\u044a\u044f\u0441\u043d\u044f\u0435\u0442\u0441\u044f newline normalization.",
+      "id": "ARTIFACT_HASH_EOL_SENSITIVE",
+      "severity": "minor"
+    },
+    {
+      "description_ru": "ruff format --check . \u0441\u043e\u043e\u0431\u0449\u0430\u0435\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043e Markdown Gate 1 implementation plan.",
+      "id": "RUFF_FORMAT_MARKDOWN_PLAN",
+      "severity": "minor"
+    },
+    {
+      "description_ru": "seed 20260828 \u0441\u043e\u0445\u0440\u0430\u043d\u0438\u043b exact binary topology \u0438 SciPy metrics, \u043d\u043e continuous map \u043e\u0442\u043b\u0438\u0447\u0430\u0435\u0442\u0441\u044f \u043c\u0430\u043a\u0441\u0438\u043c\u0443\u043c \u043d\u0430 7.15e-7; deterministic CUDA policy \u043d\u0435 \u0431\u044b\u043b\u0430 \u0432\u043a\u043b\u044e\u0447\u0435\u043d\u0430 \u0438\u043b\u0438 \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0430.",
+      "id": "CUDA_CONTINUOUS_NONBITWISE_REPRODUCTION",
+      "severity": "minor"
+    }
+  ],
+  "generation_git_sha": "ed62778b4691803769dc2db1e06abbd525e3aeda",
+  "git_state_clean_before_review_outputs": true,
+  "hash_mismatches": {
+    "preflight": {
+      "full_iteration_benchmark.json": {
+        "actual": "811c51ca0147a795bcc5e4491431b8e0fd2ee7f936c7d4a641deb00e061f9022",
+        "crlf_sha256": "551a3149df10c4f88349baab208379c9d592b7edeb93390e847f3595b6b6d9d6",
+        "declared": "551a3149df10c4f88349baab208379c9d592b7edeb93390e847f3595b6b6d9d6",
+        "eol_equivalent": true,
+        "lf_sha256": "811c51ca0147a795bcc5e4491431b8e0fd2ee7f936c7d4a641deb00e061f9022",
+        "raw_match": false
+      },
+      "gradient_validation_cpu.csv": {
+        "actual": "e378a5be25d787fdb92a461116cdc8943ef476ab00b7bc582bc7a7d05c95f974",
+        "crlf_sha256": "85c2c729d36e36340d974c82e2edec7ada0b258d8e32d541c5c3c613a9ff6fbb",
+        "declared": "85c2c729d36e36340d974c82e2edec7ada0b258d8e32d541c5c3c613a9ff6fbb",
+        "eol_equivalent": true,
+        "lf_sha256": "e378a5be25d787fdb92a461116cdc8943ef476ab00b7bc582bc7a7d05c95f974",
+        "raw_match": false
+      },
+      "gradient_validation_cpu.json": {
+        "actual": "2a5d7e792ed304bb0aa053078251ae9a1a234769f862f9bed49255b8a7de742b",
+        "crlf_sha256": "267d99b765a750aca78d0b1ba893b7f68c1fb4828b20d4a27b9a3a6c25bea176",
+        "declared": "267d99b765a750aca78d0b1ba893b7f68c1fb4828b20d4a27b9a3a6c25bea176",
+        "eol_equivalent": true,
+        "lf_sha256": "2a5d7e792ed304bb0aa053078251ae9a1a234769f862f9bed49255b8a7de742b",
+        "raw_match": false
+      },
+      "gradient_validation_cuda.csv": {
+        "actual": "75cabae95b86f68e27adad658d92b313c768ab7c38059e2be4cb68af84d25abe",
+        "crlf_sha256": "07490773fe8a35f42513226f9ff58a5fe8bebbd4d8dd27c71e070dead501cc2c",
+        "declared": "07490773fe8a35f42513226f9ff58a5fe8bebbd4d8dd27c71e070dead501cc2c",
+        "eol_equivalent": true,
+        "lf_sha256": "75cabae95b86f68e27adad658d92b313c768ab7c38059e2be4cb68af84d25abe",
+        "raw_match": false
+      },
+      "gradient_validation_cuda.json": {
+        "actual": "600a630cc26e8df4f28d0b72ef397bec153078e492e4223d3069f319b0f7a247",
+        "crlf_sha256": "72889234159edfeeb86df4ff6dd086bc689fa650813524b96fb85fc4f642d2b1",
+        "declared": "72889234159edfeeb86df4ff6dd086bc689fa650813524b96fb85fc4f642d2b1",
+        "eol_equivalent": true,
+        "lf_sha256": "600a630cc26e8df4f28d0b72ef397bec153078e492e4223d3069f319b0f7a247",
+        "raw_match": false
+      },
+      "mixed_precision_cg_stress.csv": {
+        "actual": "18bded2351027e3f93862a7ec1ac49502364f44a5349115ed72628990a2701ed",
+        "crlf_sha256": "b4f25f40e93f05bc4a43b5421f67bd1377d356355594da2dd6af22cc518dabf6",
+        "declared": "b4f25f40e93f05bc4a43b5421f67bd1377d356355594da2dd6af22cc518dabf6",
+        "eol_equivalent": true,
+        "lf_sha256": "18bded2351027e3f93862a7ec1ac49502364f44a5349115ed72628990a2701ed",
+        "raw_match": false
+      },
+      "mixed_precision_cg_stress.json": {
+        "actual": "6919f4fecfd3a1d43b1cd76fc99f5dd9ae16ee62203a735b99c4e53154a101eb",
+        "crlf_sha256": "2bc07f50695f1f03b5aff7a090450ed7ec46c5382e5ae601a1f66ac30d23f6a7",
+        "declared": "2bc07f50695f1f03b5aff7a090450ed7ec46c5382e5ae601a1f66ac30d23f6a7",
+        "eol_equivalent": true,
+        "lf_sha256": "6919f4fecfd3a1d43b1cd76fc99f5dd9ae16ee62203a735b99c4e53154a101eb",
+        "raw_match": false
+      }
+    },
+    "report": {
+      "baseline_metrics.csv": {
+        "actual": "dda51ec3057bb225eb212791a66274ad1447645ecb450f22427b57a9fb498b4f",
+        "crlf_sha256": "fdfd6aad679c5f0f65c56f9e5d3f85cfa46fc2fafe5ca985f6a55e62087d1341",
+        "declared": "fdfd6aad679c5f0f65c56f9e5d3f85cfa46fc2fafe5ca985f6a55e62087d1341",
+        "eol_equivalent": true,
+        "lf_sha256": "dda51ec3057bb225eb212791a66274ad1447645ecb450f22427b57a9fb498b4f",
+        "raw_match": false
+      },
+      "morphology_metrics.csv": {
+        "actual": "67fed23cde97c3caf1d293be2ff3312fd51942d6eae9a0dfed200f3a5a778e9c",
+        "crlf_sha256": "26baa0ae2410f664603c98bfe5368e85219596d2693a3b17bc5284da690be88c",
+        "declared": "26baa0ae2410f664603c98bfe5368e85219596d2693a3b17bc5284da690be88c",
+        "eol_equivalent": true,
+        "lf_sha256": "67fed23cde97c3caf1d293be2ff3312fd51942d6eae9a0dfed200f3a5a778e9c",
+        "raw_match": false
+      },
+      "optimized_metrics.csv": {
+        "actual": "d40f856e60a155f70e73da27ba44b24232b1e12678843a70f37dbf09bbe5ab97",
+        "crlf_sha256": "2ed2da164f6976b69715beb6950a789a805bc5ccd248a23bb9de0ccead04421f",
+        "declared": "2ed2da164f6976b69715beb6950a789a805bc5ccd248a23bb9de0ccead04421f",
+        "eol_equivalent": true,
+        "lf_sha256": "d40f856e60a155f70e73da27ba44b24232b1e12678843a70f37dbf09bbe5ab97",
+        "raw_match": false
+      },
+      "robustness_metrics.csv": {
+        "actual": "23355d9bdee05ef8ae4fef7c7a7815f6db0578a4c178e4e009c987dc486ff29e",
+        "crlf_sha256": "910ed237f19d4efee3d335c403e360f2bad3ae08fb976119a81fb890dd97eed2",
+        "declared": "910ed237f19d4efee3d335c403e360f2bad3ae08fb976119a81fb890dd97eed2",
+        "eol_equivalent": true,
+        "lf_sha256": "23355d9bdee05ef8ae4fef7c7a7815f6db0578a4c178e4e009c987dc486ff29e",
+        "raw_match": false
+      }
+    }
+  },
+  "production_implementation_sha": "8da050d36c27eddf2312639dd55419eac96c658e",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "protocol_tag_commit": "ae613daf2f61f463f4ff8a36fc18323117cd8f8a",
+  "quality_gates": {
+    "pytest": {
+      "passed": 154,
+      "status": "PASS",
+      "wall_seconds": 112.0
+    },
+    "ruff_check": {
+      "status": "PASS"
+    },
+    "ruff_format_check": {
+      "affected_files": [
+        "docs/superpowers/plans/2026-08-28-gate1-physics-implementation.md"
+      ],
+      "production_python_affected": false,
+      "status": "FAIL"
+    }
+  },
+  "reviewed_sha": "e99a0022d0a331505ca4078c2fff0863c14cb845",
+  "robustness": {
+    "minimum_improvement_by_seed": {
+      "20260828": 0.482574926666427,
+      "20260829": 0.47811022020465904,
+      "20260830": 0.4827809789795823
+    },
+    "passing_cases_by_seed": {
+      "20260828": 28,
+      "20260829": 28,
+      "20260830": 28
+    }
+  },
+  "schema_version": 1
+}
