@@ -1,0 +1,12 @@
+{
+  "benchmark_status": "PASS",
+  "determinism_mode": "strict",
+  "initial_state_sanity": "PASS",
+  "projected_production_seconds": 27594.635099958396,
+  "projected_qualification_seconds": 2759.4635099958396,
+  "schema_version": 1,
+  "smoke_completed_iterations": 10,
+  "smoke_status": "PASS",
+  "status": "PASS",
+  "two_step_replay": "PASS"
+}

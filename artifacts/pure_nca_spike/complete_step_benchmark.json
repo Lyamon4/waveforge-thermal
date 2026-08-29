@@ -1,0 +1,28 @@
+{
+  "mean_seconds": 4.525257369992323,
+  "measured_runs": 10,
+  "median_seconds": 4.599105849993066,
+  "p90_seconds": 6.037666379989241,
+  "peak_allocated_bytes": 209317376,
+  "peak_reserved_bytes": 226492416,
+  "projected_production_seconds": 27594.635099958396,
+  "projected_production_updates": 6000,
+  "projected_qualification_seconds": 2759.4635099958396,
+  "projected_qualification_updates": 600,
+  "samples_seconds": [
+    3.1226233999768738,
+    3.5070013999938965,
+    5.129474599991227,
+    6.61616820000927,
+    4.068737099994905,
+    2.3860899999854155,
+    3.267338000005111,
+    5.434399299992947,
+    5.973388399987016,
+    5.747353299986571
+  ],
+  "schema_version": 1,
+  "standard_deviation_seconds": 1.361071774765222,
+  "status": "PASS",
+  "warmup_runs": 3
+}

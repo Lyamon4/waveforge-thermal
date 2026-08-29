@@ -1,0 +1,12 @@
+{
+  "config_sha256": "4242ec57f5de447f7217ef917e794420eade51b77b2f1446eadf9b9d6975bed0",
+  "determinism_mode": "strict",
+  "implementation_git_sha": "52532b32e064871117386dc743ecbe0f4ebd1046",
+  "preflight_seed": 20260831,
+  "schema_version": 1,
+  "scope": "pure_nca_fixed_abc_feasibility",
+  "smoke_learning_rate": 0.001,
+  "smoke_seed": 20260830,
+  "spec_sha256": "a7c490487231518dca4f1cbfa0876a09304c88df6da8652ae5e2dcf24ad0157f",
+  "status": "PASS"
+}

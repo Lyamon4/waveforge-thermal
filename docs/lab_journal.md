@@ -461,3 +461,29 @@ iteration budget и feasibility threshold не изменены.
 
 Canonical LF SHA-256 уточнённой specification:
 `a7c490487231518dca4f1cbfa0876a09304c88df6da8652ae5e2dcf24ad0157f`.
+
+## 2026-08-29 — Pure-NCA CUDA preflight
+
+Blocking preflight выполнен на NVIDIA GeForce RTX 4060 без CPU fallback и без
+смены scientific algorithm. Strict deterministic mode поддерживается всеми
+required CUDA operations. Два независимых two-step replay дали exact-identical
+SHA-256 model state, optimizer state, continuous design и strict-binary design;
+ожидаемый gradient path `Conv1x1@iteration0 → Conv3x3@iteration1` подтверждён.
+
+Initial exact-zero state и material logits подтверждены. Uniform exact volume
+projection дала mean `0.24999994039535522` при absolute error
+`5.960464477539063e-08`; non-uniform projection derivative finite и nonzero.
+10-step smoke seed `20260830` завершён: objective
+`0.7078165659453859 → 0.6276594449582148` (`11.3246%`), все `60/60` CG solves
+converged, maximum explicit relative residual `9.991418346754768e-07`.
+
+Complete-step CUDA benchmark (3 warmup, 10 measured) дал median
+`4.599105849993066 s`, p90 `6.037666379989241 s`, mean
+`4.525257369992323 s`; peak allocated/reserved memory
+`209317376/226492416 bytes`. Прямая preregistered оценка: три qualification
+runs — `2759.4635099958396 s` (~46 min), три production runs —
+`27594.635099958396 s` (~7 h 40 min). Это measured computational cost, а не
+training pathology и не основание менять locked iterations или objective.
+
+Preflight implementation SHA:
+`52532b32e064871117386dc743ecbe0f4ebd1046`.

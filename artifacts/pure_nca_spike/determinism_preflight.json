@@ -1,0 +1,23 @@
+{
+  "binary_design_hashes": [
+    "644f581bf696f37296090161b02e84ce15fcfbff99bc5ec453a34574d7f61e69",
+    "644f581bf696f37296090161b02e84ce15fcfbff99bc5ec453a34574d7f61e69"
+  ],
+  "continuous_design_hashes": [
+    "973e8056ed61605db5338353f81a17ac2649d418f15097135229de29e08dea1d",
+    "973e8056ed61605db5338353f81a17ac2649d418f15097135229de29e08dea1d"
+  ],
+  "determinism_mode": "strict",
+  "exact_replay": true,
+  "gradient_path_valid": true,
+  "model_hashes": [
+    "45427abbab3366ab665573f1dc913e84d2b69dc4a3ee17b36bf28475f9b4e9d6",
+    "45427abbab3366ab665573f1dc913e84d2b69dc4a3ee17b36bf28475f9b4e9d6"
+  ],
+  "optimizer_state_hashes": [
+    "cccf767e805212781516c4d4258b43ec1feac28d45f496444a56a6b651ea3bbc",
+    "cccf767e805212781516c4d4258b43ec1feac28d45f496444a56a6b651ea3bbc"
+  ],
+  "schema_version": 1,
+  "status": "PASS"
+}

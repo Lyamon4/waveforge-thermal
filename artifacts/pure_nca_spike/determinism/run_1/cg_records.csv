@@ -1,0 +1,13 @@
+role,scenario_index,iterations,relative_residual,converged,reason,dtype,device
+forward,0,225,9.880164372320056e-07,True,CONVERGED,float64,cuda:0
+forward,1,294,9.83771419594861e-07,True,CONVERGED,float64,cuda:0
+forward,2,294,9.837714263042086e-07,True,CONVERGED,float64,cuda:0
+adjoint,0,225,8.172633963253749e-07,True,CONVERGED,float64,cuda:0
+adjoint,1,290,9.264873241594658e-07,True,CONVERGED,float64,cuda:0
+adjoint,2,290,9.264873249774438e-07,True,CONVERGED,float64,cuda:0
+forward,0,272,9.886567231373047e-07,True,CONVERGED,float64,cuda:0
+forward,1,303,9.526703937564749e-07,True,CONVERGED,float64,cuda:0
+forward,2,303,9.537619848061747e-07,True,CONVERGED,float64,cuda:0
+adjoint,0,251,9.850220016495874e-07,True,CONVERGED,float64,cuda:0
+adjoint,1,289,9.811765699170274e-07,True,CONVERGED,float64,cuda:0
+adjoint,2,289,9.741350921424103e-07,True,CONVERGED,float64,cuda:0
