@@ -81,3 +81,14 @@ inputs, tolerances и сохранённые timings при этом не изм
 - Решение: uncheckpointed eager explicit differentiation не подходит для 8 GB
   VRAM. Gate 2 начинается со steady multi-scenario Gate 2A; transient Gate 2B
   требует отдельного выбора implicit-adjoint, matrix-free или checkpointed path.
+
+## 2026-08-29 — Gate 2 specification review amendment
+
+До implementation plan и до любых optimization results specification усилена
+после scientific review. Зафиксированы minimum verified effect `5%`, обязательная
+`256×256` binary verification, exact nearest-neighbor design transfer,
+differentiable implicit volume projection, full-pipeline gradient checks,
+fail-closed Jacobi-CG protocol, независимость SciPy/PyTorch operators, literal
+baseline и perturbation registries, `N(0,0.1²)` initial logits и точные
+нормировки smooth maximum/TV. Результаты Gate 2 при выборе этих settings не
+просматривались.

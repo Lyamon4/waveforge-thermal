@@ -1,6 +1,6 @@
 # WaveForge Thermal — Gate 2 inverse-design specification
 
-**Status:** draft for user review after accepted Gate 1
+**Status:** revised draft for user review after accepted Gate 1
 
 **Scope:** Gate 2A steady multi-scenario inverse design; Gate 2B remains deferred
 
@@ -75,9 +75,9 @@ journal entry and a new config hash before production seeds are run.
 
 ## 4. Differentiable steady solver
 
-The low-fidelity PyTorch solver must use the same flux operator as Gate 1. The
-default design is a matrix-free conjugate-gradient forward solve with implicit
-adjoint differentiation:
+The low-fidelity PyTorch solver must implement the same mathematical flux
+discretization as Gate 1. The default design is a matrix-free
+conjugate-gradient forward solve with implicit adjoint differentiation:
 
 1. solve `A(D)T_s=q_s` for each scenario;
 2. solve the adjoint system for the objective derivative;
@@ -86,15 +86,61 @@ adjoint differentiation:
 It must not use dense `4096×4096` matrices, explicit pseudo-time marching,
 `torch.compile`, Triton or custom CUDA extensions.
 
+SciPy reference and PyTorch differentiable solvers are independent production
+implementations. They may share immutable configuration dataclasses, boundary
+specifications, source-map fixtures and analytical test fixtures. They must not
+share face-flux implementation, matrix assembly, matrix-free operator code or
+residual calculation. Agreement is tested at public numerical boundaries; one
+solver is never implemented by calling the other.
+
+The matrix-free forward and adjoint solves use this locked protocol:
+
+```yaml
+cg:
+  preconditioner: "Jacobi"
+  initial_guess: "zeros"
+  relative_residual_tolerance: 1.0e-6
+  maximum_iterations: 2000
+  forward_and_adjoint_same_policy: true
+  nonconvergence: "invalidate run"
+```
+
+The reported residual is
+`||b-Ax||₂ / max(||b||₂, 1e-12)`. Jacobi uses the independently implemented
+PyTorch operator diagonal. Every solve records run seed, iteration, scenario
+ID, forward/adjoint role, CG iterations, final relative residual and convergence
+status. A non-converged solve invalidates the run immediately; its last iterate
+cannot enter an objective, gradient or reported temperature.
+
 Before optimization, the following blocking checks are required:
 
 - PyTorch operator output matches the SciPy assembled operator on random
   positive conductivity fields;
 - `64×64` temperature fields match SciPy with relative L2 `≤5e-5`;
 - normalized forward and adjoint residuals are `≤1e-6`;
-- CPU `float64` directional-gradient error is `≤1e-4`;
-- CUDA `float32` directional-gradient error is `≤5e-3`;
+- full-pipeline directional-gradient checks pass under the protocol below;
 - gradients and temperatures contain no NaN or Inf.
+
+Directional-gradient validation covers the complete mapping
+
+```text
+16×16 logits
+→ bilinear upsampling
+→ Gaussian filtering
+→ differentiable volume projection
+→ conductivity interpolation
+→ matrix-free forward solve
+→ normalized smooth objective
+→ implicit adjoint
+```
+
+Five L2-normalized Gaussian directions use fixed seeds
+`7201, 7202, 7203, 7204, 7205`. Central finite differences use step sizes
+`[1e-2, 3e-3, 1e-3, 3e-4]` on CPU `float64` and
+`[1e-2, 3e-3, 1e-3]` on CUDA `float32`. Relative directional error is
+`|g_AD-g_FD| / max(|g_AD|, |g_FD|, 1e-12)`. For every direction, at least two
+adjacent step sizes must satisfy `≤1e-4` on CPU and `≤5e-3` on CUDA. All step
+sizes and errors are retained in the validation artifact.
 
 Failure stops Gate 2A; tolerances are not relaxed after inspecting optimized
 designs.
@@ -118,12 +164,51 @@ The `0.5` threshold is never moved to repair the budget. A seed whose strict
 binary map misses the budget is reported as failed, not silently quantile-
 thresholded.
 
+The bisection result remains differentiable through an implicit/custom-autograd
+derivative. For filtered logits `z`, offset `c`, projection sharpness `beta` and
+
+\[
+D_i=\sigma(\beta(z_i+c)),\qquad \frac1N\sum_iD_i=v,
+\]
+
+define `w_i = beta D_i(1-D_i)`. The implicit perturbation and reverse-mode
+derivative are
+
+\[
+dc=-\frac{\sum_iw_i\,dz_i}{\sum_iw_i},\qquad
+\frac{\partial L}{\partial z_j}
+=w_j\left(g_j-\frac{\sum_i g_iw_i}{\sum_iw_i}\right),
+\]
+
+where `g_i=∂L/∂D_i`. Detaching `c`, treating it as constant in backward or
+clamping a near-zero denominator is forbidden. If `sum(w)≤1e-12`, projection
+invalidates the run.
+
+Production logits are initialized independently for each production seed as
+`N(0, 0.1²)`. The exact `16×16` initial arrays are saved in the run checkpoint
+and recorded with SHA-256 hashes before optimization.
+
 ## 6. Objective and optimization protocol
 
-For a vector `z`, the smooth maximum is the numerically stable normalized
-log-mean-exp. Its sharpness schedule is `alpha=50` for iterations `0–199`,
-`alpha=200` for `200–349`, and `alpha=500` for `350–599`. Exact non-smooth
-maxima are logged separately.
+For a vector `z` with `N` elements, the smooth maximum is exactly
+
+\[
+\operatorname{smoothmax}_\alpha(z)
+=m+\frac1\alpha\log\left(\frac1N\sum_i
+e^{\alpha(z_i-m)}\right),\qquad m=\max_i z_i.
+\]
+
+Its sharpness schedule is `alpha=50` for iterations `0–199`, `alpha=200` for
+`200–349`, and `alpha=500` for `350–599`. Exact non-smooth maxima are logged
+separately. Normalization by `N` is mandatory so grid size and scenario count do
+not silently change the regularization trade-off.
+
+Total variation is exactly
+
+\[
+TV(D)=\operatorname{mean}|D_{:,1:}-D_{:,:-1}|
++\operatorname{mean}|D_{1:,:}-D_{:-1,:}|.
+\]
 
 \[
 J = \operatorname{smoothmax}_{s,x,y} T_s
@@ -141,6 +226,8 @@ TV, binarization penalty, continuous volume and strict-binary volume.
 - Iterations: exactly `600`; no result-dependent early stopping.
 - Gradient clipping: global norm `1.0`.
 - Production seeds: `20260828`, `20260829`, `20260830`.
+- Initial logits for each seed: independent normal distribution with mean `0.0`
+  and standard deviation `0.1`.
 - Checkpoint interval: 50 iterations.
 - One numerical smoke run may detect implementation defects, but production
   hyperparameters are not changed after baseline or production-seed outcomes
@@ -148,14 +235,49 @@ TV, binarization penalty, continuous volume and strict-binary volume.
 
 ## 7. Baselines and fair comparison
 
-All spatial binary baselines satisfy material fraction `0.25±0.01` on every
-verification grid:
+All baseline algorithms are fixed before optimization. Binary selection on the
+`64×64` grid contains exactly `1024` conductive cells and is never retuned after
+WaveForge results are inspected.
 
-1. three pre-registered random filtered designs;
-2. a straight central conductive path to the cooled boundary;
-3. an evenly dispersed binary 25% material control;
-4. a central-source-only optimized design, evaluated on all scenarios;
-5. the three-seed robust multi-scenario WaveForge design.
+### 7.1 Random filtered
+
+- Seeds: `9101`, `9102`, `9103`.
+- Generate `16×16` independent `N(0,1)` values.
+- Bilinear upsample to `64×64` with `align_corners=False`.
+- Apply the same normalized Gaussian filter with `sigma=1.0` cell.
+- Select exactly the top `1024` cells. Sort by value descending; ties are broken
+  by lower flattened row-major index first.
+
+### 7.2 Straight path
+
+The binary strip contains every `64×64` cell whose center satisfies
+`x∈[0.375,0.625)` and `y∈[0,1]`. It therefore contains 16 complete columns,
+exactly 25% of the cells, and connects the full cooled boundary segment to the
+upper domain.
+
+### 7.3 Evenly dispersed binary
+
+Partition the `64×64` grid into non-overlapping `2×2` blocks. In every block,
+the row-major first cell (even row, even column under zero-based indexing) is
+conductive and the other three cells are low-conductivity. The pattern contains
+exactly 25% conductive cells.
+
+### 7.4 Single-scenario optimized
+
+For production seeds `20260828`, `20260829`, `20260830`, use the same initial
+logits distribution, parameterization, differentiable volume projection,
+projection and objective schedules, Adam settings, 600 iterations, checkpoint
+policy and strict binary rule as the robust run. Only scenario A contributes to
+its thermal objective; final evaluation uses scenarios A/B/C. Robust seed `s`
+is always compared with single-scenario seed `s`.
+
+### 7.5 Robust multi-scenario WaveForge
+
+The three production seeds optimize the joint A/B/C objective. For a robust
+seed, its budget-matched baseline set consists of all three fixed random
+designs, the straight path, the dispersed design and its corresponding
+same-seed single-scenario design. The strongest baseline is the member with the
+lowest verified worst-case peak temperature.
 
 The required relaxed uniform baseline `D=0.25` is also evaluated in the
 continuous table. Its strict `0.5` threshold is the empty map and therefore
@@ -177,16 +299,61 @@ For every candidate, report:
 The final continuous and strict-binary maps are verified with the SciPy
 reference solver, not the differentiable solver:
 
-1. mandatory `128×128` verification for all three scenarios;
-2. `256×256` verification when the `128→256` worst-peak change exceeds 1% or
-   candidate ranking changes, following the Gate 1 registered rule;
-3. source maps are independently rasterized and renormalized at each grid;
-4. low-fidelity and high-fidelity metrics remain in separate columns.
+1. Freeze the final `64×64` continuous and strict-binary arrays before any
+   high-fidelity solve.
+2. Transfer the continuous array by piecewise-constant nearest-neighbor
+   replication: exact `2×2` replication to `128×128` and `4×4` replication to
+   `256×256`.
+3. Transfer the binary array by the same exact `2×2`/`4×4` replication. Every
+   child cell inherits its parent bit.
+4. On verification grids, do not re-filter, re-project volume, change threshold,
+   repair budget, rerun morphology or otherwise alter the transferred design.
+5. Verify every final strict-binary candidate and comparator at both `128×128`
+   and `256×256` for scenarios A/B/C. `256×256` is mandatory and defines the
+   primary PASS result; `128×128` reports convergence comparison.
+6. Continuous candidates are verified at least at `128×128`; their results are
+   secondary and cannot substitute for binary `256×256` evidence.
+7. Source maps are independently rasterized and renormalized at each grid.
+8. Low-fidelity, `128×128` and `256×256` metrics remain separate columns.
 
-Perturbations for the accepted robust seeds include source intensity `±5%`,
-source shifts by 1 and 2 verification cells, `k_high±5%`, and one-cell binary
-erosion/dilation. Each perturbed design retains its resulting material fraction
-in the report; morphology changes are not repaired invisibly.
+### 8.1 Pre-registered non-morphological perturbations
+
+Primary robustness uses exactly 28 cases on the `256×256` verification grid:
+
+- for each source scenario A/B/C, shift that source by 1 cell left, right, up
+  and down: 12 cases;
+- for each source scenario A/B/C, shift that source by 2 cells in the same four
+  directions: 12 cases;
+- scale all source intensities together by `−5%` and `+5%`: 2 cases;
+- set `k_high` to `19.0` and `21.0`: 2 cases.
+
+In a shift case, the other two scenarios remain nominal and the metric remains
+the worst peak across the three-scenario set. Every candidate and every
+baseline receives the identical perturbation. The corresponding strongest
+baseline is re-evaluated under that same case; baseline identity may change but
+the pre-registered baseline set may not.
+
+For robust seed `s` and case `p`, robustness improvement is
+
+\[
+I_{s,p}=\frac{T_{max,baseline,s,p}-T_{max,WaveForge,s,p}}
+{T_{max,baseline,s,p}}.
+\]
+
+For every robust seed that contributes to Gate 2A PASS, at least 23 of 28 cases
+must satisfy `I_{s,p}≥0.02`.
+
+### 8.2 Morphology diagnostics
+
+One-cell erosion and dilation use a `3×3` all-ones structuring element, low
+material outside the domain and clipping at domain boundaries. They are applied
+separately to every frozen `64×64` binary candidate/comparator and then
+transferred by exact replication. They are excluded from the 28-case/80%
+criterion because they change material fraction differently across geometries.
+
+For unperturbed, eroded and dilated maps, report material fraction,
+`256×256` worst-case `T_max`, four-neighbor connected-component count and
+relative degradation from the unperturbed design. No budget repair is allowed.
 
 ## 9. Gate 2A PASS criteria
 
@@ -195,15 +362,28 @@ Gate 2A passes only if all of the following hold:
 1. all differentiable-solver and gradient checks pass;
 2. at least two of three robust seeds satisfy both continuous and strict-binary
    material budgets;
-3. for those seeds, `128×128` strict-binary SciPy verification gives a lower
-   worst-case peak than every budget-matched simple baseline and the
-   single-scenario optimized baseline;
+3. for those seeds, mandatory `256×256` strict-binary SciPy verification gives
+   at least 5% worst-case peak-temperature improvement over the strongest
+   budget-matched baseline defined for that seed;
 4. strict binarization preserves the verified advantage rather than relying on
    the relaxed map;
-5. required `256×256` checks preserve the conclusion;
-6. at least 80% of registered perturbation cases retain positive improvement
-   over the corresponding strongest budget-matched baseline;
+5. the `128×128→256×256` comparison is reported for every final binary design
+   without changing the design between grids;
+6. each robust seed counted toward PASS retains at least 2% improvement over
+   its corresponding strongest budget-matched baseline in at least 23 of 28
+   registered non-morphological perturbation cases;
 7. all seeds, including failures, are reported.
+
+For unperturbed seed `s`, primary relative improvement is exactly
+
+\[
+I_s=\frac{T_{max,baseline,s}^{256}-T_{max,WaveForge,s}^{256}}
+{T_{max,baseline,s}^{256}}.
+\]
+
+`I_s≥0.05` is required for at least two of the three production seeds. Values
+are computed from unrounded temperatures; displayed rounding cannot change
+PASS/FAIL.
 
 Otherwise Gate 2A is NO-GO or scientifically inconclusive; the objective,
 budget or comparator set is not changed retroactively.
@@ -213,6 +393,11 @@ budget or comparator set is not changed retroactively.
 Gate 2A must produce the originally registered design figures, animations,
 per-seed logs, baseline/optimized/robustness CSV files, config hashes and a
 Russian scientific report under `artifacts/gate2_design/`.
+
+The artifact set also includes the frozen `64×64` continuous/binary arrays,
+their SHA-256 hashes, saved initial logits and hashes, every CG solve record,
+the complete multi-step full-pipeline gradient-check table, the literal
+28-case perturbation registry and separate morphology diagnostics.
 
 After those artifacts and exact verification are complete, work stops for
 review. Gate 2B, neuraloperator, FNO, U-Net and any surrogate dataset remain
