@@ -177,6 +177,26 @@ preflight.
 
 Production optimization не запускалась.
 
+## 2026-08-29 — Robust multi-scenario production optimizations
+
+Три заранее зарегистрированных robust runs завершены без early stopping, по
+600 iterations каждый, с единым objective для scenarios A/B/C. Все initial-logit
+hashes совпали с production manifest. Для каждого seed сохранены 600 metric
+rows, 3600 CG records, checkpoints и frozen continuous/binary arrays. Ни один
+seed не исключён по результату.
+
+| Seed | Final low-fidelity exact peak | Binary fraction | Step time sum, s | Maximum residual |
+|---:|---:|---:|---:|---:|
+| `20260828` | `0.15886448961261085` | `0.2509765625` | `1016.3810855998745` | `9.999859946731049e-7` |
+| `20260829` | `0.1599247503065012` | `0.2509765625` | `1036.8936866001313` | `9.999931216008133e-7` |
+| `20260830` | `0.15952271195329357` | `0.251220703125` | `1023.4208541998523` | `9.999301803481152e-7` |
+
+Все runs имеют machine status `PASS` на уровне numerical optimization,
+continuous material fraction `0.25`, максимум 313 CG iterations при locked cap
+2000 и finite metrics. Эти значения не являются Gate 2A verdict: primary effect
+будет определён независимым SciPy verification на `256×256` для strict-binary
+designs и всех заранее определённых baselines.
+
 ## 2026-08-29 — Production manifest freeze
 
 После `138 passed`, Ruff lint/format PASS и повторного complete-step benchmark
