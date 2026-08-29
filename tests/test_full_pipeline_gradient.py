@@ -1,15 +1,20 @@
 """Blocking directional-gradient tests for the complete Gate 2A pipeline."""
 
+import json
 from itertools import pairwise
+from pathlib import Path
 
 import numpy as np
 import pytest
 import torch
 
 from waveforge.design.gradient_validation import (
+    GradientCheckRecord,
     GradientValidationConfig,
+    GradientValidationReport,
     direction_for_seed,
     validate_full_pipeline_gradient,
+    write_gradient_validation_artifacts,
 )
 
 
@@ -76,3 +81,39 @@ def test_complete_cuda_mixed_precision_gradient_pipeline() -> None:
     assert report.maximum_explicit_residual <= 1e-6
     assert np.isfinite([record.relative_error for record in report.records]).all()
     _assert_two_adjacent_steps_pass_per_direction(report)
+
+
+def test_gradient_artifact_writer_preserves_machine_status(tmp_path: Path) -> None:
+    """Dropping schema, config identity, or numerical status must fail."""
+    record = GradientCheckRecord(
+        device="cpu",
+        dtype="float64",
+        direction_seed=7201,
+        step_size=1e-3,
+        automatic_derivative=0.25,
+        finite_difference_derivative=0.25,
+        relative_error=0.0,
+        passed=True,
+    )
+    report = GradientValidationReport(
+        records=(record,),
+        solve_records=(),
+        passed=True,
+        maximum_explicit_residual=9e-7,
+        physics_dtypes=("float64",),
+        gradient_dtype="float64",
+        config_sha256="abc123",
+    )
+
+    csv_path, json_path = write_gradient_validation_artifacts(
+        report,
+        output_dir=tmp_path,
+        label="cpu",
+    )
+
+    assert csv_path.is_file() and csv_path.stat().st_size > 0
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    assert payload["schema_version"] == 2
+    assert payload["status"] == "PASS"
+    assert payload["config_sha256"] == "abc123"
+    assert payload["record_count"] == 1

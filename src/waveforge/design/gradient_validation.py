@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import hashlib
+import json
+from dataclasses import asdict, dataclass
 from itertools import pairwise
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import torch
 from torch import Tensor
 
@@ -61,6 +65,7 @@ class GradientValidationReport:
     maximum_explicit_residual: float
     physics_dtypes: tuple[str, ...]
     gradient_dtype: str
+    config_sha256: str
 
 
 def direction_for_seed(
@@ -74,6 +79,13 @@ def direction_for_seed(
     values = np.random.default_rng(seed).normal(size=shape)
     direction = torch.as_tensor(values, dtype=dtype, device=device)
     return direction / torch.linalg.vector_norm(direction)
+
+
+def _config_hash() -> str:
+    repository_root = Path(__file__).resolve().parents[3]
+    return hashlib.sha256(
+        (repository_root / "configs" / "inverse_design.yaml").read_bytes()
+    ).hexdigest()
 
 
 def _source_batch(grid: Grid2D, device: torch.device) -> Tensor:
@@ -222,4 +234,41 @@ def validate_full_pipeline_gradient(
         maximum_explicit_residual=maximum_residual,
         physics_dtypes=physics_dtypes,
         gradient_dtype=str(gradient.dtype).removeprefix("torch."),
+        config_sha256=_config_hash(),
     )
+
+
+def write_gradient_validation_artifacts(
+    report: GradientValidationReport,
+    *,
+    output_dir: Path,
+    label: str,
+) -> tuple[Path, Path]:
+    """Persist every directional step and a schema-versioned gate summary."""
+    if label not in ("cpu", "cuda"):
+        raise ValueError("gradient artifact label must be cpu or cuda")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = output_dir / f"gradient_validation_{label}.csv"
+    json_path = output_dir / f"gradient_validation_{label}.json"
+    pd.DataFrame([asdict(record) for record in report.records]).to_csv(
+        csv_path,
+        index=False,
+    )
+    payload = {
+        "schema_version": 2,
+        "status": "PASS" if report.passed else "INVALID_RUN",
+        "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+        "run_namespace": "gate2a_mixed_precision_v1",
+        "config_sha256": report.config_sha256,
+        "record_count": len(report.records),
+        "solve_record_count": len(report.solve_records),
+        "maximum_explicit_relative_residual": report.maximum_explicit_residual,
+        "physics_dtypes": list(report.physics_dtypes),
+        "gradient_dtype": report.gradient_dtype,
+        "direction_seeds": sorted({record.direction_seed for record in report.records}),
+    }
+    json_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return csv_path, json_path

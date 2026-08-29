@@ -171,3 +171,20 @@ update. Plotting и artifact I/O не входят в `step_wall_seconds`.
 - Peak CUDA allocated/reserved: `18,694,144 / 23,068,672 bytes`.
 
 Production optimization не запускалась.
+
+## 2026-08-29 — Full-pipeline gradient artifacts
+
+После mixed-precision amendment оба directional-gradient gates повторно
+запущены и сохранены как schema-2 CSV/JSON с новым config hash.
+
+- CPU `float64`: `PASS`, 20 records, maximum relative error
+  `4.3346277662377975e-5`, maximum explicit solver residual
+  `9.78328585677294e-7`.
+- CUDA mixed precision: `PASS`, 15 records, maximum explicit solver residual
+  `9.783278263842893e-7`.
+- На CUDA отдельные step sizes могут превышать `5e-3` (observed maximum across
+  all retained records `1.4991486590618615e-2`), но для каждого из пяти
+  directions выполнен locked criterion: минимум два соседних step sizes имеют
+  error `≤5e-3`. Ни одна строка не скрыта из artifact.
+
+Production optimization не запускалась.
