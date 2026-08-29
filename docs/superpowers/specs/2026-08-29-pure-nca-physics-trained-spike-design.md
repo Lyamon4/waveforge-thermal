@@ -101,6 +101,45 @@ final scientific verification:    CPU SciPy float64, 256×256
 Triton, custom CUDA extensions и BF16 не используются. CUDA timing включает
 явную synchronization до и после измеряемого участка.
 
+### 3.1 CUDA reproducibility policy
+
+До создания CUDA tensors и model применяется:
+
+```python
+torch.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.use_deterministic_algorithms(True)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
+```
+
+`environment.json` сохраняет seed, результат
+`torch.are_deterministic_algorithms_enabled()`, warn-only status,
+`torch.backends.cudnn.benchmark`, `torch.backends.cudnn.deterministic`, PyTorch
+и CUDA versions. Qualification candidates повторно устанавливают один и тот же
+qualification seed до создания bitwise-identical model initialization.
+
+Strict deterministic preflight дважды выполняет одинаковый two-step pipeline
+и требует exact hashes model state, projected continuous design и optimizer
+state. Если required CUDA op не поддерживает deterministic algorithms, нельзя
+молча менять NCA rule, padding, physics solver или precision. До qualification
+сохраняются op/error и явный `determinism_mode=topology_verdict`; запуск
+продолжается с тем же scientific algorithm только при зарегистрированном
+PyTorch warn-only exception.
+
+Technical fallback включает только повторный запуск процесса с
+`torch.use_deterministic_algorithms(True, warn_only=True)`; значение флага и
+полный warning/error сохраняются. Это не разрешает заменять unsupported op или
+выбирать другой numerical path после просмотра результата.
+
+В `topology_verdict` mode после production полностью повторяется seed
+`20260901` с теми же inputs, initialization и selected LR. Continuous
+differences квантифицируются, а acceptance требует exact equality final
+strict-binary `64×64` topology, exact binary material fraction и неизменный
+independent SciPy `256×256` per-seed verdict. Нарушение даёт
+`NCA_SPIKE_INVALID_REPRODUCIBILITY`, а не `NCA_NO_GO_EFFECT`. Если strict mode
+поддерживается, production replay не обязателен.
+
 Differentiable physics использует существующий validated matrix-free operator,
 implicit adjoint и Jacobi-preconditioned CG:
 
@@ -427,6 +466,18 @@ peak. Binary budget acceptance:
 0.24 <= mean(D_binary) <= 0.26
 ```
 
+Каждый final binary design дополнительно переносится exact `2×2` replication
+на `128×128` и независимо проверяется тем же SciPy solver. Сохраняются
+`Tmax_128`, `Tmax_256` и signed diagnostic
+
+```text
+relative_128_to_256_change
+  = (Tmax_128 - Tmax_256) / max(abs(Tmax_256), 1e-12)
+```
+
+Для `128×128` нет нового hard threshold. Primary PASS/NO-GO authority остаётся
+только independent CPU SciPy `256×256`.
+
 Connectivity — diagnostic, не hard gate. Сохраняются four-neighbor component
 count, доля high-conductivity cells в sink-connected component и его contact с
 каждым source footprint. Нельзя отбрасывать физически хороший design из-за
@@ -457,6 +508,8 @@ Machine-readable umbrella verdict:
 - `NCA_NO_GO_EFFECT`: все три runs valid, но проходит менее 2/3 seeds;
 - `NCA_SPIKE_INVALID_PRODUCTION_RUN`: минимум один production run technically
   invalid;
+- `NCA_SPIKE_INVALID_REPRODUCIBILITY`: required topology/verdict replay в
+  зарегистрированном non-bitwise CUDA mode не воспроизводится;
 - `NCA_SPIKE_INVALID_TRAINING_PATHOLOGY`: qualification не дала ни одного
   eligible LR, поэтому production не началась.
 
@@ -529,6 +582,20 @@ environment, source hashes, model initialization hashes, selected LR artifact
 hash и result-generation SHA. Existing Gate 2A/challenge/old ML artifacts не
 изменяются.
 
+Hash policy для новых artifacts:
+
+```yaml
+artifact_hash_mode: canonical_lf_text_raw_binary
+text_extensions: [.md, .json, .csv, .yaml, .yml]
+text_hash: UTF-8 without BOM, CRLF/CR normalized to LF, then SHA-256
+binary_hash: raw file bytes, then SHA-256
+```
+
+Canonicalization используется только при hashing и не переписывает original
+artifact. Binary policy применяется как минимум к `.npy`, `.pt`, `.png` и
+другим нетекстовым files. Regression test обязан доказать одинаковый text hash
+для LF и CRLF представлений одного содержимого.
+
 ## 12. Порядок выполнения и stop conditions
 
 1. Lock и commit этой docs-only specification.
@@ -539,8 +606,10 @@ hash и result-generation SHA. Existing Gate 2A/challenge/old ML artifacts не
 6. Зафиксировать selected LR или остановиться с qualification pathology.
 7. Выполнить ровно три production seeds без result-dependent changes.
 8. Заморозить final designs и выполнить independent CPU SciPy verification.
-9. Сформировать machine verdict и русский scientific report.
-10. Остановиться для review.
+9. При зарегистрированном `topology_verdict` CUDA mode повторить production
+   seed `20260901` и применить reproducibility gate.
+10. Сформировать machine verdict и русский scientific report.
+11. Остановиться для review.
 
 Нельзя автоматически начинать generalization experiment, NCA-2 continuation,
 transient Gate 2B, FNO/U-Net, UI или paper claims.

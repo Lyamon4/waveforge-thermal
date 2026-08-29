@@ -442,3 +442,22 @@ scientific no-effect имеют разные machine-readable statuses.
 `docs/superpowers/specs/2026-08-29-pure-nca-physics-trained-spike-design.md`.
 SHA-256 рабочей LF-normalized specification на момент lock:
 `a6843a1fe003aae7f9a3de5684e0b42353f0ccefa71ce7992c8f3149aeb984df`.
+
+## 2026-08-29 — Pure-NCA prospective reproducibility clarification
+
+После scientific approval и до implementation plan пользователь добавил три
+non-result-dependent clarification. Strict CUDA determinism с explicit seeds,
+deterministic algorithms и disabled cuDNN benchmark является default. Если
+required CUDA op несовместим, scientific algorithm не меняется молча:
+limitation регистрируется до qualification, а повтор seed `20260901` должен
+сохранить exact strict-binary topology и independent SciPy `256×256` verdict.
+
+Для всех новых text artifacts hash вычисляется после canonical LF
+normalization; binary artifacts hash по raw bytes. Каждый final NCA design
+получает secondary SciPy `128×128` diagnostic с signed relative change к
+`256×256`; primary verdict остаётся исключительно `256×256`, без нового
+resolution threshold. Architecture, objective, LR qualification, seeds,
+iteration budget и feasibility threshold не изменены.
+
+Canonical LF SHA-256 уточнённой specification:
+`a7c490487231518dca4f1cbfa0876a09304c88df6da8652ae5e2dcf24ad0157f`.
