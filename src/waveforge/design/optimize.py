@@ -31,6 +31,7 @@ from waveforge.physics.grid import Grid2D
 from waveforge.verification.compare import Gate2Status
 
 OptimizationMode = Literal["unit", "benchmark", "smoke", "production"]
+ObjectiveScope = Literal["single_A", "robust"]
 
 
 @dataclass(frozen=True)
@@ -39,6 +40,7 @@ class OptimizationConfig:
 
     iterations: int = 600
     mode: OptimizationMode = "production"
+    objective_scope: ObjectiveScope = "robust"
     learning_rate: float = 0.05
     gradient_clip_norm: float = 1.0
     checkpoint_interval: int = 50
@@ -58,6 +60,8 @@ class OptimizationConfig:
             raise ValueError("optimizer learning rate and clip norm must be positive")
         if self.checkpoint_interval < 1:
             raise ValueError("checkpoint interval must be positive")
+        if self.objective_scope not in ("single_A", "robust"):
+            raise ValueError("objective scope must be single_A or robust")
 
 
 @dataclass(frozen=True)
@@ -226,6 +230,19 @@ def _write_result_artifacts(result: OptimizationResult, output_dir: Path) -> Non
         "config_sha256": result.config_sha256,
         "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
     }
+    if result.continuous_design is not None and result.binary_design is not None:
+        np.save(
+            output_dir / "design_continuous_64.npy",
+            result.continuous_design.numpy(),
+            allow_pickle=False,
+        )
+        np.save(
+            output_dir / "design_binary_64.npy",
+            result.binary_design.numpy(),
+            allow_pickle=False,
+        )
+        payload["continuous_design_sha256"] = array_sha256(result.continuous_design)
+        payload["binary_design_sha256"] = array_sha256(result.binary_design)
     (output_dir / "optimization_result.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -236,6 +253,7 @@ def _failed_result(
     *,
     seed: int,
     mode: OptimizationMode,
+    objective_scope: ObjectiveScope,
     reason_code: str,
     records: list[IterationRecord],
     solve_records: list[SolveRecord],
@@ -246,7 +264,7 @@ def _failed_result(
         status=Gate2Status.INVALID_RUN,
         reason_codes=(reason_code,),
         seed=seed,
-        run_id=f"gate2a_mixed_precision_v1_{mode}_seed_{seed}",
+        run_id=(f"gate2a_mixed_precision_v1_{mode}_{objective_scope}_seed_{seed}"),
         completed_iterations=len(records),
         records=tuple(records),
         solve_records=tuple(solve_records),
@@ -383,6 +401,7 @@ def optimize_design(
         result = _failed_result(
             seed=seed,
             mode=config.mode,
+            objective_scope=config.objective_scope,
             reason_code="CG_NONCONVERGENCE",
             records=records,
             solve_records=solve_records,
@@ -398,6 +417,7 @@ def optimize_design(
         result = _failed_result(
             seed=seed,
             mode=config.mode,
+            objective_scope=config.objective_scope,
             reason_code=f"NUMERICAL_FAILURE:{type(error).__name__}",
             records=records,
             solve_records=solve_records,
@@ -424,7 +444,10 @@ def optimize_design(
         status=status,
         reason_codes=reason_codes,
         seed=seed,
-        run_id=f"gate2a_mixed_precision_v1_{config.mode}_seed_{seed}",
+        run_id=(
+            "gate2a_mixed_precision_v1_"
+            f"{config.mode}_{config.objective_scope}_seed_{seed}"
+        ),
         completed_iterations=len(records),
         records=tuple(records),
         solve_records=tuple(solve_records),

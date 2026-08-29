@@ -85,6 +85,7 @@ def test_real_cg_nonconvergence_invalidates_before_optimizer_step() -> None:
     assert result.records == ()
     assert "CG_NONCONVERGENCE" in result.reason_codes
     assert result.initial_logits_hash == result.final_logits_hash
+    assert "robust" in result.run_id
 
 
 def test_valid_run_with_binary_budget_failure_is_no_go_effect(tmp_path: Path) -> None:
@@ -110,6 +111,36 @@ def test_valid_run_with_binary_budget_failure_is_no_go_effect(tmp_path: Path) ->
     assert (tmp_path / "checkpoint_final.pt").is_file()
     assert (tmp_path / "optimization_metrics.csv").is_file()
     assert (tmp_path / "optimization_result.json").is_file()
+    assert (tmp_path / "design_continuous_64.npy").is_file()
+    assert (tmp_path / "design_binary_64.npy").is_file()
+    np.testing.assert_array_equal(
+        np.load(tmp_path / "design_continuous_64.npy"),
+        result.continuous_design.numpy(),
+    )
+    np.testing.assert_array_equal(
+        np.load(tmp_path / "design_binary_64.npy"),
+        result.binary_design.numpy(),
+    )
+
+
+def test_single_scenario_scope_has_distinct_immutable_run_id() -> None:
+    """Colliding single-A and robust run identities must fail reproducibility."""
+    assert torch.cuda.is_available(), "Gate 2A locked environment requires CUDA"
+    grid = Grid2D(nx=64, ny=64)
+    result = optimize_design(
+        _source_batch(grid, torch.device("cuda")),
+        seed=20260828,
+        config=OptimizationConfig(
+            iterations=1,
+            mode="unit",
+            objective_scope="single_A",
+            enforce_final_binary_budget=False,
+        ),
+        output_dir=None,
+    )
+
+    assert result.status is Gate2Status.PASS
+    assert result.run_id == "gate2a_mixed_precision_v1_unit_single_A_seed_20260828"
 
 
 def test_full_step_benchmark_includes_three_forward_and_adjoint_solves(

@@ -118,10 +118,17 @@ def _load_pass_artifact(path: Path) -> None:
         raise RuntimeError(f"preflight artifact is not PASS: {path}")
 
 
-def run_production(seed: int, output_dir: Path) -> OptimizationResult:
+def run_production(
+    seed: int,
+    output_dir: Path,
+    *,
+    objective_scope: str,
+) -> OptimizationResult:
     """Run one 600-step seed only after all machine preflights are present."""
     if seed not in (20260828, 20260829, 20260830):
         raise ValueError("seed is not one of the three registered production seeds")
+    if objective_scope not in ("single_A", "robust"):
+        raise ValueError("objective scope must be single_A or robust")
     repository_root = Path(__file__).resolve().parents[3]
     preflight = repository_root / "artifacts" / "gate2_design" / "preflight"
     for filename in (
@@ -131,10 +138,12 @@ def run_production(seed: int, output_dir: Path) -> OptimizationResult:
         "full_iteration_benchmark.json",
     ):
         _load_pass_artifact(preflight / filename)
+    sources = gate2_source_batch(device=torch.device("cuda"))
+    objective_sources = sources[:1] if objective_scope == "single_A" else sources
     return optimize_design(
-        gate2_source_batch(device=torch.device("cuda")),
+        objective_sources,
         seed=seed,
-        config=OptimizationConfig(),
+        config=OptimizationConfig(objective_scope=objective_scope),
         output_dir=output_dir,
     )
 
@@ -148,6 +157,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--seed", type=int)
+    parser.add_argument("--scope", choices=("single_A", "robust"))
     return parser.parse_args()
 
 
@@ -163,7 +173,13 @@ def main() -> None:
     else:
         if args.seed is None:
             raise SystemExit("--seed is required for production mode")
-        result = run_production(args.seed, args.output)
+        if args.scope is None:
+            raise SystemExit("--scope is required for production mode")
+        result = run_production(
+            args.seed,
+            args.output,
+            objective_scope=args.scope,
+        )
         if result.status is Gate2Status.INVALID_RUN:
             raise SystemExit(2)
 
