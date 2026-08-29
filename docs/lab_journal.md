@@ -177,6 +177,24 @@ preflight.
 
 Production optimization не запускалась.
 
+## 2026-08-29 — Independent Gate 2A review and prospective challenge lock
+
+Independent review завершён verdict `REVIEW_PASS_WITH_MINOR_FINDINGS` и
+сохранён в `artifacts/independent_review/`. Seed `20260828` повторно выполнен
+на 600 iterations: continuous map имеет non-bitwise CUDA drift до
+`7.152557373046875e-7`, но strict binary design, material fraction,
+`256×256` nominal Tmax и все `28/28` perturbation results совпали. Gate 2A
+слит в `master` и отмечен annotated tag
+`v0.3-gate2a-inverse-design-validated`.
+
+До первого evaluation strong baseline зафиксирован prospective post-result
+challenge protocol. Candidate family, полный grid из `41055` combinations,
+normalized-distance score, exact top-1024 tie-breaking, `64→128→256` funnel,
+frozen-map replication и verdict thresholds записаны в
+`docs/superpowers/specs/2026-08-29-gate2a-strong-baseline-challenge-design.md`.
+WaveForge pixel values не используются для построения или настройки baseline.
+Original Gate 2A protocol и artifacts не изменяются.
+
 ## 2026-08-29 — Independent nominal and registered robustness verification
 
 Все 11 frozen strict-binary candidates/comparators независимо проверены SciPy
