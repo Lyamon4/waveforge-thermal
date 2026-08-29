@@ -8,7 +8,7 @@ import json
 import math
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -24,12 +24,27 @@ from waveforge.design.baselines import (
 )
 from waveforge.design.optimize import array_sha256 as optimization_array_sha256
 from waveforge.physics.grid import Grid2D
-from waveforge.verification.compare import SeedVerdict, classify_nominal_seed
+from waveforge.verification.compare import (
+    Gate2Status,
+    SeedVerdict,
+    classify_nominal_seed,
+    select_strongest_baseline,
+)
 from waveforge.verification.high_fidelity import (
     CandidateVerification,
     Fidelity,
     array_sha256,
+    relative_improvement,
     verify_candidate,
+)
+from waveforge.verification.perturbations import (
+    MorphologyRecord,
+    PerturbationCase,
+    PerturbationEvaluation,
+    classify_seed_robustness,
+    evaluate_perturbation_case,
+    morphology_diagnostics,
+    registered_primary_cases,
 )
 
 Representation = Literal["binary", "continuous"]
@@ -80,6 +95,38 @@ class NominalVerificationBundle:
     binary: tuple[CandidateVerification, ...]
     continuous: tuple[CandidateVerification, ...]
     seed_verdicts: dict[int, SeedVerdict]
+    valid: bool
+
+
+@dataclass(frozen=True)
+class RobustnessComparison:
+    """One robust-seed effect comparison under one registered case."""
+
+    seed: int
+    case_id: str
+    candidate_id: str
+    candidate_peak: float
+    strongest_baseline_id: str
+    strongest_baseline_peak: float
+    relative_improvement: float
+    passed_two_percent: bool
+
+
+@dataclass(frozen=True)
+class RobustnessVerificationBundle:
+    """All registered perturbation solves and derived seed verdicts."""
+
+    evaluations: tuple[PerturbationEvaluation, ...]
+    comparisons: tuple[RobustnessComparison, ...]
+    seed_verdicts: dict[int, SeedVerdict]
+    valid: bool
+
+
+@dataclass(frozen=True)
+class MorphologyVerificationBundle:
+    """Separate budget-changing diagnostics for every frozen binary design."""
+
+    records: tuple[MorphologyRecord, ...]
     valid: bool
 
 
@@ -549,9 +596,252 @@ def write_nominal_artifacts(
     )
 
 
+def _perturbation_evaluation_is_valid(
+    evaluation: PerturbationEvaluation,
+    candidate: FrozenCandidate,
+    case: PerturbationCase,
+) -> bool:
+    values = (
+        *evaluation.scenario_peaks,
+        *evaluation.scenario_residuals,
+        evaluation.worst_peak,
+        evaluation.k_high,
+        evaluation.wall_seconds,
+        evaluation.material_fraction,
+    )
+    return (
+        evaluation.candidate_id == candidate.candidate_id
+        and evaluation.case_id == case.case_id
+        and evaluation.grid_shape == (256, 256)
+        and evaluation.design_hash_64 == candidate.design_hash
+        and len(evaluation.scenario_peaks) == 3
+        and len(evaluation.scenario_residuals) == 3
+        and all(math.isfinite(value) for value in values)
+        and all(peak > 0.0 for peak in evaluation.scenario_peaks)
+        and all(
+            0.0 <= residual <= 1.0e-10 for residual in evaluation.scenario_residuals
+        )
+        and math.isclose(
+            evaluation.worst_peak,
+            max(evaluation.scenario_peaks),
+            rel_tol=0.0,
+            abs_tol=1.0e-15,
+        )
+        and math.isclose(
+            evaluation.material_fraction,
+            float(np.mean(candidate.design)),
+            rel_tol=0.0,
+            abs_tol=1.0e-12,
+        )
+        and evaluation.k_high == case.k_high
+        and evaluation.wall_seconds >= 0.0
+    )
+
+
+def run_robustness_verification(
+    registry: CandidateRegistry,
+    nominal: NominalVerificationBundle,
+    *,
+    evaluator: Callable[..., PerturbationEvaluation] = evaluate_perturbation_case,
+) -> RobustnessVerificationBundle:
+    """Evaluate the exact 28-case registry with per-case baseline selection."""
+    eligible_seeds = tuple(
+        seed
+        for seed in PRODUCTION_SEEDS
+        if nominal.seed_verdicts[seed].status is Gate2Status.PASS
+    )
+    required_ids: set[str] = set()
+    for seed in eligible_seeds:
+        required_ids.update(baseline_ids_for_seed(seed))
+        required_ids.add(f"robust_{seed}")
+    candidates = tuple(
+        candidate
+        for candidate in registry.binary
+        if candidate.candidate_id in required_ids
+    )
+    cases = registered_primary_cases()
+    evaluations: list[PerturbationEvaluation] = []
+    validity: list[bool] = []
+    for case in cases:
+        for candidate in candidates:
+            evaluation = evaluator(
+                candidate.candidate_id,
+                candidate.design,
+                case,
+            )
+            evaluations.append(evaluation)
+            validity.append(
+                _perturbation_evaluation_is_valid(evaluation, candidate, case)
+            )
+    valid = nominal.valid and all(validity) and len(cases) == 28
+    by_candidate_case = {
+        (evaluation.candidate_id, evaluation.case_id): evaluation
+        for evaluation in evaluations
+    }
+    comparisons: list[RobustnessComparison] = []
+    seed_verdicts: dict[int, SeedVerdict] = {}
+    for seed in eligible_seeds:
+        improvements: list[float] = []
+        for case in cases:
+            baseline_peaks = {
+                baseline_id: by_candidate_case[(baseline_id, case.case_id)].worst_peak
+                for baseline_id in baseline_ids_for_seed(seed)
+            }
+            strongest = select_strongest_baseline(baseline_peaks)
+            candidate_id = f"robust_{seed}"
+            candidate_peak = by_candidate_case[(candidate_id, case.case_id)].worst_peak
+            improvement = relative_improvement(
+                strongest.worst_peak,
+                candidate_peak,
+            )
+            improvements.append(improvement)
+            comparisons.append(
+                RobustnessComparison(
+                    seed=seed,
+                    case_id=case.case_id,
+                    candidate_id=candidate_id,
+                    candidate_peak=candidate_peak,
+                    strongest_baseline_id=strongest.candidate_id,
+                    strongest_baseline_peak=strongest.worst_peak,
+                    relative_improvement=improvement,
+                    passed_two_percent=improvement >= 0.02,
+                )
+            )
+        seed_verdicts[seed] = classify_seed_robustness(
+            improvements,
+            valid=valid,
+        )
+    return RobustnessVerificationBundle(
+        evaluations=tuple(evaluations),
+        comparisons=tuple(comparisons),
+        seed_verdicts=seed_verdicts,
+        valid=valid,
+    )
+
+
+def run_morphology_verification(
+    registry: CandidateRegistry,
+    *,
+    diagnostic: Callable[..., tuple[MorphologyRecord, ...]] = morphology_diagnostics,
+) -> MorphologyVerificationBundle:
+    """Run morphology separately for every frozen strict-binary design."""
+    records: list[MorphologyRecord] = []
+    valid = True
+    for candidate in registry.binary:
+        candidate_records = diagnostic(candidate.candidate_id, candidate.design)
+        records.extend(candidate_records)
+        if tuple(record.operation for record in candidate_records) != (
+            "unperturbed",
+            "erosion",
+            "dilation",
+        ):
+            valid = False
+            continue
+        base, eroded, dilated = candidate_records
+        numerical = tuple(
+            value
+            for record in candidate_records
+            for value in (
+                record.material_fraction,
+                record.worst_peak_256,
+                record.relative_degradation,
+            )
+        )
+        valid = valid and (
+            len(candidate_records) == 3
+            and all(
+                record.candidate_id == candidate.candidate_id
+                for record in candidate_records
+            )
+            and base.design_hash_64 == candidate.design_hash
+            and all(math.isfinite(value) for value in numerical)
+            and all(record.worst_peak_256 > 0.0 for record in candidate_records)
+            and all(record.component_count >= 0 for record in candidate_records)
+            and math.isclose(base.relative_degradation, 0.0, abs_tol=1.0e-15)
+            and eroded.material_fraction <= base.material_fraction
+            and dilated.material_fraction >= base.material_fraction
+        )
+    valid = valid and len(records) == len(registry.binary) * 3
+    return MorphologyVerificationBundle(records=tuple(records), valid=valid)
+
+
+def write_robustness_artifacts(
+    robustness: RobustnessVerificationBundle,
+    morphology: MorphologyVerificationBundle,
+    registry: CandidateRegistry,
+    output_dir: Path,
+) -> None:
+    """Write the literal registry, raw solves and derived robustness decisions."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    evaluation_rows = [
+        {
+            "candidate_id": evaluation.candidate_id,
+            "case_id": evaluation.case_id,
+            "grid_ny": evaluation.grid_shape[0],
+            "grid_nx": evaluation.grid_shape[1],
+            "design_hash_64": evaluation.design_hash_64,
+            "material_fraction": evaluation.material_fraction,
+            "scenario_A_peak": evaluation.scenario_peaks[0],
+            "scenario_B_peak": evaluation.scenario_peaks[1],
+            "scenario_C_peak": evaluation.scenario_peaks[2],
+            "scenario_A_residual": evaluation.scenario_residuals[0],
+            "scenario_B_residual": evaluation.scenario_residuals[1],
+            "scenario_C_residual": evaluation.scenario_residuals[2],
+            "worst_peak": evaluation.worst_peak,
+            "k_high": evaluation.k_high,
+            "wall_seconds": evaluation.wall_seconds,
+        }
+        for evaluation in robustness.evaluations
+    ]
+    _write_rows(output_dir / "perturbation_evaluations.csv", evaluation_rows)
+    _write_rows(
+        output_dir / "robustness_metrics.csv",
+        [asdict(comparison) for comparison in robustness.comparisons],
+    )
+    _write_rows(
+        output_dir / "morphology_metrics.csv",
+        [asdict(record) for record in morphology.records],
+    )
+    registry_payload = {
+        "schema_version": 2,
+        "config_sha256": registry.config_hash,
+        "protocol_tag": registry.protocol_tag,
+        "cases": [asdict(case) for case in registered_primary_cases()],
+    }
+    (output_dir / "perturbation_registry.json").write_text(
+        json.dumps(registry_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    verdict_payload = {
+        "schema_version": 2,
+        "valid": robustness.valid and morphology.valid,
+        "robustness_valid": robustness.valid,
+        "morphology_valid": morphology.valid,
+        "config_sha256": registry.config_hash,
+        "protocol_tag": registry.protocol_tag,
+        "seeds": {
+            str(seed): {
+                "status": verdict.status.value,
+                "reason_codes": list(verdict.reason_codes),
+                "metrics": verdict.metrics,
+            }
+            for seed, verdict in robustness.seed_verdicts.items()
+        },
+    }
+    (output_dir / "robustness_verdicts.json").write_text(
+        json.dumps(verdict_payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
 def main() -> int:
-    """Run and serialize the mandatory nominal verification campaign."""
+    """Run and serialize one mandatory Gate 2A verification stage."""
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--stage",
+        choices=("nominal", "robustness"),
+        default="nominal",
+    )
     parser.add_argument(
         "--production-root",
         type=Path,
@@ -564,23 +854,43 @@ def main() -> int:
     )
     arguments = parser.parse_args()
     registry = build_candidate_registry(arguments.production_root)
-    bundle = run_nominal_verification(registry)
-    write_nominal_artifacts(bundle, registry, arguments.output)
-    print(
-        json.dumps(
-            {
-                "valid": bundle.valid,
-                "binary_records": len(bundle.binary),
-                "continuous_records": len(bundle.continuous),
-                "seed_statuses": {
-                    str(seed): verdict.status.value
-                    for seed, verdict in bundle.seed_verdicts.items()
-                },
+    nominal = run_nominal_verification(registry)
+    if arguments.stage == "nominal":
+        write_nominal_artifacts(nominal, registry, arguments.output)
+        payload = {
+            "stage": "nominal",
+            "valid": nominal.valid,
+            "binary_records": len(nominal.binary),
+            "continuous_records": len(nominal.continuous),
+            "seed_statuses": {
+                str(seed): verdict.status.value
+                for seed, verdict in nominal.seed_verdicts.items()
             },
-            sort_keys=True,
+        }
+        valid = nominal.valid
+    else:
+        robustness = run_robustness_verification(registry, nominal)
+        morphology = run_morphology_verification(registry)
+        write_robustness_artifacts(
+            robustness,
+            morphology,
+            registry,
+            arguments.output,
         )
-    )
-    return 0 if bundle.valid else 2
+        payload = {
+            "stage": "robustness",
+            "valid": robustness.valid and morphology.valid,
+            "perturbation_evaluations": len(robustness.evaluations),
+            "comparisons": len(robustness.comparisons),
+            "morphology_records": len(morphology.records),
+            "seed_statuses": {
+                str(seed): verdict.status.value
+                for seed, verdict in robustness.seed_verdicts.items()
+            },
+        }
+        valid = robustness.valid and morphology.valid
+    print(json.dumps(payload, sort_keys=True))
+    return 0 if valid else 2
 
 
 if __name__ == "__main__":
