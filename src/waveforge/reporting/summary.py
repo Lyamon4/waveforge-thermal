@@ -8,6 +8,48 @@ from pathlib import Path
 import pandas as pd
 
 from waveforge.physics.validation import ValidationMetric
+from waveforge.verification.compare import (
+    CampaignVerdict,
+    Gate2Status,
+    SeedVerdict,
+    classify_campaign,
+)
+
+
+def final_gate2a_verdict(
+    nominal: dict[int, SeedVerdict],
+    robustness: dict[int, SeedVerdict],
+    *,
+    mandatory_valid: bool,
+    config_hash: str = "",
+) -> CampaignVerdict:
+    """Combine locked seed criteria with technical-invalidity precedence."""
+    same_registry = set(nominal) == set(robustness) and bool(nominal)
+    all_verdicts = (*nominal.values(), *robustness.values())
+    valid = (
+        mandatory_valid
+        and same_registry
+        and all(
+            verdict.status is not Gate2Status.INVALID_RUN for verdict in all_verdicts
+        )
+    )
+    passing_seeds = tuple(
+        seed
+        for seed in nominal
+        if nominal[seed].status is Gate2Status.PASS
+        and robustness[seed].status is Gate2Status.PASS
+    )
+    return classify_campaign(
+        valid=valid,
+        passing_seed_count=len(passing_seeds),
+        required=2,
+        metrics={
+            "registered_seed_count": len(nominal),
+            "passing_seeds": list(passing_seeds),
+            "mandatory_valid": mandatory_valid,
+        },
+        config_hash=config_hash,
+    )
 
 
 def write_gate1_report(
