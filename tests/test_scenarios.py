@@ -50,4 +50,3 @@ def test_area_overlap_source_rejects_invalid_rectangle(
 
     with pytest.raises(ValueError, match="rectangle"):
         area_overlap_rectangular_source(grid, bounds=bounds, power=1.0)
-

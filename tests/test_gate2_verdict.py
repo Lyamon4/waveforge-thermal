@@ -25,4 +25,3 @@ def test_valid_campaign_with_required_seeds_passes() -> None:
 
     assert verdict.status is Gate2Status.PASS
     assert verdict.reason_codes == ()
-

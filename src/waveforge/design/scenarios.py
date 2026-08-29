@@ -51,4 +51,3 @@ def area_overlap_rectangular_source(
     rectangle_area = (x_max - x_min) * (y_max - y_min)
     cell_area = grid.dx * grid.dy
     return overlap_area * (power / (rectangle_area * cell_area))
-
