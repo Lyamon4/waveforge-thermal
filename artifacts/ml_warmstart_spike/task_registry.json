@@ -1,0 +1,1018 @@
+{
+  "center_grid_units_tenths": {
+    "x": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "y": [
+      6,
+      7,
+      8
+    ]
+  },
+  "integrated_power_per_source": 1.0,
+  "minimum_center_separation": 0.2,
+  "pool_sizes": {
+    "held_out_test": 265,
+    "train_validation": 80
+  },
+  "schema_version": 1,
+  "selection_seeds": {
+    "test": 202608293,
+    "training": 202608291,
+    "validation": 202608292
+  },
+  "source_size": [
+    0.2,
+    0.2
+  ],
+  "spec_sha256": "495d14e1652e52d17f81f0f4750c9dd3ba5a7ad3db27c3ce97e2d680f8d8445c",
+  "status": "LOCKED_BEFORE_TEACHER_GENERATION",
+  "tasks": [
+    {
+      "center_units": [
+        [
+          2,
+          7
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.7
+        ],
+        [
+          0.6,
+          0.6
+        ],
+        [
+          0.8,
+          0.6
+        ]
+      ],
+      "global_index": 0,
+      "split": "training",
+      "split_index": 0,
+      "task_id": "ml_training_000",
+      "teacher_seed": 41000
+    },
+    {
+      "center_units": [
+        [
+          2,
+          7
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          7,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.7
+        ],
+        [
+          0.4,
+          0.6
+        ],
+        [
+          0.7,
+          0.6
+        ]
+      ],
+      "global_index": 1,
+      "split": "training",
+      "split_index": 1,
+      "task_id": "ml_training_001",
+      "teacher_seed": 41001
+    },
+    {
+      "center_units": [
+        [
+          2,
+          7
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.7
+        ],
+        [
+          0.4,
+          0.7
+        ],
+        [
+          0.8,
+          0.6
+        ]
+      ],
+      "global_index": 2,
+      "split": "training",
+      "split_index": 2,
+      "task_id": "ml_training_002",
+      "teacher_seed": 41002
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          8,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.4,
+          0.7
+        ],
+        [
+          0.8,
+          0.7
+        ]
+      ],
+      "global_index": 3,
+      "split": "training",
+      "split_index": 3,
+      "task_id": "ml_training_003",
+      "teacher_seed": 41003
+    },
+    {
+      "center_units": [
+        [
+          3,
+          6
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.6
+        ],
+        [
+          0.5,
+          0.7
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "global_index": 4,
+      "split": "training",
+      "split_index": 4,
+      "task_id": "ml_training_004",
+      "teacher_seed": 41004
+    },
+    {
+      "center_units": [
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          8,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.4,
+          0.6
+        ],
+        [
+          0.6,
+          0.7
+        ],
+        [
+          0.8,
+          0.7
+        ]
+      ],
+      "global_index": 5,
+      "split": "training",
+      "split_index": 5,
+      "task_id": "ml_training_005",
+      "teacher_seed": 41005
+    },
+    {
+      "center_units": [
+        [
+          3,
+          7
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.7
+        ],
+        [
+          0.5,
+          0.7
+        ],
+        [
+          0.8,
+          0.6
+        ]
+      ],
+      "global_index": 6,
+      "split": "training",
+      "split_index": 6,
+      "task_id": "ml_training_006",
+      "teacher_seed": 41006
+    },
+    {
+      "center_units": [
+        [
+          3,
+          7
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.7
+        ],
+        [
+          0.5,
+          0.6
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "global_index": 7,
+      "split": "training",
+      "split_index": 7,
+      "task_id": "ml_training_007",
+      "teacher_seed": 41007
+    },
+    {
+      "center_units": [
+        [
+          3,
+          6
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          7,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.6
+        ],
+        [
+          0.5,
+          0.7
+        ],
+        [
+          0.7,
+          0.6
+        ]
+      ],
+      "global_index": 8,
+      "split": "training",
+      "split_index": 8,
+      "task_id": "ml_training_008",
+      "teacher_seed": 41008
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.4,
+          0.7
+        ],
+        [
+          0.6,
+          0.7
+        ]
+      ],
+      "global_index": 9,
+      "split": "training",
+      "split_index": 9,
+      "task_id": "ml_training_009",
+      "teacher_seed": 41009
+    },
+    {
+      "center_units": [
+        [
+          3,
+          7
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.7
+        ],
+        [
+          0.6,
+          0.6
+        ],
+        [
+          0.8,
+          0.6
+        ]
+      ],
+      "global_index": 10,
+      "split": "training",
+      "split_index": 10,
+      "task_id": "ml_training_010",
+      "teacher_seed": 41010
+    },
+    {
+      "center_units": [
+        [
+          2,
+          7
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.7
+        ],
+        [
+          0.4,
+          0.6
+        ],
+        [
+          0.6,
+          0.6
+        ]
+      ],
+      "global_index": 11,
+      "split": "training",
+      "split_index": 11,
+      "task_id": "ml_training_011",
+      "teacher_seed": 41011
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.4,
+          0.6
+        ],
+        [
+          0.6,
+          0.6
+        ]
+      ],
+      "global_index": 12,
+      "split": "training",
+      "split_index": 12,
+      "task_id": "ml_training_012",
+      "teacher_seed": 41012
+    },
+    {
+      "center_units": [
+        [
+          2,
+          7
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.7
+        ],
+        [
+          0.5,
+          0.7
+        ],
+        [
+          0.8,
+          0.6
+        ]
+      ],
+      "global_index": 13,
+      "split": "training",
+      "split_index": 13,
+      "task_id": "ml_training_013",
+      "teacher_seed": 41013
+    },
+    {
+      "center_units": [
+        [
+          3,
+          6
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          8,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.6
+        ],
+        [
+          0.5,
+          0.7
+        ],
+        [
+          0.8,
+          0.6
+        ]
+      ],
+      "global_index": 14,
+      "split": "training",
+      "split_index": 14,
+      "task_id": "ml_training_014",
+      "teacher_seed": 41014
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          6,
+          6
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.4,
+          0.7
+        ],
+        [
+          0.6,
+          0.6
+        ]
+      ],
+      "global_index": 15,
+      "split": "training",
+      "split_index": 15,
+      "task_id": "ml_training_015",
+      "teacher_seed": 41015
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          8,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.6,
+          0.6
+        ],
+        [
+          0.8,
+          0.7
+        ]
+      ],
+      "global_index": 16,
+      "split": "validation",
+      "split_index": 0,
+      "task_id": "ml_validation_000",
+      "teacher_seed": 41016
+    },
+    {
+      "center_units": [
+        [
+          2,
+          7
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.7
+        ],
+        [
+          0.4,
+          0.6
+        ],
+        [
+          0.6,
+          0.7
+        ]
+      ],
+      "global_index": 17,
+      "split": "validation",
+      "split_index": 1,
+      "task_id": "ml_validation_001",
+      "teacher_seed": 41017
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.4,
+          0.7
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "global_index": 18,
+      "split": "validation",
+      "split_index": 2,
+      "task_id": "ml_validation_002",
+      "teacher_seed": 41018
+    },
+    {
+      "center_units": [
+        [
+          3,
+          6
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          8,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.6
+        ],
+        [
+          0.5,
+          0.6
+        ],
+        [
+          0.8,
+          0.7
+        ]
+      ],
+      "global_index": 19,
+      "split": "validation",
+      "split_index": 3,
+      "task_id": "ml_validation_003",
+      "teacher_seed": 41019
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          8,
+          8
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.6,
+          0.7
+        ],
+        [
+          0.8,
+          0.8
+        ]
+      ],
+      "global_index": 20,
+      "split": "test",
+      "split_index": 0,
+      "task_id": "ml_test_000",
+      "teacher_seed": 41020
+    },
+    {
+      "center_units": [
+        [
+          4,
+          6
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.4,
+          0.6
+        ],
+        [
+          0.4,
+          0.8
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "global_index": 21,
+      "split": "test",
+      "split_index": 1,
+      "task_id": "ml_test_001",
+      "teacher_seed": 41021
+    },
+    {
+      "center_units": [
+        [
+          2,
+          8
+        ],
+        [
+          5,
+          7
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.8
+        ],
+        [
+          0.5,
+          0.7
+        ],
+        [
+          0.7,
+          0.7
+        ]
+      ],
+      "global_index": 22,
+      "split": "test",
+      "split_index": 2,
+      "task_id": "ml_test_002",
+      "teacher_seed": 41022
+    },
+    {
+      "center_units": [
+        [
+          2,
+          8
+        ],
+        [
+          4,
+          7
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.8
+        ],
+        [
+          0.4,
+          0.7
+        ],
+        [
+          0.6,
+          0.7
+        ]
+      ],
+      "global_index": 23,
+      "split": "test",
+      "split_index": 3,
+      "task_id": "ml_test_003",
+      "teacher_seed": 41023
+    },
+    {
+      "center_units": [
+        [
+          2,
+          7
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          6,
+          8
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.7
+        ],
+        [
+          0.5,
+          0.6
+        ],
+        [
+          0.6,
+          0.8
+        ]
+      ],
+      "global_index": 24,
+      "split": "test",
+      "split_index": 4,
+      "task_id": "ml_test_004",
+      "teacher_seed": 41024
+    },
+    {
+      "center_units": [
+        [
+          3,
+          6
+        ],
+        [
+          6,
+          8
+        ],
+        [
+          8,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.3,
+          0.6
+        ],
+        [
+          0.6,
+          0.8
+        ],
+        [
+          0.8,
+          0.7
+        ]
+      ],
+      "global_index": 25,
+      "split": "test",
+      "split_index": 5,
+      "task_id": "ml_test_005",
+      "teacher_seed": 41025
+    },
+    {
+      "center_units": [
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          6,
+          8
+        ]
+      ],
+      "centers": [
+        [
+          0.4,
+          0.6
+        ],
+        [
+          0.6,
+          0.6
+        ],
+        [
+          0.6,
+          0.8
+        ]
+      ],
+      "global_index": 26,
+      "split": "test",
+      "split_index": 6,
+      "task_id": "ml_test_006",
+      "teacher_seed": 41026
+    },
+    {
+      "center_units": [
+        [
+          2,
+          6
+        ],
+        [
+          2,
+          8
+        ],
+        [
+          4,
+          7
+        ]
+      ],
+      "centers": [
+        [
+          0.2,
+          0.6
+        ],
+        [
+          0.2,
+          0.8
+        ],
+        [
+          0.4,
+          0.7
+        ]
+      ],
+      "global_index": 27,
+      "split": "test",
+      "split_index": 7,
+      "task_id": "ml_test_007",
+      "teacher_seed": 41027
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "held_out_rule": "exactly_one_center_with_y_units_8",
+  "schema_version": 1,
+  "spec_sha256": "495d14e1652e52d17f81f0f4750c9dd3ba5a7ad3db27c3ce97e2d680f8d8445c",
+  "splits": {
+    "test": [
+      "ml_test_000",
+      "ml_test_001",
+      "ml_test_002",
+      "ml_test_003",
+      "ml_test_004",
+      "ml_test_005",
+      "ml_test_006",
+      "ml_test_007"
+    ],
+    "training": [
+      "ml_training_000",
+      "ml_training_001",
+      "ml_training_002",
+      "ml_training_003",
+      "ml_training_004",
+      "ml_training_005",
+      "ml_training_006",
+      "ml_training_007",
+      "ml_training_008",
+      "ml_training_009",
+      "ml_training_010",
+      "ml_training_011",
+      "ml_training_012",
+      "ml_training_013",
+      "ml_training_014",
+      "ml_training_015"
+    ],
+    "validation": [
+      "ml_validation_000",
+      "ml_validation_001",
+      "ml_validation_002",
+      "ml_validation_003"
+    ]
+  },
+  "task_registry_sha256": "9fd41d0f2bd6c513e08091c3dac4b0720742425c80360b88efdb1c0139ab6cd0",
+  "training_access_forbidden": [
+    "ml_test_000",
+    "ml_test_001",
+    "ml_test_002",
+    "ml_test_003",
+    "ml_test_004",
+    "ml_test_005",
+    "ml_test_006",
+    "ml_test_007"
+  ]
+}
