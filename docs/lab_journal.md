@@ -518,3 +518,33 @@ effect и не считается production seed. Внутреннее сумм
 
 Qualification implementation SHA:
 `91a5c672b7bb2e30bd4d72adb587352fcf17a4af`.
+
+## 2026-08-30 — Pure-NCA production training
+
+Три preregistered production seed (`20260901`, `20260902`, `20260903`)
+выполнены на RTX 4060 с locked learning rate `1e-3`, fixed objective и ровно
+2000 updates на seed. Все runs использовали один frozen result-producing
+implementation SHA `5569ef0085339da6547ad03095cfd16a6c6f8679` и завершились
+со статусом `VALID_PRODUCTION_RUN`. Для каждого seed сохранены ровно 2000
+optimization records, 12000 forward/adjoint CG records и 20 checkpoints;
+CG failures отсутствуют. Незавершённых `.incomplete` каталогов нет.
+
+Raw final production diagnostics до independent SciPy verification:
+
+- `20260901`: objective `0.7078165659453859 → 0.3477520499158953`,
+  continuous/binary fraction `0.2499999850988388 / 0.24462890625`, binary
+  SHA-256 `b410b920a61948d39a73f7eabf8c3c69bd7826c0ff1fdcc71d6f66fb792ea055`,
+  summed update wall time `4536.405614799616 s`;
+- `20260902`: objective `0.7078165659453859 → 0.14551590522158564`,
+  continuous/binary fraction `0.2499999850988388 / 0.250244140625`, binary
+  SHA-256 `581a997c037dbe483e62d13d89524891e6947e02f85cf06d87f686c7cc7e2646`,
+  summed update wall time `4258.097470700392 s`;
+- `20260903`: objective `0.7078165659453859 → 0.47415955937117843`,
+  continuous/binary fraction `0.25 / 0.283447265625`, binary SHA-256
+  `d05cf9a746979110a97d8c6fd42d29927babdfd9e80770c507927baad94af12d`,
+  summed update wall time `4603.864730800124 s`.
+
+Seed `20260903` не удовлетворяет preregistered binary material-budget range,
+но это не technical invalidity: training finite, gradients intact и все CG
+solves converged. Научная классификация намеренно отложена до независимой
+SciPy `128×128`/`256×256` verification всех трёх final strict-binary designs.

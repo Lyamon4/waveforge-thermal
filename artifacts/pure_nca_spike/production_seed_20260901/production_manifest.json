@@ -1,0 +1,19 @@
+{
+  "binary_design_sha256": "b410b920a61948d39a73f7eabf8c3c69bd7826c0ff1fdcc71d6f66fb792ea055",
+  "checkpoint_interval": 100,
+  "completed_iterations": 2000,
+  "config_sha256": "4242ec57f5de447f7217ef917e794420eade51b77b2f1446eadf9b9d6975bed0",
+  "continuous_design_sha256": "b475a092dfb2693d7a288effee0113bb7bf97209e7b77508b4d75a1e962b8187",
+  "diagnostic_interval": 10,
+  "final_iteration_index": 1999,
+  "final_model_sha256": "972e76cabc78ec28c6b6091b5f17e40903eb84ef70c1e8fc000a0ecdc3016f60",
+  "implementation_git_sha": "5569ef0085339da6547ad03095cfd16a6c6f8679",
+  "initial_model_sha256": "e83d3fa97a216ebfc75b7a0816fa47395a2fb1aa6cc879ff844099fb9f551a6d",
+  "learning_rate": 0.001,
+  "qualification_verdict_sha256": "d283f673867f617d8d28cfcffd3ea46ff1f3b8038012a3f4613e4a69a3fd45f7",
+  "requested_iterations": 2000,
+  "schema_version": 1,
+  "seed": 20260901,
+  "spec_sha256": "a7c490487231518dca4f1cbfa0876a09304c88df6da8652ae5e2dcf24ad0157f",
+  "status": "VALID_PRODUCTION_RUN"
+}

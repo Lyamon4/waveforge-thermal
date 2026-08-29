@@ -1,0 +1,19 @@
+{
+  "binary_design_sha256": "d05cf9a746979110a97d8c6fd42d29927babdfd9e80770c507927baad94af12d",
+  "checkpoint_interval": 100,
+  "completed_iterations": 2000,
+  "config_sha256": "4242ec57f5de447f7217ef917e794420eade51b77b2f1446eadf9b9d6975bed0",
+  "continuous_design_sha256": "61fb005a74dfeeb673bd29716b0da2eff9b2f058c77563513fb8a96246b57b0b",
+  "diagnostic_interval": 10,
+  "final_iteration_index": 1999,
+  "final_model_sha256": "de9cf28dcd669e878b9b968aec04eb865115201ccd57622bfa263f8ce98ef573",
+  "implementation_git_sha": "5569ef0085339da6547ad03095cfd16a6c6f8679",
+  "initial_model_sha256": "5713fd2b078ff98b7a3bdf704fe5ca17911d128f252c79ce2ed324177a097708",
+  "learning_rate": 0.001,
+  "qualification_verdict_sha256": "d283f673867f617d8d28cfcffd3ea46ff1f3b8038012a3f4613e4a69a3fd45f7",
+  "requested_iterations": 2000,
+  "schema_version": 1,
+  "seed": 20260903,
+  "spec_sha256": "a7c490487231518dca4f1cbfa0876a09304c88df6da8652ae5e2dcf24ad0157f",
+  "status": "VALID_PRODUCTION_RUN"
+}
