@@ -548,3 +548,54 @@ Seed `20260903` не удовлетворяет preregistered binary material-bu
 но это не technical invalidity: training finite, gradients intact и все CG
 solves converged. Научная классификация намеренно отложена до независимой
 SciPy `128×128`/`256×256` verification всех трёх final strict-binary designs.
+
+## 2026-08-30 — Pure-NCA independent verification и final verdict
+
+Уточнение к предыдущей записи: приведённые там `binary fraction` были взяты из
+последнего `optimization_metrics.csv` record, то есть из evaluation до
+заключительного Adam update. Frozen scientific designs были заново получены из
+post-update checkpoint `002000` и сохранены как `.npy`; именно их hashes,
+strict threshold и fractions проверяет SciPy verifier. Frozen fractions равны
+`0.2451171875`, `0.250244140625`, `0.289306640625` для seeds `20260901–20260903`.
+Это уточнение provenance, а не изменение результатов или designs.
+
+Independent CPU SciPy verification использовала strict
+`D_binary = 1[D >= 0.5]`, exact nearest-neighbor replication `2×2` и `4×4`,
+независимую rasterization трёх equal-power sources и grids `128×128`/`256×256`.
+Primary unrounded results:
+
+| Seed | Tmax 128 | Tmax 256 | Relative 128→256 | Binary fraction | Status |
+|---:|---:|---:|---:|---:|---|
+| `20260901` | `0.3615808006397153` | `0.35998093578206947` | `0.004444304402315347` | `0.2451171875` | `NO_GO_EFFECT` |
+| `20260902` | `0.15613268780112255` | `0.15566241528647928` | `0.003021105086785286` | `0.250244140625` | `PASS` |
+| `20260903` | `0.47798645100169623` | `0.476990845552799` | `0.0020872632214636545` | `0.289306640625` | `NO_GO_EFFECT` |
+
+Connectivity diagnostics объясняют failure mode. Seed `20260902` образует один
+four-neighbor component: все `1025/1025` conductive cells sink-connected и
+этот component пересекает footprints A/B/C. У seed `20260901` sink-connected
+только `125/1004` cells, ни один source footprint не связан с sink. У seed
+`20260903` sink-connected conductive cells отсутствуют (`0/1185`).
+
+Успешный seed `20260902` лучше registered parametric branching tree на
+`5.71503286%`, прежнего WaveForge seed `20260828` на `0.53953536%` и
+straight-path baseline на `50.88611972%`. Tree является diagnostic comparator,
+а не условием PASS. Остальные два NCA seed значительно хуже comparators.
+
+Campaign verdict: `NCA_NO_GO_EFFECT`. Пройден `1` seed из `3`, тогда как
+locked criterion требует минимум `2`. Это не `TRAINING_PATHOLOGY`: три runs
+имеют finite gradients/state, exact projection, `36000/36000` converged CG
+solves и полные 2000 iterations. Pure NCA продемонстрировала representational
+feasibility в одном seed, но fixed sharp objective без continuation не дал
+надёжного повторяемого эффекта.
+
+Суммарное measured update wall time трёх production runs:
+`13398.367816300131 s` (~`3 h 43 min`). Result-producing implementation SHA:
+`5569ef0085339da6547ad03095cfd16a6c6f8679`; production-artifact commit:
+`c03fd00`; verification implementation commit: `d673896`; reporting commit:
+`30e0f05`; reporting clarification commit: `f344fb5`.
+
+Standalone recalculation без импорта NCA qualification/verdict functions
+подтвердил LR `1e-3`, по 200 qualification records на candidate, по 2000
+production records на seed, strict threshold equality, raw design hashes,
+fractions, все three `Tmax_256` comparisons и campaign status
+`NCA_NO_GO_EFFECT`.
