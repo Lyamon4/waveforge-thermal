@@ -155,3 +155,19 @@ families решены три forward и три adjoint systems, всего 60 so
 Tolerance и iteration cap не менялись. Production optimization всё ещё не
 запускалась; следующим gate остаётся benchmark полного forward-plus-adjoint
 optimization step.
+
+## 2026-08-29 — Complete mixed-precision optimization-step benchmark
+
+До smoke optimization измерен один production-shaped step для трёх scenarios:
+parameterization, `float64` conductivity, три forward solves, thermal/direct
+objective, три adjoint solves, возврат `float32` gradient, clipping и Adam
+update. Plotting и artifact I/O не входят в `step_wall_seconds`.
+
+- Status: `PASS`.
+- Step wall time: `2.860629200004041 s`.
+- Forward/adjoint solves: `3/3`.
+- Maximum explicit relative residual: `9.961008434944852e-7`.
+- Maximum CG iterations: `298`.
+- Peak CUDA allocated/reserved: `18,694,144 / 23,068,672 bytes`.
+
+Production optimization не запускалась.
