@@ -302,13 +302,14 @@ def render_russian_report(
             f"{item['relative_128_to_256_change']:.8%} |"
         )
     campaign = verification["campaign"]
+    registered_seed_count = len(verification["seed_verifications"])
     lines.extend(
         (
             "",
-            "Прошёл "
-            f"`{campaign['passing_seed_count']}/"
-            f"{campaign['required_passing_seed_count']}` "
-            "необходимых seeds. Численная training path была валидной, однако "
+            f"Прошёл `{campaign['passing_seed_count']}` seed из "
+            f"`{registered_seed_count}`; требуется минимум "
+            f"`{campaign['required_passing_seed_count']}`. Численная training path "
+            "была валидной, однако "
             "preregistered reproducibility-of-effect criterion не выполнен.",
             "",
             "## Comparator diagnostics",

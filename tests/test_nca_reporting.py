@@ -136,5 +136,6 @@ def test_russian_report_avoids_unearned_claims() -> None:
     )
 
     assert "NCA_NO_GO_EFFECT" in report
+    assert "seed из `3`; требуется минимум `2`" in report
     for forbidden in ("generalizes", "surrogate", "first", "industrial-ready"):
         assert forbidden not in report.lower()
