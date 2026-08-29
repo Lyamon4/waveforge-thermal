@@ -8,6 +8,12 @@ import torch
 import torch.nn.functional as functional
 from torch import Tensor, nn
 
+from waveforge.design.parameterization import (
+    ProjectionDiagnostics,
+    filter_logits,
+    project_volume,
+)
+
 
 @dataclass(frozen=True)
 class NCARollout:
@@ -19,6 +25,16 @@ class NCARollout:
     snapshots: dict[int, Tensor]
     maximum_absolute_delta: float
     maximum_absolute_state: float
+
+
+@dataclass(frozen=True)
+class NCAProjectedDesign:
+    """Locked filtered and exactly volume-projected NCA material readout."""
+
+    material_logit: Tensor
+    filtered_logits: Tensor
+    design: Tensor
+    projection: ProjectionDiagnostics
 
 
 def build_static_condition(sources: Tensor) -> Tensor:
@@ -34,6 +50,37 @@ def build_static_condition(sources: Tensor) -> Tensor:
     sink_mask = torch.zeros_like(source_condition)
     sink_mask[0, :] = 1.0
     return torch.stack((source_condition, sink_mask), dim=0).unsqueeze(0)
+
+
+def project_nca_material(material_logit: Tensor) -> NCAProjectedDesign:
+    """Map the final NCA material channel to the fixed-budget design."""
+    if material_logit.shape != (1, 1, 64, 64):
+        raise ValueError("material_logit must have shape [1,1,64,64]")
+    if material_logit.dtype is not torch.float32:
+        raise ValueError("material_logit must be float32")
+    if not torch.isfinite(material_logit).all():
+        raise ValueError("material_logit must be finite")
+    material_field = material_logit[0, 0]
+    filtered = filter_logits(
+        material_field,
+        sigma=1.0,
+        radius=3,
+        padding="reflect",
+    )
+    design, diagnostics = project_volume(
+        filtered,
+        beta=8.0,
+        target=0.25,
+        bracket=(-40.0, 40.0),
+        maximum_iterations=80,
+        mean_tolerance=1.0e-6,
+    )
+    return NCAProjectedDesign(
+        material_logit=material_field,
+        filtered_logits=filtered,
+        design=design,
+        projection=diagnostics,
+    )
 
 
 class PureNCA(nn.Module):
