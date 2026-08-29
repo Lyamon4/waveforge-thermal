@@ -220,6 +220,13 @@ projection делает additive logit offset неидентифицируемы
 `teacher continuous design`. Dataset generation и network training ещё не
 начинались.
 
+До первого teacher optimization result обнаружено противоречие: base spec
+ошибочно разрешала `64×64` fallback dataset после failure reduced-teacher
+fidelity, тогда как controlling user protocol требует stop. Prospective
+amendment 1 запрещает fallback. Immutable task split не изменён, поскольку
+коррекция не влияет на task selection. Все последующие artifacts обязаны
+хешировать base spec и amendment.
+
 ## 2026-08-29 — Independent Gate 2A review and prospective challenge lock
 
 Independent review завершён verdict `REVIEW_PASS_WITH_MINOR_FINDINGS` и
