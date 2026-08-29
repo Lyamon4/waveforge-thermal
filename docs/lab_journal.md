@@ -137,3 +137,21 @@ CUDA `float32` diagnostic остаётся сохранён как `INVALID_RUN`
 - Amended specification SHA-256:
   `2ac31164574b985f708d4f430bc0ea1c371027005d65ef049b489d7e964638c7`.
 - Production optimization started: `false`.
+
+## 2026-08-29 — Mixed-precision CG stress qualification
+
+До smoke и production optimization выполнен зарегистрированный CUDA `float64`
+stress suite: uniform `k=1/20`, smooth/high-contrast random, straight/dispersed
+binary и projected designs при `beta=1/2/4/8`. Для каждой из 10 conductivity
+families решены три forward и три adjoint systems, всего 60 solves.
+
+- Status: `PASS`.
+- Maximum explicit relative residual: `9.967153332904605e-7`.
+- Maximum CG iterations: `408` из разрешённых `2000`.
+- Sum of individually measured solve times: `22.005076899993583 s`.
+- Config SHA-256:
+  `ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec`.
+
+Tolerance и iteration cap не менялись. Production optimization всё ещё не
+запускалась; следующим gate остаётся benchmark полного forward-plus-adjoint
+optimization step.
