@@ -417,3 +417,28 @@ smoke diagnostic, а не Gate 2 budget verdict. Binary acceptance примен�
   error `≤5e-3`. Ни одна строка не скрыта из artifact.
 
 Production optimization не запускалась.
+
+## 2026-08-29 — Pure-NCA physics-trained spike prospective design approval
+
+До реализации NCA, optimizer qualification и просмотра любых NCA training
+curves пользователь утвердил prospective pure-NCA protocol. NCA получает
+только aggregated A/B/C source map и bottom sink mask на каждом из 64 shared
+local updates, стартует из exact-zero 16-channel state и обучается напрямую
+через existing CUDA float64 differentiable steady physics. Tree/teacher inputs,
+labels, coordinates, schedules и threshold в training graph запрещены.
+
+Зафиксированы fixed objective (`beta=8`, `alpha=500`, `+0.001 TV`,
+`+0.02 mean(D(1-D))`), exact 25% continuous volume projection, three-candidate
+LR qualification на seed `20260831`, eligibility gates, zero-based selection
+windows и production seeds `20260901..20260903` по 2000 iterations. Primary
+scientific threshold — strict-binary independent SciPy `256×256` worst-case
+`Tmax<=0.1721575074379424`, то есть не хуже 10% относительно заранее выбранного
+best Gate 2A reference `robust_20260828`. Требуется минимум 2/3 passing seeds при
+трёх numerically valid runs. Connectivity и tree comparison являются
+diagnostics, не hard gates. Training pathology, invalid production и valid
+scientific no-effect имеют разные machine-readable statuses.
+
+Полная спецификация:
+`docs/superpowers/specs/2026-08-29-pure-nca-physics-trained-spike-design.md`.
+SHA-256 рабочей LF-normalized specification на момент lock:
+`a6843a1fe003aae7f9a3de5684e0b42353f0ccefa71ce7992c8f3149aeb984df`.
