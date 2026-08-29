@@ -6,6 +6,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 import torch
@@ -248,3 +249,126 @@ def test_qualification_runs_exact_candidates_from_identical_initialization(
     payload = json.loads((tmp_path / "lr_qualification_verdict.json").read_text())
     assert payload["selected_learning_rate"] == 3.0e-4
     assert len(payload["artifact_hashes"]["metrics_sha256"]) == 64
+
+
+def test_production_uses_locked_budget_and_atomically_freezes_final_design(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from waveforge.experiments.run_pure_nca_spike import (
+        FrozenProductionDesign,
+        run_production_phase,
+    )
+
+    config = Path("configs/pure_nca_spike.yaml")
+    spec = Path(
+        "docs/superpowers/specs/2026-08-29-pure-nca-physics-trained-spike-design.md"
+    )
+    (tmp_path / "protocol_manifest.json").write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "config_sha256": artifact_sha256(config),
+                "spec_sha256": artifact_sha256(spec),
+                "determinism_mode": "strict",
+            }
+        ),
+        encoding="utf-8",
+    )
+    for name in (
+        "environment.json",
+        "initial_state_sanity.json",
+        "determinism_preflight.json",
+        "preflight_report.json",
+        "complete_step_benchmark.json",
+    ):
+        (tmp_path / name).write_text('{"status":"PASS"}', encoding="utf-8")
+    metrics_path = tmp_path / "lr_qualification_metrics.csv"
+    metrics_path.write_text("learning_rate,total_objective\n0.001,1.0\n")
+    qualification = {
+        "qualification_status": "PASS",
+        "production_authorized": True,
+        "selected_learning_rate": 0.001,
+        "candidates": [
+            {"learning_rate": 0.0003, "selected": False},
+            {"learning_rate": 0.001, "selected": True},
+            {"learning_rate": 0.003, "selected": False},
+        ],
+        "artifact_hashes": {
+            "config_sha256": artifact_sha256(config),
+            "spec_sha256": artifact_sha256(spec),
+            "preflight_manifest_sha256": artifact_sha256(
+                tmp_path / "protocol_manifest.json"
+            ),
+            "metrics_sha256": artifact_sha256(metrics_path),
+        },
+    }
+    (tmp_path / "lr_qualification_verdict.json").write_text(
+        json.dumps(qualification), encoding="utf-8"
+    )
+
+    calls: list[dict[str, object]] = []
+    continuous = torch.full((64, 64), 0.25, dtype=torch.float32)
+    binary = continuous >= 0.5
+
+    def fake_runner(**kwargs) -> NCARunResult:
+        calls.append(kwargs)
+        run_dir = kwargs["output_dir"]
+        run_dir.mkdir(parents=True, exist_ok=True)
+        for completed in range(100, 2001, 100):
+            torch.save(
+                {"completed_updates": completed},
+                run_dir / f"checkpoint_{completed:06d}.pt",
+            )
+        records = tuple(
+            replace(record, iteration=index)
+            for index, record in enumerate(_run_result([1.0] * 2000).records)
+        )
+        return replace(
+            _run_result([1.0] * 2000),
+            mode="production",
+            seed=kwargs["seed"],
+            learning_rate=kwargs["learning_rate"],
+            requested_iterations=2000,
+            completed_iterations=2000,
+            records=records,
+            final_continuous_design=continuous,
+            final_binary_design=binary,
+            final_model_hash="f" * 64,
+        )
+
+    def fake_finalizer(**kwargs) -> FrozenProductionDesign:
+        return FrozenProductionDesign(
+            continuous_design=continuous.numpy(),
+            binary_design=binary.numpy(),
+            snapshots={0: np.zeros((16, 64, 64), dtype=np.float32)},
+            checkpoint_model_hash="f" * 64,
+        )
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(
+        "waveforge.experiments.run_pure_nca_spike.configure_cuda_reproducibility",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "waveforge.experiments.run_pure_nca_spike.gate2_source_batch",
+        lambda **kwargs: object(),
+    )
+    manifest = run_production_phase(
+        tmp_path,
+        seed=20260901,
+        training_runner=fake_runner,
+        finalizer=fake_finalizer,
+    )
+
+    assert len(calls) == 1
+    assert calls[0]["learning_rate"] == 1.0e-3
+    assert calls[0]["iterations"] == 2000
+    assert calls[0]["checkpoint_interval"] == 100
+    assert not (tmp_path / "production_seed_20260901.incomplete").exists()
+    final_dir = tmp_path / "production_seed_20260901"
+    assert final_dir.is_dir()
+    assert manifest["status"] == "VALID_PRODUCTION_RUN"
+    stored = json.loads((final_dir / "production_manifest.json").read_text())
+    assert stored["final_iteration_index"] == 1999
+    assert stored["completed_iterations"] == 2000

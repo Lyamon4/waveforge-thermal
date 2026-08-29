@@ -8,7 +8,7 @@ import json
 import subprocess
 import time
 from collections.abc import Callable
-from dataclasses import asdict, replace
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -28,8 +28,11 @@ from waveforge.ml.nca_qualification import (
     select_learning_rate,
 )
 from waveforge.ml.nca_training import (
+    NCAForwardResult,
     NCARunResult,
     NCARunStatus,
+    evaluate_nca,
+    model_state_sha256,
     run_nca_training,
 )
 from waveforge.reproducibility import (
@@ -63,6 +66,18 @@ class PreflightGateError(RuntimeError):
 
 class QualificationGateError(RuntimeError):
     """Production attempted to bypass the locked LR selection."""
+
+
+class ProductionRunError(RuntimeError):
+    """A registered production seed failed its numerical/artifact contract."""
+
+
+@dataclass(frozen=True)
+class FrozenProductionDesign:
+    continuous_design: np.ndarray
+    binary_design: np.ndarray
+    snapshots: dict[int, np.ndarray]
+    checkpoint_model_hash: str
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -193,18 +208,196 @@ def run_qualification_phase(
     return verdict
 
 
-def run_production_phase(output_dir: Path, *, seed: int) -> None:
-    """Gate placeholder that rejects absent or mismatched selected LR artifacts."""
-    validate_preflight_gate(output_dir)
+def _validate_qualification_gate(output_dir: Path) -> tuple[dict[str, Any], float]:
+    manifest = validate_preflight_gate(output_dir)
     verdict_path = output_dir / "lr_qualification_verdict.json"
     if not verdict_path.is_file():
         raise QualificationGateError("selected learning rate artifact is missing")
     verdict = _read_json(verdict_path)
-    if verdict.get("selected_learning_rate") is None:
+    selected = verdict.get("selected_learning_rate")
+    if (
+        verdict.get("qualification_status") != "PASS"
+        or verdict.get("production_authorized") is not True
+        or selected is None
+    ):
         raise QualificationGateError("selected learning rate is absent")
+    if float(selected) != 1.0e-3:
+        raise QualificationGateError(
+            "selected learning rate differs from locked verdict"
+        )
+    candidates = verdict.get("candidates")
+    if not isinstance(candidates, list):
+        raise QualificationGateError("qualification candidates are missing")
+    selected_candidates = [
+        candidate for candidate in candidates if candidate.get("selected")
+    ]
+    if len(selected_candidates) != 1 or float(
+        selected_candidates[0].get("learning_rate", -1.0)
+    ) != float(selected):
+        raise QualificationGateError("selected candidate is inconsistent")
+    artifact_hashes = verdict.get("artifact_hashes", {})
+    expected_hashes = {
+        "config_sha256": artifact_sha256(CONFIG_PATH),
+        "spec_sha256": artifact_sha256(SPEC_PATH),
+        "preflight_manifest_sha256": artifact_sha256(
+            output_dir / "protocol_manifest.json"
+        ),
+        "metrics_sha256": artifact_sha256(output_dir / "lr_qualification_metrics.csv"),
+    }
+    if any(artifact_hashes.get(key) != value for key, value in expected_hashes.items()):
+        raise QualificationGateError("qualification artifact hash mismatch")
+    return manifest, float(selected)
+
+
+def _freeze_production_checkpoint(
+    *,
+    checkpoint_path: Path,
+    sources: Tensor,
+) -> FrozenProductionDesign:
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+    if (
+        checkpoint.get("completed_updates") != 2000
+        or checkpoint.get("last_iteration") != 1999
+    ):
+        raise ProductionRunError("final checkpoint does not represent update 1999")
+    model = PureNCA().to(device=sources.device, dtype=torch.float32)
+    model.load_state_dict(checkpoint["model_state"], strict=True)
+    checkpoint_hash = model_state_sha256(model)
+    if checkpoint_hash != checkpoint.get("model_state_sha256"):
+        raise ProductionRunError("final checkpoint model hash mismatch")
+    with torch.no_grad():
+        final: NCAForwardResult = evaluate_nca(
+            model,
+            sources,
+            include_binary_diagnostic=True,
+        )
+        rollout = model.rollout(
+            build_static_condition(sources),
+            snapshot_steps=(0, 1, 2, 4, 8, 16, 32, 48, 64),
+        )
+    if final.binary_design is None:
+        raise ProductionRunError("strict final binary design is missing")
+    return FrozenProductionDesign(
+        continuous_design=final.continuous_design.detach().cpu().numpy(),
+        binary_design=final.binary_design.detach().cpu().numpy(),
+        snapshots={
+            step: state[0].cpu().numpy() for step, state in rollout.snapshots.items()
+        },
+        checkpoint_model_hash=checkpoint_hash,
+    )
+
+
+def run_production_phase(
+    output_dir: Path,
+    *,
+    seed: int,
+    training_runner: Callable[..., NCARunResult] = run_nca_training,
+    finalizer: Callable[..., FrozenProductionDesign] = _freeze_production_checkpoint,
+) -> dict[str, Any]:
+    """Run one registered seed and atomically freeze only its final checkpoint."""
+    preflight, selected_learning_rate = _validate_qualification_gate(output_dir)
     if seed not in (20260901, 20260902, 20260903):
         raise QualificationGateError(f"unregistered production seed: {seed}")
-    raise NotImplementedError("production runner is implemented in Task 7")
+    if not torch.cuda.is_available():
+        raise ProductionRunError("CUDA is unavailable; production cannot use CPU")
+    final_dir = output_dir / f"production_seed_{seed}"
+    incomplete_dir = output_dir / f"production_seed_{seed}.incomplete"
+    if final_dir.exists() or incomplete_dir.exists():
+        raise ProductionRunError(
+            f"production destination already exists for seed {seed}"
+        )
+    incomplete_dir.mkdir(parents=True)
+    configure_cuda_reproducibility(
+        seed,
+        warn_only=preflight.get("determinism_mode") == "topology_verdict",
+    )
+    sources = gate2_source_batch(device=torch.device("cuda"))
+    result = training_runner(
+        sources=sources,
+        seed=seed,
+        learning_rate=selected_learning_rate,
+        iterations=2000,
+        mode="production",
+        output_dir=incomplete_dir,
+        checkpoint_interval=100,
+        synchronize=torch.cuda.synchronize,
+    )
+    expected_indices = list(range(2000))
+    if (
+        result.status is not NCARunStatus.PASS
+        or result.completed_iterations != 2000
+        or [record.iteration for record in result.records] != expected_indices
+    ):
+        invalid = {
+            "schema_version": 1,
+            "status": "NCA_SPIKE_INVALID_PRODUCTION_RUN",
+            "seed": seed,
+            "reason_codes": list(result.reason_codes),
+            "completed_iterations": result.completed_iterations,
+        }
+        _write_json(incomplete_dir / "production_manifest.json", invalid)
+        raise ProductionRunError(f"production seed {seed} is numerically invalid")
+    checkpoints = sorted(incomplete_dir.glob("checkpoint_*.pt"))
+    expected_names = [
+        f"checkpoint_{completed:06d}.pt" for completed in range(100, 2001, 100)
+    ]
+    if [path.name for path in checkpoints] != expected_names:
+        raise ProductionRunError("production checkpoint registry is incomplete")
+    frozen = finalizer(
+        checkpoint_path=incomplete_dir / "checkpoint_002000.pt",
+        sources=sources,
+    )
+    if result.final_continuous_design is None or result.final_binary_design is None:
+        raise ProductionRunError("training result did not freeze final designs")
+    result_continuous = result.final_continuous_design.numpy()
+    result_binary = result.final_binary_design.numpy()
+    if not np.array_equal(frozen.continuous_design, result_continuous):
+        raise ProductionRunError("checkpoint-regenerated continuous design differs")
+    if not np.array_equal(frozen.binary_design, result_binary):
+        raise ProductionRunError("checkpoint-regenerated binary design differs")
+    if not np.array_equal(frozen.binary_design, frozen.continuous_design >= 0.5):
+        raise ProductionRunError("final design violates strict D >= 0.5 binarization")
+    if result.final_model_hash != frozen.checkpoint_model_hash:
+        raise ProductionRunError("result model hash differs from final checkpoint")
+
+    np.save(
+        incomplete_dir / "design_continuous_64.npy",
+        frozen.continuous_design,
+        allow_pickle=False,
+    )
+    np.save(
+        incomplete_dir / "design_binary_64.npy",
+        frozen.binary_design,
+        allow_pickle=False,
+    )
+    np.savez(
+        incomplete_dir / "rollout_snapshots.npz",
+        **{f"step_{step}": state for step, state in frozen.snapshots.items()},
+    )
+    manifest = {
+        "schema_version": 1,
+        "status": "VALID_PRODUCTION_RUN",
+        "seed": seed,
+        "learning_rate": selected_learning_rate,
+        "requested_iterations": 2000,
+        "completed_iterations": 2000,
+        "final_iteration_index": 1999,
+        "checkpoint_interval": 100,
+        "diagnostic_interval": 10,
+        "initial_model_sha256": result.initial_model_hash,
+        "final_model_sha256": result.final_model_hash,
+        "continuous_design_sha256": content_hash(frozen.continuous_design),
+        "binary_design_sha256": content_hash(frozen.binary_design),
+        "qualification_verdict_sha256": artifact_sha256(
+            output_dir / "lr_qualification_verdict.json"
+        ),
+        "config_sha256": artifact_sha256(CONFIG_PATH),
+        "spec_sha256": artifact_sha256(SPEC_PATH),
+        "implementation_git_sha": _git_sha(),
+    }
+    _write_json(incomplete_dir / "production_manifest.json", manifest)
+    incomplete_dir.replace(final_dir)
+    return manifest
 
 
 def benchmark_complete_steps(
