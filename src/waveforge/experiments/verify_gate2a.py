@@ -680,6 +680,20 @@ def run_robustness_verification(
     }
     comparisons: list[RobustnessComparison] = []
     seed_verdicts: dict[int, SeedVerdict] = {}
+    for seed in PRODUCTION_SEEDS:
+        nominal_status = nominal.seed_verdicts[seed].status
+        if nominal_status is Gate2Status.NO_GO_EFFECT:
+            seed_verdicts[seed] = SeedVerdict(
+                status=Gate2Status.NO_GO_EFFECT,
+                reason_codes=("NOMINAL_GATE_NOT_PASSED",),
+                metrics={"robustness_skipped": True},
+            )
+        elif nominal_status is Gate2Status.INVALID_RUN:
+            seed_verdicts[seed] = SeedVerdict(
+                status=Gate2Status.INVALID_RUN,
+                reason_codes=("NOMINAL_GATE_INVALID",),
+                metrics={"robustness_skipped": True},
+            )
     for seed in eligible_seeds:
         improvements: list[float] = []
         for case in cases:
