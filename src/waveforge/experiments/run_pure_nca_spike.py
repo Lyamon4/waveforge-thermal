@@ -8,10 +8,12 @@ import json
 import subprocess
 import time
 from collections.abc import Callable
+from dataclasses import asdict, replace
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+import pandas as pd
 import torch
 from torch import Tensor
 
@@ -19,6 +21,12 @@ from waveforge.environment import collect_environment
 from waveforge.experiments.run_inverse_design import gate2_source_batch
 from waveforge.ml.nca import PureNCA, build_static_condition, project_nca_material
 from waveforge.ml.nca_protocol import load_nca_protocol
+from waveforge.ml.nca_qualification import (
+    QualificationReason,
+    QualificationVerdict,
+    evaluate_lr_eligibility,
+    select_learning_rate,
+)
 from waveforge.ml.nca_training import (
     NCARunResult,
     NCARunStatus,
@@ -68,6 +76,17 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     temporary.replace(path)
 
 
+def _atomic_csv(path: Path, frame: pd.DataFrame) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        frame.to_csv(index=False),
+        encoding="utf-8",
+        newline="\n",
+    )
+    temporary.replace(path)
+
+
 def _read_json(path: Path) -> dict[str, Any]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -94,10 +113,84 @@ def validate_preflight_gate(output_dir: Path) -> dict[str, Any]:
     return manifest
 
 
-def run_qualification_phase(output_dir: Path) -> None:
-    """Gate placeholder extended by the preregistered qualification task."""
-    validate_preflight_gate(output_dir)
-    raise NotImplementedError("qualification runner is implemented in Task 6")
+def run_qualification_phase(
+    output_dir: Path,
+    *,
+    training_runner: Callable[..., NCARunResult] = run_nca_training,
+) -> QualificationVerdict:
+    """Run all three registered candidates and lock the deterministic winner."""
+    manifest = validate_preflight_gate(output_dir)
+    protocol = load_nca_protocol(CONFIG_PATH)
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA is unavailable; qualification cannot use CPU")
+    configure_cuda_reproducibility(
+        protocol.qualification.seed,
+        warn_only=manifest.get("determinism_mode") == "topology_verdict",
+    )
+    sources = gate2_source_batch(device=torch.device("cuda"))
+    run_results: list[NCARunResult] = []
+    qualifications = []
+    metric_rows: list[dict[str, Any]] = []
+    run_hashes: dict[str, str] = {}
+    for learning_rate in protocol.qualification.candidate_learning_rates:
+        label = f"lr_{learning_rate:.0e}".replace("e-0", "e-")
+        run_dir = output_dir / "qualification" / label
+        result = training_runner(
+            sources=sources,
+            seed=protocol.qualification.seed,
+            learning_rate=learning_rate,
+            iterations=protocol.qualification.iterations,
+            mode="qualification",
+            output_dir=run_dir,
+            checkpoint_interval=100,
+            synchronize=torch.cuda.synchronize,
+        )
+        run_results.append(result)
+        qualifications.append(
+            evaluate_lr_eligibility(
+                learning_rate,
+                result.initial_objective,
+                result.records,
+            )
+        )
+        for record in result.records:
+            metric_rows.append({"learning_rate": learning_rate, **asdict(record)})
+        result_path = run_dir / "nca_run_result.json"
+        if result_path.is_file():
+            run_hashes[label] = artifact_sha256(result_path)
+
+    initial_hashes = {result.initial_model_hash for result in run_results}
+    if len(initial_hashes) != 1:
+        qualifications = [
+            replace(
+                qualification,
+                eligible=False,
+                reason_codes=(
+                    *qualification.reason_codes,
+                    QualificationReason.INITIAL_MODEL_MISMATCH,
+                ),
+            )
+            for qualification in qualifications
+        ]
+    verdict = select_learning_rate(qualifications)
+    metrics_path = output_dir / "lr_qualification_metrics.csv"
+    _atomic_csv(metrics_path, pd.DataFrame(metric_rows))
+    payload = {
+        "schema_version": 1,
+        **asdict(verdict),
+        "initial_model_hashes": [result.initial_model_hash for result in run_results],
+        "artifact_hashes": {
+            "config_sha256": artifact_sha256(CONFIG_PATH),
+            "spec_sha256": artifact_sha256(SPEC_PATH),
+            "preflight_manifest_sha256": artifact_sha256(
+                output_dir / "protocol_manifest.json"
+            ),
+            "metrics_sha256": artifact_sha256(metrics_path),
+            "run_result_sha256": run_hashes,
+        },
+    }
+    _write_json(output_dir / "lr_qualification_verdict.json", payload)
+    return verdict
 
 
 def run_production_phase(output_dir: Path, *, seed: int) -> None:

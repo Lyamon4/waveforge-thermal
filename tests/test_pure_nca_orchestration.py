@@ -6,7 +6,9 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
+import pandas as pd
 import pytest
+import torch
 
 from waveforge.ml.nca_training import NCAIterationRecord, NCARunResult, NCARunStatus
 from waveforge.reproducibility import artifact_sha256
@@ -166,3 +168,83 @@ def test_benchmark_rejects_invalid_or_incomplete_training_result() -> None:
             peak_reserved_memory=lambda: 0,
             timer=lambda: 0.0,
         )
+
+
+def test_qualification_runs_exact_candidates_from_identical_initialization(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from waveforge.experiments.run_pure_nca_spike import run_qualification_phase
+
+    config = Path("configs/pure_nca_spike.yaml")
+    spec = Path(
+        "docs/superpowers/specs/2026-08-29-pure-nca-physics-trained-spike-design.md"
+    )
+    (tmp_path / "protocol_manifest.json").write_text(
+        json.dumps(
+            {
+                "status": "PASS",
+                "config_sha256": artifact_sha256(config),
+                "spec_sha256": artifact_sha256(spec),
+                "determinism_mode": "strict",
+            }
+        ),
+        encoding="utf-8",
+    )
+    for name in (
+        "environment.json",
+        "initial_state_sanity.json",
+        "determinism_preflight.json",
+        "preflight_report.json",
+        "complete_step_benchmark.json",
+    ):
+        (tmp_path / name).write_text('{"status":"PASS"}', encoding="utf-8")
+
+    calls: list[dict[str, object]] = []
+
+    def fake_runner(**kwargs) -> NCARunResult:
+        calls.append(kwargs)
+        objectives = [1.0 - 0.001 * index for index in range(200)]
+        result = _run_result([1.0] * 200)
+        records = tuple(
+            replace(
+                record,
+                total_objective=objectives[index],
+                thermal_smooth=objectives[index],
+                material_std=0.02,
+                conv3x3_weight_gradient_norm=(1.0e-3 if index >= 1 else 0.0),
+                conv1x1_weight_gradient_norm=1.0e-3,
+            )
+            for index, record in enumerate(result.records)
+        )
+        return replace(
+            result,
+            mode="qualification",
+            learning_rate=kwargs["learning_rate"],
+            requested_iterations=200,
+            completed_iterations=200,
+            records=records,
+            initial_model_hash="same-initial-hash",
+            initial_objective=1.1,
+        )
+
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(
+        "waveforge.experiments.run_pure_nca_spike.configure_cuda_reproducibility",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
+        "waveforge.experiments.run_pure_nca_spike.gate2_source_batch",
+        lambda **kwargs: object(),
+    )
+    verdict = run_qualification_phase(tmp_path, training_runner=fake_runner)
+
+    assert [call["learning_rate"] for call in calls] == [3.0e-4, 1.0e-3, 3.0e-3]
+    assert {call["seed"] for call in calls} == {20260831}
+    assert {call["iterations"] for call in calls} == {200}
+    assert verdict.selected_learning_rate == 3.0e-4
+    metrics = pd.read_csv(tmp_path / "lr_qualification_metrics.csv")
+    assert len(metrics) == 600
+    payload = json.loads((tmp_path / "lr_qualification_verdict.json").read_text())
+    assert payload["selected_learning_rate"] == 3.0e-4
+    assert len(payload["artifact_hashes"]["metrics_sha256"]) == 64
