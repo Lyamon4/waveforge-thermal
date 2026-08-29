@@ -170,6 +170,11 @@ update. Plotting и artifact I/O не входят в `step_wall_seconds`.
 - Maximum CG iterations: `298`.
 - Peak CUDA allocated/reserved: `18,694,144 / 23,068,672 bytes`.
 
+После добавления distinct production run IDs benchmark повторён на финальном
+pre-manifest code path: `2.799938900003326 s`; residual, iteration count и peak
+memory остались теми же. Именно повторный artifact используется production
+preflight.
+
 Production optimization не запускалась.
 
 ## 2026-08-29 — Ten-step numerical smoke optimization
