@@ -1,0 +1,259 @@
+{
+  "cases": [
+    {
+      "case_id": "shift_A_1_left",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": -1,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_A_1_right",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": 1,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_A_1_up",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": 0,
+      "shift_cells_y": 1
+    },
+    {
+      "case_id": "shift_A_1_down",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": 0,
+      "shift_cells_y": -1
+    },
+    {
+      "case_id": "shift_A_2_left",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": -2,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_A_2_right",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": 2,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_A_2_up",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": 0,
+      "shift_cells_y": 2
+    },
+    {
+      "case_id": "shift_A_2_down",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "A",
+      "shift_cells_x": 0,
+      "shift_cells_y": -2
+    },
+    {
+      "case_id": "shift_B_1_left",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": -1,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_B_1_right",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": 1,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_B_1_up",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": 0,
+      "shift_cells_y": 1
+    },
+    {
+      "case_id": "shift_B_1_down",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": 0,
+      "shift_cells_y": -1
+    },
+    {
+      "case_id": "shift_B_2_left",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": -2,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_B_2_right",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": 2,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_B_2_up",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": 0,
+      "shift_cells_y": 2
+    },
+    {
+      "case_id": "shift_B_2_down",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "B",
+      "shift_cells_x": 0,
+      "shift_cells_y": -2
+    },
+    {
+      "case_id": "shift_C_1_left",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": -1,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_C_1_right",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": 1,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_C_1_up",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": 0,
+      "shift_cells_y": 1
+    },
+    {
+      "case_id": "shift_C_1_down",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": 0,
+      "shift_cells_y": -1
+    },
+    {
+      "case_id": "shift_C_2_left",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": -2,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_C_2_right",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": 2,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "shift_C_2_up",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": 0,
+      "shift_cells_y": 2
+    },
+    {
+      "case_id": "shift_C_2_down",
+      "intensity_scale": 1.0,
+      "k_high": 20.0,
+      "kind": "source_shift",
+      "scenario_id": "C",
+      "shift_cells_x": 0,
+      "shift_cells_y": -2
+    },
+    {
+      "case_id": "intensity_minus_5pct",
+      "intensity_scale": 0.95,
+      "k_high": 20.0,
+      "kind": "intensity_scale",
+      "scenario_id": null,
+      "shift_cells_x": 0,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "intensity_plus_5pct",
+      "intensity_scale": 1.05,
+      "k_high": 20.0,
+      "kind": "intensity_scale",
+      "scenario_id": null,
+      "shift_cells_x": 0,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "k_high_19",
+      "intensity_scale": 1.0,
+      "k_high": 19.0,
+      "kind": "conductivity_scale",
+      "scenario_id": null,
+      "shift_cells_x": 0,
+      "shift_cells_y": 0
+    },
+    {
+      "case_id": "k_high_21",
+      "intensity_scale": 1.0,
+      "k_high": 21.0,
+      "kind": "conductivity_scale",
+      "scenario_id": null,
+      "shift_cells_x": 0,
+      "shift_cells_y": 0
+    }
+  ],
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "schema_version": 2
+}

@@ -1,0 +1,21 @@
+{
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "direction_seeds": [
+    7201,
+    7202,
+    7203,
+    7204,
+    7205
+  ],
+  "gradient_dtype": "float32",
+  "maximum_explicit_relative_residual": 9.783278263842893e-07,
+  "physics_dtypes": [
+    "float64"
+  ],
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "record_count": 15,
+  "run_namespace": "gate2a_mixed_precision_v1",
+  "schema_version": 2,
+  "solve_record_count": 96,
+  "status": "PASS"
+}

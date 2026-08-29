@@ -1,6 +1,11 @@
 # WaveForge Thermal — Gate 2 inverse-design specification
 
-**Status:** approved and locked before Gate 2A implementation
+**Status:** approved and locked with a prospective mixed-precision amendment
+before Gate 2A production optimization
+
+**Protocol tags:** original lock `v0.2-gate2a-inverse-design-locked`; prospective
+precision amendment `v0.2.1-gate2a-mixed-precision-physics-locked`. The original
+tag remains immutable.
 
 **Scope:** Gate 2A steady multi-scenario inverse design; Gate 2B remains deferred
 
@@ -112,6 +117,51 @@ ID, forward/adjoint role, CG iterations, final relative residual and convergence
 status. A non-converged solve invalidates the run immediately; its last iterate
 cannot enter an objective, gradient or reported temperature.
 
+### 4.1 Prospective mixed-precision contract
+
+The original CUDA `float32` physics path was empirically unable to reach the
+locked explicit residual in the tested implementation and operated below an
+observed representation/roundoff floor. This is not a universal mathematical
+lower-bound claim. Before production optimization, the protocol is therefore
+amended without changing the residual, iteration or directional-gradient
+tolerances:
+
+```yaml
+precision:
+  design_dtype: "float32"
+  filtering_dtype: "float32"
+  projection_dtype: "float32"
+  optimizer_state_dtype: "float32"
+  physics_input_cast_dtype: "float64"
+  conductivity_dtype: "float64"
+  forward_solve_dtype: "float64"
+  adjoint_solve_dtype: "float64"
+  preconditioner_dtype: "float64"
+  residual_evaluation_dtype: "float64"
+  thermal_objective_dtype: "float64"
+  gradient_return_dtype: "float32"
+```
+
+The exact differentiable path is:
+
+```text
+float32 logits
+→ float32 upsampling/filtering/volume projection
+→ cast projected D to float64
+→ compute k(D)=1+19D³ in float64
+→ float64 forward CG and thermal objective
+→ float64 adjoint CG and gradient with respect to D
+→ autograd cast to float32 logits gradient
+→ float32 Adam update
+```
+
+`D` is cast before conductivity interpolation. Operator applications, Jacobi
+diagonal, dot products, explicit residuals and adjoints all remain `float64`.
+Temperature may not be cast back to `float32` before residual evaluation.
+Direct regularizers may be evaluated in `float32`, but are cast to `float64`
+before addition to the thermal objective. The implicit volume-projection
+derivative remains attached and unchanged.
+
 Before optimization, the following blocking checks are required:
 
 - PyTorch operator output matches the SciPy assembled operator on random
@@ -137,10 +187,20 @@ Directional-gradient validation covers the complete mapping
 Five L2-normalized Gaussian directions use fixed seeds
 `7201, 7202, 7203, 7204, 7205`. Central finite differences use step sizes
 `[1e-2, 3e-3, 1e-3, 3e-4]` on CPU `float64` and
-`[1e-2, 3e-3, 1e-3]` on CUDA `float32`. Relative directional error is
+`[1e-2, 3e-3, 1e-3]` on CUDA mixed precision (`float32` design state and
+`float64` physical forward/adjoint solves). Relative directional error is
 `|g_AD-g_FD| / max(|g_AD|, |g_FD|, 1e-12)`. For every direction, at least two
 adjacent step sizes must satisfy `≤1e-4` on CPU and `≤5e-3` on CUDA. All step
 sizes and errors are retained in the validation artifact.
+
+Before optimization, `float64` forward and adjoint CG are stress-qualified on
+uniform `k=1`, uniform `k=20`, smooth random, high-contrast random,
+straight-path binary, dispersed binary and projected designs at
+`beta=1,2,4,8`. Every solve records iterations, explicit relative residual,
+convergence and wall time. Any failure is `INVALID_RUN`; `2000` iterations and
+the `1e-6` residual are not changed after inspection. One complete
+forward-plus-adjoint optimization iteration is benchmarked and reported before
+any 600-iteration production run.
 
 Failure stops Gate 2A; tolerances are not relaxed after inspecting optimized
 designs.
@@ -148,6 +208,7 @@ designs.
 ## 5. Design parameterization and material budget
 
 - Trainable variables: `16×16` logits.
+- Design, filtering, volume projection and optimizer state use `float32`.
 - Upsampling: bilinear to `64×64`, `align_corners=False`.
 - Spatial filter: normalized Gaussian, `sigma=1.0` simulation cell.
 - Projection: sigmoid with sharpness schedule:
@@ -159,6 +220,7 @@ designs.
   that continuous `mean(D)=0.25` to absolute tolerance `1e-6`.
 - Strict binary design: `D_binary = 1[D >= 0.5]`.
 - Binary acceptance budget: `mean(D_binary)=0.25±0.01`.
+- Projected `D` is cast to `float64` before evaluating `k(D)=1+19D³`.
 
 The `0.5` threshold is never moved to repair the budget. A seed whose strict
 binary map misses the budget is reported as failed, not silently quantile-
@@ -187,6 +249,11 @@ invalidates the run.
 Production logits are initialized independently for each production seed as
 `N(0, 0.1²)`. The exact `16×16` initial arrays are saved in the run checkpoint
 and recorded with SHA-256 hashes before optimization.
+
+Direct regularizers may originate in `float32`, but the combined objective is
+formed in `float64`. Autograd returns the final trainable-logit gradient in
+`float32`; no manual gradient replacement or detached projection offset is
+allowed.
 
 ## 6. Objective and optimization protocol
 
@@ -398,6 +465,11 @@ The artifact set also includes the frozen `64×64` continuous/binary arrays,
 their SHA-256 hashes, saved initial logits and hashes, every CG solve record,
 the complete multi-step full-pipeline gradient-check table, the literal
 28-case perturbation registry and separate morphology diagnostics.
+
+The rejected CUDA `float32` preflight artifact remains preserved as
+`INVALID_RUN`. Mixed-precision production uses a new run ID, bumped config and
+artifact schema versions, and a new config hash tied to the prospective
+protocol tag.
 
 After those artifacts and exact verification are complete, work stops for
 review. Gate 2B, neuraloperator, FNO, U-Net and any surrogate dataset remain

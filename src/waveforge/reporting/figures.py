@@ -131,3 +131,128 @@ def save_transient_convergence_gif(
     animation.save(output_path, writer=PillowWriter(fps=10))
     plt.close(figure)
     return output_path
+
+
+def save_multi_field_figure(
+    fields: NDArray[np.float64],
+    labels: tuple[str, ...],
+    output_path: Path,
+    *,
+    title: str,
+    cmap: str,
+    colorbar_label: str,
+    value_range: tuple[float, float] | None = None,
+) -> Path:
+    """Сохранить одинаково масштабированные panels без mutation полей."""
+    values = np.asarray(fields, dtype=np.float64).copy()
+    if values.ndim != 3 or values.shape[0] != len(labels):
+        raise ValueError("fields must have shape [panel, ny, nx]")
+    if not np.all(np.isfinite(values)) or not labels:
+        raise ValueError("fields and labels must be finite and non-empty")
+    _prepare_output(output_path)
+    minimum, maximum = (
+        (float(values.min()), float(values.max()))
+        if value_range is None
+        else value_range
+    )
+    if not np.isfinite(minimum) or not np.isfinite(maximum):
+        raise ValueError("color range must be finite")
+    if maximum <= minimum:
+        maximum = minimum + 1.0e-12
+    figure, axes = plt.subplots(
+        1,
+        len(labels),
+        figsize=(4.2 * len(labels), 4.0),
+        constrained_layout=True,
+        squeeze=False,
+    )
+    image = None
+    for axis, field, label_text in zip(axes[0], values, labels, strict=True):
+        image = axis.imshow(
+            field,
+            origin="lower",
+            extent=(0.0, 1.0, 0.0, 1.0),
+            cmap=cmap,
+            vmin=minimum,
+            vmax=maximum,
+            aspect="equal",
+        )
+        axis.set(xlabel="x", ylabel="y", title=label_text)
+    assert image is not None
+    figure.suptitle(title)
+    figure.colorbar(image, ax=axes[0].tolist(), label=colorbar_label, shrink=0.86)
+    figure.savefig(output_path, dpi=160)
+    plt.close(figure)
+    return output_path
+
+
+def save_metric_curves(
+    iterations: NDArray[np.float64],
+    curves: NDArray[np.float64],
+    labels: tuple[str, ...],
+    output_path: Path,
+    *,
+    title: str,
+    ylabel: str,
+) -> Path:
+    """Сохранить per-seed curves с неизменёнными scientific arrays."""
+    x_values = np.asarray(iterations, dtype=np.float64).copy()
+    y_values = np.asarray(curves, dtype=np.float64).copy()
+    if x_values.ndim != 1 or y_values.shape != (len(labels), x_values.size):
+        raise ValueError("curves must have shape [curve, iteration]")
+    if not np.all(np.isfinite(x_values)) or not np.all(np.isfinite(y_values)):
+        raise ValueError("curve data must be finite")
+    _prepare_output(output_path)
+    figure, axis = plt.subplots(figsize=(7.2, 4.8), constrained_layout=True)
+    for curve, label_text in zip(y_values, labels, strict=True):
+        axis.plot(x_values, curve, linewidth=1.6, label=label_text)
+    axis.set(xlabel="Iteration", ylabel=ylabel, title=title)
+    axis.grid(True, alpha=0.25)
+    axis.legend()
+    figure.savefig(output_path, dpi=160)
+    plt.close(figure)
+    return output_path
+
+
+def save_design_animation(
+    designs: NDArray[np.float64],
+    iterations: NDArray[np.int64],
+    output_path: Path,
+) -> Path:
+    """Сохранить checkpoint trajectory прямо в GIF, без raw frame files."""
+    fields = np.asarray(designs, dtype=np.float64).copy()
+    steps = np.asarray(iterations, dtype=np.int64).copy()
+    if fields.ndim != 3 or fields.shape[0] != steps.size or steps.size < 2:
+        raise ValueError("design trajectory must have at least two frames")
+    if not np.all(np.isfinite(fields)):
+        raise ValueError("design trajectory must be finite")
+    _prepare_output(output_path)
+    figure, axis = plt.subplots(figsize=(5.4, 5.0), constrained_layout=True)
+    image = axis.imshow(
+        fields[0],
+        origin="lower",
+        extent=(0.0, 1.0, 0.0, 1.0),
+        cmap="viridis",
+        vmin=0.0,
+        vmax=1.0,
+        animated=True,
+    )
+    axis.set(xlabel="x", ylabel="y")
+    title = axis.set_title(f"Iteration {int(steps[0])}")
+    figure.colorbar(image, ax=axis, label="D")
+
+    def update(frame_number: int) -> tuple[object, object]:
+        image.set_data(fields[frame_number])
+        title.set_text(f"Iteration {int(steps[frame_number])}")
+        return image, title
+
+    animation = FuncAnimation(
+        figure,
+        update,
+        frames=steps.size,
+        interval=180,
+        blit=False,
+    )
+    animation.save(output_path, writer=PillowWriter(fps=6))
+    plt.close(figure)
+    return output_path
