@@ -447,6 +447,9 @@ def run_nca_training(
     evaluator: NCAEvaluator = evaluate_nca,
     allow_cpu_unit_test: bool = False,
     checkpoint_interval: int = 100,
+    synchronize: Callable[[], None] | None = None,
+    clock: Callable[[], float] = time.perf_counter,
+    iteration_start_hook: Callable[[int], None] | None = None,
 ) -> NCARunResult:
     """Run fixed Adam updates, fail closed, and freeze the post-update design."""
     if iterations < 1:
@@ -476,7 +479,11 @@ def run_nca_training(
 
     try:
         for iteration in range(iterations):
-            started = time.perf_counter()
+            if synchronize is not None:
+                synchronize()
+            if iteration_start_hook is not None:
+                iteration_start_hook(iteration)
+            started = clock()
             optimizer.zero_grad(set_to_none=True)
             active_trace = SolveTrace()
             forward = evaluator(
@@ -498,7 +505,9 @@ def run_nca_training(
             torch.nn.utils.clip_grad_norm_(parameters, max_norm=1.0)
             gradient_norm_after = _gradient_norm(parameters)
             optimizer.step()
-            elapsed = time.perf_counter() - started
+            if synchronize is not None:
+                synchronize()
+            elapsed = clock() - started
             record = _iteration_record(
                 iteration,
                 forward,
