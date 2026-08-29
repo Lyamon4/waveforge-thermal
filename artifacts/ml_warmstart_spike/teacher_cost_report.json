@@ -1,0 +1,106 @@
+{
+  "accepted_teacher_resolution": null,
+  "amendment_sha256": "f31b9a9c4887a818608c7601d884b544c8cd5744f24fe5b6ad48ecc91288d356",
+  "base_spec_sha256": "495d14e1652e52d17f81f0f4750c9dd3ba5a7ad3db27c3ce97e2d680f8d8445c",
+  "cost_metrics": {
+    "artifact_gib_ceiling": 5.0,
+    "contingency_factor": 1.15,
+    "future_training_validation_tasks": 20,
+    "held_out_full_reference_tasks": 8,
+    "projected_artifact_gib": 0.002365611679852009,
+    "projected_teacher_hours": 6.500180736371208,
+    "teacher_hour_ceiling": 8.0
+  },
+  "fidelity_metrics": {
+    "maximum_median_degradation": 0.1,
+    "maximum_relative_degradation": 0.18922697821951853,
+    "maximum_single_degradation": 0.2,
+    "median_relative_degradation": 0.11063285948151706,
+    "relative_degradations": [
+      0.11063285948151706,
+      0.18922697821951853,
+      0.09794002334479512
+    ],
+    "required_spearman": 0.5,
+    "spearman_rank_correlation": 0.5
+  },
+  "measurements": [
+    {
+      "artifact_bytes": 39113,
+      "binary_fraction": 0.2509765625,
+      "binary_sha256": "0ac69b6adff914d00b4c90e68f35fd0de42f39fdabcd4c73bd0a549f38abb38b",
+      "maximum_scipy_residual": 4.3361230830913656e-13,
+      "pilot_id": "pilot_1",
+      "resolution": 32,
+      "result_sha256": "dce148ee6115f88409e6e2ea1780554815bce2844c63011ca49a715bbea84bdf",
+      "status": "PASS",
+      "verified_peak_64": 0.16038452218244995,
+      "wall_seconds": 228.2952146000025
+    },
+    {
+      "artifact_bytes": 124766,
+      "binary_fraction": 0.2509765625,
+      "binary_sha256": "bc749b432a30487d0e18c7449aa21087ada383e6c46b7ae6057dbfbaa432b522",
+      "maximum_scipy_residual": 4.504760936011312e-13,
+      "pilot_id": "pilot_1",
+      "resolution": 64,
+      "result_sha256": "903c5d1e2be1aa33b2e5f2ad3e1a6bdddc6252a4a547ed0e565b8027e695c020",
+      "status": "PASS",
+      "verified_peak_64": 0.14440822708714304,
+      "wall_seconds": 1424.748968199623
+    },
+    {
+      "artifact_bytes": 39111,
+      "binary_fraction": 0.2509765625,
+      "binary_sha256": "f8659440c4a7f5ebfb04416798d96dbc3a79cc18a57e69235d7818eff8409f22",
+      "maximum_scipy_residual": 3.7350613138251276e-13,
+      "pilot_id": "pilot_2",
+      "resolution": 32,
+      "result_sha256": "9f0742bed2c1900d68e82db4166dffc372960636889cf425a486408d0ea87b27",
+      "status": "PASS",
+      "verified_peak_64": 0.16902694441828844,
+      "wall_seconds": 238.72943590000796
+    },
+    {
+      "artifact_bytes": 124806,
+      "binary_fraction": 0.251708984375,
+      "binary_sha256": "5c33671c4e6d0b83a1073b5d5e4646712b8bc76837cf718fa4d6ffb4bc4c7d4a",
+      "maximum_scipy_residual": 4.0000608180585673e-13,
+      "pilot_id": "pilot_2",
+      "resolution": 64,
+      "result_sha256": "3bd2a31a62897b6b009bbb04f88b82cabea0ef96c3fb3dcd7c7a6f072e5f157d",
+      "status": "PASS",
+      "verified_peak_64": 0.14213177762865037,
+      "wall_seconds": 1476.7878349000093
+    },
+    {
+      "artifact_bytes": 39226,
+      "binary_fraction": 0.25,
+      "binary_sha256": "06538e62f9e1d7cf76e2f6f493a03e4b5886ea6a969ca72624f02836e81b3d5c",
+      "maximum_scipy_residual": 3.6230085581792977e-13,
+      "pilot_id": "pilot_3",
+      "resolution": 32,
+      "result_sha256": "d7bf880e377da89a3147614b907ea29e9a881d691a37fdf6c98a18a81ea412b7",
+      "status": "PASS",
+      "verified_peak_64": 0.1341374181722122,
+      "wall_seconds": 229.28489169999375
+    },
+    {
+      "artifact_bytes": 125220,
+      "binary_fraction": 0.25048828125,
+      "binary_sha256": "82f70ad9b13f53e57c131c6635d8da242a6dd7cef32b9892381d3d59beae4c10",
+      "maximum_scipy_residual": 3.845216477393833e-13,
+      "pilot_id": "pilot_3",
+      "resolution": 64,
+      "result_sha256": "4cc54585d31807f1b6533a3dc6df49e0d0fb011dd36e66d97fec0026a91b53f8",
+      "status": "PASS",
+      "verified_peak_64": 0.1221718994846114,
+      "wall_seconds": 1421.5612891003257
+    }
+  ],
+  "reason_codes": [
+    "MEDIAN_DEGRADATION_EXCEEDS_10_PERCENT"
+  ],
+  "schema_version": 1,
+  "status": "ML_NO_GO_TEACHER_FIDELITY"
+}

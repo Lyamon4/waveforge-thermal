@@ -1,0 +1,14 @@
+{
+  "explanation": "No model or dataset was created because the prospective teacher gate failed; a finite ML break-even estimate would be unsupported.",
+  "number_of_design_tasks_to_break_even": null,
+  "projected_teacher_generation_hours": 6.500180736371208,
+  "reason_codes": [
+    "MEDIAN_DEGRADATION_EXCEEDS_10_PERCENT"
+  ],
+  "schema_version": 1,
+  "solver_cost_without_warmstart_hours": null,
+  "status": "NOT_COMPUTABLE_PRE_DATASET_GATE_FAILED",
+  "surrogate_inference_cost_seconds": null,
+  "teacher_gate_status": "ML_NO_GO_TEACHER_FIDELITY",
+  "training_cost_hours": null
+}

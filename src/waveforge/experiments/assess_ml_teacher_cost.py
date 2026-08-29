@@ -376,6 +376,88 @@ def run_teacher_cost_assessment(
     return assessment
 
 
+def _write_json_atomic(path: Path, payload: dict[str, object]) -> None:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(path)
+
+
+def write_pre_dataset_gate_outcome(
+    output_dir: Path,
+    assessment: TeacherCostAssessment,
+) -> Path:
+    """Authorize dataset generation or write an explicit pre-dataset stop."""
+    report_path = output_dir / "teacher_cost_report.json"
+    if not report_path.is_file():
+        raise FileNotFoundError("teacher_cost_report.json is required for gate outcome")
+    common: dict[str, object] = {
+        "schema_version": 1,
+        "stage": "teacher_cost_fidelity_preflight",
+        "teacher_gate_status": assessment.status.value,
+        "reason_codes": list(assessment.reason_codes),
+        "base_spec_sha256": assessment.base_spec_sha256,
+        "amendment_sha256": assessment.amendment_sha256,
+        "teacher_cost_report_sha256": _sha256(report_path),
+        "projected_teacher_hours": assessment.projected_teacher_hours,
+        "projected_artifact_gib": assessment.projected_artifact_gib,
+    }
+    if assessment.status is TeacherCostStatus.PASS:
+        authorization_path = output_dir / "teacher_gate_authorization.json"
+        _write_json_atomic(
+            authorization_path,
+            {
+                **common,
+                "status": "AUTHORIZED",
+                "accepted_teacher_resolution": (assessment.accepted_teacher_resolution),
+                "dataset_generation_authorized": True,
+            },
+        )
+        return authorization_path
+
+    verdict = (
+        "INVALID_RUN"
+        if assessment.status is TeacherCostStatus.INVALID_RUN
+        else "ML_NO_GO"
+    )
+    verdict_path = output_dir / "ml_verdict.json"
+    _write_json_atomic(
+        verdict_path,
+        {
+            **common,
+            "verdict": verdict,
+            "accepted_teacher_resolution": None,
+            "dataset_generation_authorized": False,
+            "dataset_generation_started": False,
+            "network_training_started": False,
+            "initializer_evaluation_started": False,
+            "fno_installed": False,
+        },
+    )
+    _write_json_atomic(
+        output_dir / "break_even_analysis.json",
+        {
+            "schema_version": 1,
+            "status": "NOT_COMPUTABLE_PRE_DATASET_GATE_FAILED",
+            "reason_codes": list(assessment.reason_codes),
+            "teacher_gate_status": assessment.status.value,
+            "projected_teacher_generation_hours": (assessment.projected_teacher_hours),
+            "training_cost_hours": None,
+            "surrogate_inference_cost_seconds": None,
+            "solver_cost_without_warmstart_hours": None,
+            "number_of_design_tasks_to_break_even": None,
+            "explanation": (
+                "No model or dataset was created because the prospective "
+                "teacher gate failed; a finite ML break-even estimate would "
+                "be unsupported."
+            ),
+        },
+    )
+    return verdict_path
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -405,6 +487,7 @@ def main() -> int:
         base_spec_path=arguments.base_spec,
         amendment_path=arguments.amendment,
     )
+    write_pre_dataset_gate_outcome(arguments.output, result)
     print(
         json.dumps(
             {

@@ -1,0 +1,29 @@
+{
+  "binary_design_sha256": "43de5dcc91e7db5c3273bd11f622ba9c9a1e9bb7af6e56708dbad061c15b7b9c",
+  "binary_material_fraction": 0.2509765625,
+  "centers": [
+    [
+      0.3,
+      0.7
+    ],
+    [
+      0.5,
+      0.7
+    ],
+    [
+      0.7,
+      0.7
+    ]
+  ],
+  "completed_iterations": 600,
+  "continuous_design_sha256": "a3dfbbac7fda8ca733b839e3382ae731ea2c858fdfc9c4881049696e2a96592f",
+  "continuous_material_fraction": 0.2499999850988388,
+  "final_logits_sha256": "462a05125ab494df562428c328043a092640bdf4f8bed45c73a24c649b9cba7d",
+  "initial_logits_sha256": "1cb9ed662b05ed847197f9916b231b0edd9e292dd014c0cc3ddf98c6ab6dcd82",
+  "reason_codes": [],
+  "resolution": 64,
+  "schema_version": 1,
+  "seed": 31001,
+  "status": "PASS",
+  "total_wall_seconds": 1424.748968199623
+}

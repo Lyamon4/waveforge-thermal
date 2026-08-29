@@ -227,6 +227,36 @@ amendment 1 запрещает fallback. Immutable task split не изменё�
 коррекция не влияет на task selection. Все последующие artifacts обязаны
 хешировать base spec и amendment.
 
+## 2026-08-29 — ML teacher cost/fidelity preflight NO-GO
+
+До dataset generation выполнены три fixed paired teacher studies:
+`32×32×200` против locked `64×64×600`. Все шесть optimizations завершились
+machine status `PASS`, strict-binary fractions находятся в
+`[0.25, 0.251708984375]`, independent SciPy residuals не превышают
+`4.51e-13`.
+
+| Pilot | `32×32` transferred peak | `64×64` peak | Degradation | `32` time, s | `64` time, s |
+|---|---:|---:|---:|---:|---:|
+| `pilot_1` | `0.16038452218244995` | `0.14440822708714304` | `11.0633%` | `228.2952` | `1424.7490` |
+| `pilot_2` | `0.16902694441828844` | `0.14213177762865037` | `18.9227%` | `238.7294` | `1476.7878` |
+| `pilot_3` | `0.13413741817221220` | `0.12217189948461140` | `9.7940%` | `229.2849` | `1421.5613` |
+
+Spearman correlation равна locked boundary `0.5`; worst degradation
+`18.9227%` проходит двадцатипроцентный limit. Median degradation
+`11.063285948%` превышает preregistered `10%`, поэтому status равен
+`ML_NO_GO_TEACHER_FIDELITY` с reason
+`MEDIAN_DEGRADATION_EXCEEDS_10_PERCENT`.
+
+Projected teacher cost с actual pilots и `15%` contingency равен
+`6.500180736 h`, то есть eight-hour cost ceiling сам по себе проходит. Failure
+является fidelity result, не cost failure и не technical invalid run.
+
+Independent post-run audit подтвердил strict-threshold identity, array hashes,
+fresh SciPy peaks/residuals, все arithmetic metrics и отсутствие dataset/model
+artifacts. Согласно prospective amendment dataset generation, network training
+и initializer evaluation не начинались. Break-even не вычисляется: без
+принятого teacher и обученной модели finite estimate не поддержан данными.
+
 ## 2026-08-29 — Independent Gate 2A review and prospective challenge lock
 
 Independent review завершён verdict `REVIEW_PASS_WITH_MINOR_FINDINGS` и

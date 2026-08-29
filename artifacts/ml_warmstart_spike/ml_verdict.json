@@ -1,0 +1,20 @@
+{
+  "accepted_teacher_resolution": null,
+  "amendment_sha256": "f31b9a9c4887a818608c7601d884b544c8cd5744f24fe5b6ad48ecc91288d356",
+  "base_spec_sha256": "495d14e1652e52d17f81f0f4750c9dd3ba5a7ad3db27c3ce97e2d680f8d8445c",
+  "dataset_generation_authorized": false,
+  "dataset_generation_started": false,
+  "fno_installed": false,
+  "initializer_evaluation_started": false,
+  "network_training_started": false,
+  "projected_artifact_gib": 0.002365611679852009,
+  "projected_teacher_hours": 6.500180736371208,
+  "reason_codes": [
+    "MEDIAN_DEGRADATION_EXCEEDS_10_PERCENT"
+  ],
+  "schema_version": 1,
+  "stage": "teacher_cost_fidelity_preflight",
+  "teacher_cost_report_sha256": "244432b8fb63cc19afd746aa780af7bf2734baaf9525b8fbd623c9476752b67d",
+  "teacher_gate_status": "ML_NO_GO_TEACHER_FIDELITY",
+  "verdict": "ML_NO_GO"
+}

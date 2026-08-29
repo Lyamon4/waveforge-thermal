@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 
 import pytest
@@ -8,6 +9,7 @@ from waveforge.experiments.assess_ml_teacher_cost import (
     PilotMeasurement,
     TeacherCostStatus,
     assess_teacher_cost,
+    write_pre_dataset_gate_outcome,
 )
 from waveforge.ml.teacher import TeacherStatus
 
@@ -125,3 +127,46 @@ def test_incomplete_or_duplicate_pilot_matrix_is_invalid() -> None:
 
     assert missing.status is TeacherCostStatus.INVALID_RUN
     assert duplicate.status is TeacherCostStatus.INVALID_RUN
+
+
+def test_fidelity_no_go_writes_honest_stop_without_placeholder_results(
+    tmp_path,
+) -> None:
+    assessment = assess_teacher_cost(
+        _measurements(peaks_32=(1.11, 2.24, 3.30)),
+        base_spec_sha256="base",
+        amendment_sha256="amendment",
+    )
+    report_path = tmp_path / "teacher_cost_report.json"
+    report_path.write_text("{}\n", encoding="utf-8")
+
+    outcome_path = write_pre_dataset_gate_outcome(tmp_path, assessment)
+
+    assert outcome_path == tmp_path / "ml_verdict.json"
+    verdict = json.loads(outcome_path.read_text(encoding="utf-8"))
+    break_even = json.loads(
+        (tmp_path / "break_even_analysis.json").read_text(encoding="utf-8")
+    )
+    assert verdict["verdict"] == "ML_NO_GO"
+    assert verdict["teacher_gate_status"] == "ML_NO_GO_TEACHER_FIDELITY"
+    assert verdict["dataset_generation_started"] is False
+    assert verdict["network_training_started"] is False
+    assert break_even["status"] == "NOT_COMPUTABLE_PRE_DATASET_GATE_FAILED"
+    assert break_even["number_of_design_tasks_to_break_even"] is None
+    assert not (tmp_path / "training_curves.csv").exists()
+    assert not (tmp_path / "initializer_comparison.csv").exists()
+
+
+def test_passing_teacher_gate_writes_authorization_not_ml_verdict(tmp_path) -> None:
+    assessment = assess_teacher_cost(
+        _measurements(),
+        base_spec_sha256="base",
+        amendment_sha256="amendment",
+    )
+    (tmp_path / "teacher_cost_report.json").write_text("{}\n", encoding="utf-8")
+
+    outcome_path = write_pre_dataset_gate_outcome(tmp_path, assessment)
+
+    assert outcome_path == tmp_path / "teacher_gate_authorization.json"
+    assert not (tmp_path / "ml_verdict.json").exists()
+    assert not (tmp_path / "break_even_analysis.json").exists()
