@@ -177,6 +177,35 @@ preflight.
 
 Production optimization не запускалась.
 
+## 2026-08-29 — Post-result strong branching-baseline challenge
+
+После independent Gate 2A review и merge validated master был prospectively
+зафиксирован secondary challenge с `41055` members
+`ParametricBranchingTreeBaseline`. Этот comparator не входит в original Gate 2A
+protocol и не изменяет исходный Gate 2A PASS.
+
+Exhaustive funnel `41055@64 → 20@128 → 5@256` выбрал candidate
+`tree_xs_0p500_xj_0p500_yj_0p475_r_1p25`: `x_sink=0.5`,
+`junction=(0.5, 0.475)`, ratio `1.25`, exact material fraction `0.25` и
+independent SciPy worst-case peak `0.1650978093408512` на `256×256`.
+
+WaveForge improvements относительно tree: `5.203572616%`, `4.619187220%` и
+`5.125655989%`. Robustness: `27/28` для каждого seed; общий failed threshold
+case — `shift_A_2_up`. По заранее зафиксированному правилу два из трёх seeds
+проходят nominal `5%`, поэтому verdict равен `STRONG_CHALLENGE_PASS`.
+
+Independent post-run arithmetic audit повторно построил winner mask без вызова
+baseline implementation, подтвердил exact design/transfer hashes, fresh SciPy
+nominal peaks, полный ranking funnel, все `84` perturbation comparisons и
+artifact hashes. Расхождений не найдено.
+
+Интерпретация: большая часть original `~50%` result объясняется слабостью
+исходных simple baselines, поскольку parametric tree сам улучшает
+`straight_path` примерно на `47.91%`. Остающийся solver-verified эффект
+WaveForge относительно сильного geometric family составляет лишь `~4.6–5.2%`.
+Обе геометрии качественно являются толстыми Y-shaped trees; вклад WaveForge
+сейчас убедительнее как inverse-design automation, чем как новая topology.
+
 ## 2026-08-29 — Independent Gate 2A review and prospective challenge lock
 
 Independent review завершён verdict `REVIEW_PASS_WITH_MINOR_FINDINGS` и

@@ -1,0 +1,56 @@
+{
+  "artifact_hashes": {
+    "best_tree_design.png": "88275484d6859b92588b362206795149991e034cba16355de9b5a88fa319fa14",
+    "best_tree_temperature_maps.png": "a016beb69d85d825785dda9e15bb1b4472049100a72288daf9a2c5d23825b9d3",
+    "candidate_registry.json": "495fbbeaf7013d6b51ba2582dcb893db2f0de3610ece0b0e915fc356e31fb317",
+    "challenge_interpretation.md": "1c4ab24ec85ef97eca8dd1bc60fb450c91b0125ba222d65bca72869a45d2640d",
+    "challenge_morphology.csv": "b33a0d1041a06559e8ea7e90c1120a4637deae224d585ed4d947f52ded888b18",
+    "challenge_robustness.csv": "f48f659eda5e81a9fa336b0a23972c51f527717a41b5a8558cd9b19cb67f07bd",
+    "challenge_spec.md": "41c61b04bd4794f31f7b841513a1f382be542643d54ab737da1de8fdbdc0a947",
+    "tree_finalists_128.csv": "dd73e3ab4187010e0ec195033fe22dc3c91d1c206bbdcc7b0bc892ac92e45634",
+    "tree_finalists_256.csv": "4fc1f12a5c97e4b81526fb2bd727bc9d31877564ed3eb8e2f2de0315c2018635",
+    "tree_search_64.csv": "caa5e0a2ebbaf7cb26f93957894df01e122a235c1198eb2674c8561e1ff50bc9",
+    "waveforge_vs_tree.csv": "76def9e0556e1f2829785aea48ff4b7d10685f00363e342287e89305ee47dca0"
+  },
+  "metrics": {
+    "negative_seed_count": 0,
+    "required_strong_seeds": 2,
+    "seed_metrics": {
+      "20260828": {
+        "nominal_improvement": 0.05203572616478967,
+        "nominal_pass_5pct": true,
+        "robustness_passing_cases": 27,
+        "seed_strong_pass": true
+      },
+      "20260829": {
+        "nominal_improvement": 0.04619187219953922,
+        "nominal_pass_5pct": false,
+        "robustness_passing_cases": 27,
+        "seed_strong_pass": false
+      },
+      "20260830": {
+        "nominal_improvement": 0.05125655988882916,
+        "nominal_pass_5pct": true,
+        "robustness_passing_cases": 27,
+        "seed_strong_pass": true
+      }
+    },
+    "strong_seed_count": 2
+  },
+  "post_result_challenge": true,
+  "reason_codes": [],
+  "schema_version": 1,
+  "status": "STRONG_CHALLENGE_PASS",
+  "valid": true,
+  "winner": {
+    "candidate_id": "tree_xs_0p500_xj_0p500_yj_0p475_r_1p25",
+    "material_fraction": 0.25,
+    "parameters": {
+      "trunk_to_branch_width_ratio": 1.25,
+      "x_junction": 0.5,
+      "x_sink": 0.5,
+      "y_junction": 0.475
+    },
+    "worst_peak_256": 0.1650978093408512
+  }
+}

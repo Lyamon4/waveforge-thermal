@@ -1,0 +1,4 @@
+seed,tree_candidate_id,tree_peak,waveforge_candidate_id,waveforge_peak,relative_improvement,nominal_pass_5pct,robustness_passing_cases,seed_strong_pass
+20260828,tree_xs_0p500_xj_0p500_yj_0p475_r_1p25,0.1650978093408512,robust_20260828,0.156506824943584,0.05203572616478967,True,27,True
+20260829,tree_xs_0p500_xj_0p500_yj_0p475_r_1p25,0.1650978093408512,robust_20260829,0.1574716324313547,0.04619187219953922,False,27,False
+20260830,tree_xs_0p500_xj_0p500_yj_0p475_r_1p25,0.1650978093408512,robust_20260830,0.15663546358885735,0.05125655988882916,True,27,True

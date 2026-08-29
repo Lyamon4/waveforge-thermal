@@ -1,0 +1,104 @@
+{
+  "axes": {
+    "trunk_to_branch_width_ratio": [
+      0.75,
+      1.0,
+      1.25,
+      1.5,
+      2.0
+    ],
+    "x_junction": [
+      0.25,
+      0.275,
+      0.3,
+      0.325,
+      0.35,
+      0.375,
+      0.4,
+      0.425,
+      0.45,
+      0.475,
+      0.5,
+      0.525,
+      0.55,
+      0.575,
+      0.6,
+      0.625,
+      0.65,
+      0.675,
+      0.7,
+      0.725,
+      0.75
+    ],
+    "x_sink": [
+      0.3,
+      0.325,
+      0.35,
+      0.375,
+      0.4,
+      0.425,
+      0.45,
+      0.475,
+      0.5,
+      0.525,
+      0.55,
+      0.575,
+      0.6,
+      0.625,
+      0.65,
+      0.675,
+      0.7
+    ],
+    "y_junction": [
+      0.1,
+      0.125,
+      0.15,
+      0.175,
+      0.2,
+      0.225,
+      0.25,
+      0.275,
+      0.3,
+      0.325,
+      0.35,
+      0.375,
+      0.4,
+      0.425,
+      0.45,
+      0.475,
+      0.5,
+      0.525,
+      0.55,
+      0.575,
+      0.6,
+      0.625,
+      0.65
+    ]
+  },
+  "candidate_count": 41055,
+  "implementation_git_sha": "3b7e733e3bb8dd1ae76f3f3bf985296599ee2148",
+  "post_result_challenge": true,
+  "schema_version": 1,
+  "score": "negative_minimum_normalized_segment_distance_v1",
+  "search_counts": {
+    "128": 20,
+    "256": 5,
+    "64": 41055
+  },
+  "selected_cells": 1024,
+  "spec_sha256": "41c61b04bd4794f31f7b841513a1f382be542643d54ab737da1de8fdbdc0a947",
+  "tie_break": "lower_row_major_index",
+  "transfer": {
+    "128": "exact_2x2_replication",
+    "256": "exact_4x4_replication"
+  },
+  "winner": {
+    "candidate_id": "tree_xs_0p500_xj_0p500_yj_0p475_r_1p25",
+    "parameters": {
+      "trunk_to_branch_width_ratio": 1.25,
+      "x_junction": 0.5,
+      "x_sink": 0.5,
+      "y_junction": 0.475
+    }
+  }
+}
