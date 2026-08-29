@@ -100,3 +100,17 @@ design review. Перед implementation status изменён на
 `approved and locked before Gate 2A implementation`. На момент lock Gate 2A
 optimization не запускалась; objective, thresholds, baselines, material budget,
 schedules и verification rules становятся immutable для production runs.
+
+## 2026-08-29 — Gate 2A CUDA residual precision blocker
+
+Во время TDD для fail-closed CG recursive residual был заменён обязательной
+явной проверкой `||b-Ax||₂/||b||₂`. На CUDA `float32` эта проверка выявила
+precision floor выше locked tolerance `1e-6`: даже точное SciPy `float64`
+решение после представления как `float32` даёт residual `4.78e-5` на uniform
+`64×64, k=1` и `5.41e-5` при `k=1.296875`. Следовательно, проблема не является
+недостатком iterations или CG convergence: один `float32` temperature tensor
+не может представить решение с требуемым residual для locked operator scale.
+
+Ни tolerance, ни dtype молча не изменялись. Gate 2A implementation остановлена
+до выбора между higher-precision physics solve и изменением CUDA residual
+criterion. Production optimization не запускалась.
