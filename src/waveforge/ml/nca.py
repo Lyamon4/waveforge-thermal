@@ -23,6 +23,8 @@ class NCARollout:
     material_logit: Tensor
     hidden_state: Tensor
     snapshots: dict[int, Tensor]
+    hidden_state_rms: float
+    delta_state_rms: float
     maximum_absolute_delta: float
     maximum_absolute_state: float
 
@@ -136,19 +138,29 @@ class PureNCA(nn.Module):
             snapshots[0] = state.detach().clone()
         maximum_delta = condition.new_zeros(())
         maximum_state = condition.new_zeros(())
+        delta_square_sum = condition.new_zeros(())
+        delta_element_count = 0
 
         for step_index in range(1, steps + 1):
             state, delta = self.step(state, condition)
             maximum_delta = torch.maximum(maximum_delta, delta.detach().abs().amax())
             maximum_state = torch.maximum(maximum_state, state.detach().abs().amax())
+            delta_square_sum = delta_square_sum + delta.detach().square().sum()
+            delta_element_count += delta.numel()
             if step_index in requested_snapshots:
                 snapshots[step_index] = state.detach().clone()
+
+        hidden_state = state[:, 1:16]
+        hidden_state_rms = torch.sqrt(hidden_state.detach().square().mean())
+        delta_state_rms = torch.sqrt(delta_square_sum / delta_element_count)
 
         return NCARollout(
             final_state=state,
             material_logit=state[:, 0:1],
-            hidden_state=state[:, 1:16],
+            hidden_state=hidden_state,
             snapshots=snapshots,
+            hidden_state_rms=float(hidden_state_rms.item()),
+            delta_state_rms=float(delta_state_rms.item()),
             maximum_absolute_delta=float(maximum_delta.item()),
             maximum_absolute_state=float(maximum_state.item()),
         )
