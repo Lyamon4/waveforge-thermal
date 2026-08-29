@@ -1,0 +1,119 @@
+{
+  "artifact_hashes": {
+    "baseline_metrics.csv": "fdfd6aad679c5f0f65c56f9e5d3f85cfa46fc2fafe5ca985f6a55e62087d1341",
+    "design_initial.png": "c8e5d3cec0800154f7381d80becee279e11ad248c15957fb85a5afa4c95eadd2",
+    "design_optimized_binary.png": "f15517eb0a9152ead916aa0b161420fb9752f9225bc2f7980a81211b4893d070",
+    "design_optimized_continuous.png": "22f9aad90f6babeb9536be4d16bceba7eda8e4d5b2390e06bca9d84311fa1275",
+    "material_fraction_curve.png": "021929ca2c44c7931f03943617a819ac49de80874f31de3564608f4208db72c8",
+    "morphology_metrics.csv": "26baa0ae2410f664603c98bfe5368e85219596d2693a3b17bc5284da690be88c",
+    "objective_curve.png": "7ba417a9c35b4aa505f09803a283e4300748e12b38eb6863c51bc7784cb5e077",
+    "optimization_animation.gif": "60e603c2776622e07fa5bf56e837600d37de1d9890a5233a887948e11a2f0d51",
+    "optimized_metrics.csv": "2ed2da164f6976b69715beb6950a789a805bc5ccd248a23bb9de0ccead04421f",
+    "robustness_metrics.csv": "910ed237f19d4efee3d335c403e360f2bad3ae08fb976119a81fb890dd97eed2",
+    "temperature_baseline_scenarios.png": "40f609d0123f6f06865c8ec031921897ac336ca0fdceae3f6536665a2bd5cb10",
+    "temperature_optimized_scenarios.png": "9906472bc6e9536a1db7d53b98328e667a45fa976ea16f259729e2641b96dce2"
+  },
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "generation_git_sha": "ed62778b4691803769dc2db1e06abbd525e3aeda",
+  "metrics": {
+    "mandatory_valid": true,
+    "passing_seed_count": 3,
+    "passing_seeds": [
+      20260828,
+      20260829,
+      20260830
+    ],
+    "registered_seed_count": 3,
+    "required": 2
+  },
+  "nominal_seeds": {
+    "20260828": {
+      "metrics": {
+        "binary_material_fraction": 0.2509765625,
+        "budget_pass": true,
+        "candidate_peak": 0.156506824943584,
+        "continuous_material_fraction": 0.24999999492505218,
+        "effect_pass": true,
+        "effect_threshold": 0.05,
+        "material_target": 0.25,
+        "material_tolerance": 0.01,
+        "relative_improvement": 0.506196955223448,
+        "strongest_baseline_id": "straight_path",
+        "strongest_baseline_peak": 0.31694179815032125
+      },
+      "reason_codes": [],
+      "status": "PASS"
+    },
+    "20260829": {
+      "metrics": {
+        "binary_material_fraction": 0.2509765625,
+        "budget_pass": true,
+        "candidate_peak": 0.1574716324313547,
+        "continuous_material_fraction": 0.24999998720566297,
+        "effect_pass": true,
+        "effect_threshold": 0.05,
+        "material_target": 0.25,
+        "material_tolerance": 0.01,
+        "relative_improvement": 0.5031528395738197,
+        "strongest_baseline_id": "straight_path",
+        "strongest_baseline_peak": 0.31694179815032125
+      },
+      "reason_codes": [],
+      "status": "PASS"
+    },
+    "20260830": {
+      "metrics": {
+        "binary_material_fraction": 0.251220703125,
+        "budget_pass": true,
+        "candidate_peak": 0.15663546358885735,
+        "continuous_material_fraction": 0.24999999348418606,
+        "effect_pass": true,
+        "effect_threshold": 0.05,
+        "material_target": 0.25,
+        "material_tolerance": 0.01,
+        "relative_improvement": 0.50579108056121,
+        "strongest_baseline_id": "straight_path",
+        "strongest_baseline_peak": 0.31694179815032125
+      },
+      "reason_codes": [],
+      "status": "PASS"
+    }
+  },
+  "numerical_gates": {
+    "full_iteration_benchmark.json": "PASS",
+    "gradient_validation_cpu.json": "PASS",
+    "gradient_validation_cuda.json": "PASS",
+    "mixed_precision_cg_stress.json": "PASS"
+  },
+  "production_implementation_sha": "8da050d36c27eddf2312639dd55419eac96c658e",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "reason_codes": [],
+  "robustness_seeds": {
+    "20260828": {
+      "metrics": {
+        "passing_cases": 28,
+        "required": 23
+      },
+      "reason_codes": [],
+      "status": "PASS"
+    },
+    "20260829": {
+      "metrics": {
+        "passing_cases": 28,
+        "required": 23
+      },
+      "reason_codes": [],
+      "status": "PASS"
+    },
+    "20260830": {
+      "metrics": {
+        "passing_cases": 28,
+        "required": 23
+      },
+      "reason_codes": [],
+      "status": "PASS"
+    }
+  },
+  "schema_version": 2,
+  "status": "PASS"
+}
