@@ -172,6 +172,24 @@ update. Plotting и artifact I/O не входят в `step_wall_seconds`.
 
 Production optimization не запускалась.
 
+## 2026-08-29 — Ten-step numerical smoke optimization
+
+После PASS всех revised preflights выполнен зарегистрированный smoke run:
+seed `20260828`, `64×64`, три scenarios, 10 iterations и production physics.
+Scientific settings и schedules не менялись.
+
+- Status: `PASS` (numerical smoke semantics, без Gate 2 effect claim).
+- Exact peak: `0.7185536170427336 → 0.6617657147219772`, снижение `7.903%`.
+- Continuous material fraction: maximum deviation from `0.25` меньше `3e-8`.
+- Linear solves: `60/60` converged; maximum explicit residual
+  `9.994847401346692e-7`; maximum iterations `302`.
+- Mean/sum complete-step time: `2.5030361899975104 / 25.030361899975105 s`.
+
+Strict-binary fraction при `beta=1` равна `0.0`; это ожидаемый intermediate
+smoke diagnostic, а не Gate 2 budget verdict. Binary acceptance применяется к
+финальному `beta=8` production design. Production optimization пока не
+запускалась.
+
 ## 2026-08-29 — Full-pipeline gradient artifacts
 
 После mixed-precision amendment оба directional-gradient gates повторно
