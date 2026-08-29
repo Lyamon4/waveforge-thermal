@@ -487,3 +487,34 @@ training pathology и не основание менять locked iterations и�
 
 Preflight implementation SHA:
 `52532b32e064871117386dc743ecbe0f4ebd1046`.
+
+## 2026-08-30 — Pure-NCA learning-rate qualification
+
+В strict deterministic CUDA mode выполнены ровно три preregistered trials на
+qualification seed `20260831`: learning rates `3e-4`, `1e-3`, `3e-3`, по 200
+updates каждый. Все три run имеют exact-identical initial model SHA-256
+`136a1b111f16d4491a051745ce42696e89a74190c98c071057f05f8593ca21c5`,
+полные records `0..199`, finite gradients/state, valid exact projection и
+converged forward/adjoint CG. Повторных trials не выполнялось.
+
+Unrounded locked qualification metrics:
+
+- `3e-4`: early/late loss `0.6180409847913846 / 0.4976934300928907`,
+  relative improvement `0.1947242297193549`, objective learning fraction
+  `0.2968610032061725`, eligible;
+- `1e-3`: early/late loss `0.5448736653753179 / 0.21369332219197487`,
+  relative improvement `0.6078112491548303`, objective learning fraction
+  `0.6980950538978157`, eligible;
+- `3e-3`: early/late loss `0.5159924174314467 / 0.4869038745725151`,
+  relative improvement `0.056373973485368635`, objective learning fraction
+  `0.3121044377900532`, eligible.
+
+Independent read-only recalculation из raw 600-row CSV подтвердила exact
+windows `[20,40)`/`[180,200)`, eligibility каждого candidate и selection.
+Locked production learning rate: `1e-3`, reason
+`HIGHEST_RELATIVE_IMPROVEMENT`. Qualification seed не входит в scientific
+effect и не считается production seed. Внутреннее суммарное время 600 updates
+`2248.678372199938 s` (~37.48 min).
+
+Qualification implementation SHA:
+`91a5c672b7bb2e30bd4d72adb587352fcf17a4af`.

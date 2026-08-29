@@ -1,0 +1,72 @@
+{
+  "artifact_hashes": {
+    "config_sha256": "4242ec57f5de447f7217ef917e794420eade51b77b2f1446eadf9b9d6975bed0",
+    "metrics_sha256": "3e3f5fe52c5e1be40dabc10451c378ae4e43c5805d7f79bae7cda953b8c041d1",
+    "preflight_manifest_sha256": "3d0f01b93606dcd51f945fc56b3e5d5bede9b24286142233a8b3656a40ae9029",
+    "run_result_sha256": {
+      "lr_1e-3": "936718f8ad340d8c91503d26290044de3544107e2f2aeba694292772e6412b1e",
+      "lr_3e-3": "0ff98fae4c28581be6ad01038f98ec950e6cdf29adbe99f4989899258d6e3b25",
+      "lr_3e-4": "b56dc7187530b3680a804b07460e69d960777f84680da57e4cae9a3962228d9f"
+    },
+    "spec_sha256": "a7c490487231518dca4f1cbfa0876a09304c88df6da8652ae5e2dcf24ad0157f"
+  },
+  "candidates": [
+    {
+      "early_loss": 0.6180409847913846,
+      "eligible": true,
+      "initial_objective": 0.7078165659453859,
+      "late_loss": 0.4976934300928907,
+      "late_loss_delta": null,
+      "late_material_std": 0.4256459027528763,
+      "learning_rate": 0.0003,
+      "objective_learning_fraction": 0.2968610032061725,
+      "primary_score_delta": 0.41308701943547543,
+      "reason_codes": [],
+      "record_count": 200,
+      "relative_improvement": 0.1947242297193549,
+      "selected": false
+    },
+    {
+      "early_loss": 0.5448736653753179,
+      "eligible": true,
+      "initial_objective": 0.7078165659453859,
+      "late_loss": 0.21369332219197487,
+      "late_loss_delta": 0.0,
+      "late_material_std": 0.40553708374500275,
+      "learning_rate": 0.001,
+      "objective_learning_fraction": 0.6980950538978157,
+      "primary_score_delta": 0.0,
+      "reason_codes": [],
+      "record_count": 200,
+      "relative_improvement": 0.6078112491548303,
+      "selected": true
+    },
+    {
+      "early_loss": 0.5159924174314467,
+      "eligible": true,
+      "initial_objective": 0.7078165659453859,
+      "late_loss": 0.4869038745725151,
+      "late_loss_delta": null,
+      "late_material_std": 0.36255913972854614,
+      "learning_rate": 0.003,
+      "objective_learning_fraction": 0.3121044377900532,
+      "primary_score_delta": 0.5514372756694617,
+      "reason_codes": [],
+      "record_count": 200,
+      "relative_improvement": 0.056373973485368635,
+      "selected": false
+    }
+  ],
+  "initial_model_hashes": [
+    "136a1b111f16d4491a051745ce42696e89a74190c98c071057f05f8593ca21c5",
+    "136a1b111f16d4491a051745ce42696e89a74190c98c071057f05f8593ca21c5",
+    "136a1b111f16d4491a051745ce42696e89a74190c98c071057f05f8593ca21c5"
+  ],
+  "production_authorized": true,
+  "production_started": false,
+  "qualification_status": "PASS",
+  "schema_version": 1,
+  "selected_learning_rate": 0.001,
+  "selection_reason": "HIGHEST_RELATIVE_IMPROVEMENT",
+  "umbrella_spike_status": null
+}
