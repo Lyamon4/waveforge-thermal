@@ -177,6 +177,40 @@ preflight.
 
 Production optimization не запускалась.
 
+## 2026-08-29 — Independent nominal and registered robustness verification
+
+Все 11 frozen strict-binary candidates/comparators независимо проверены SciPy
+solver на `64×64`, `128×128` и обязательной primary grid `256×256`; семь
+continuous designs отдельно проверены на `128×128`. Transfer выполнен только
+exact nearest-neighbor replication, без повторной фильтрации, volume repair или
+изменения threshold. Все 40 aggregate records и 120 scenario records валидны;
+maximum normalized residual равен `2.409382300637203e-11`.
+
+На `256×256` strongest nominal baseline для всех seeds — `straight_path` с
+worst-case peak `0.31694179815032125`. Strict-binary robust results:
+
+| Seed | Robust worst peak | Improvement | Binary fraction |
+|---:|---:|---:|---:|
+| `20260828` | `0.156506824943584` | `0.506196955223448` | `0.2509765625` |
+| `20260829` | `0.1574716324313547` | `0.5031528395738197` | `0.2509765625` |
+| `20260830` | `0.15663546358885735` | `0.50579108056121` | `0.251220703125` |
+
+Затем все 11 binary designs получили одинаковые 28 registered perturbations:
+308 candidate-case evaluations и 84 derived seed-case comparisons. Все seeds
+прошли `28/28` cases при threshold `2%`. Minimum improvement наблюдалось в
+`shift_A_2_up` и составило `0.482574926666427`, `0.47811022020465904` и
+`0.4827809789795823` по seeds. Maximum perturbation residual равен
+`2.6064612257953468e-11`. Strongest case-wise baseline менялся между
+`straight_path` и соответствующим `single_A`; identity сохранена в каждой
+строке.
+
+Morphology выполнена отдельно для всех 11 candidates/comparators: 33 records,
+без budget repair и вне denominator `23/28`. Для robust designs erosion снизила
+material fraction примерно до `0.206–0.207` и ухудшила worst peak на
+`46.35–47.23%`; dilation подняла fraction примерно до `0.293` и улучшила peak
+на `14.12–14.84%`. Во всех трёх nominal robust maps один four-neighbor
+conductive component.
+
 ## 2026-08-29 — Robust multi-scenario production optimizations
 
 Три заранее зарегистрированных robust runs завершены без early stopping, по
