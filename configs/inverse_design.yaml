@@ -1,6 +1,21 @@
-schema_version: 1
+schema_version: 2
 gate: gate2a
 scope: steady_multi_scenario_inverse_design
+run_namespace: gate2a_mixed_precision_v1
+
+precision:
+  design_dtype: float32
+  filtering_dtype: float32
+  projection_dtype: float32
+  optimizer_state_dtype: float32
+  physics_input_cast_dtype: float64
+  conductivity_dtype: float64
+  forward_solve_dtype: float64
+  adjoint_solve_dtype: float64
+  preconditioner_dtype: float64
+  residual_evaluation_dtype: float64
+  thermal_objective_dtype: float64
+  gradient_return_dtype: float32
 
 physics:
   domain: [1.0, 1.0]
@@ -83,7 +98,7 @@ optimization:
 gradient_validation:
   direction_seeds: [7201, 7202, 7203, 7204, 7205]
   cpu_float64: {steps: [1.0e-2, 3.0e-3, 1.0e-3, 3.0e-4], tolerance: 1.0e-4}
-  cuda_float32: {steps: [1.0e-2, 3.0e-3, 1.0e-3], tolerance: 5.0e-3}
+  cuda_mixed_precision: {steps: [1.0e-2, 3.0e-3, 1.0e-3], tolerance: 5.0e-3}
   adjacent_passing_steps_required: 2
 
 baselines:

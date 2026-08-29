@@ -16,7 +16,8 @@ parameterization enforces continuous volume through an implicit derivative;
 final frozen maps are replicated exactly into the SciPy verification path.
 
 **Tech Stack:** Python 3.11, NumPy/SciPy `float64`, PyTorch 2.13 eager CUDA
-`float32`, pandas, matplotlib, PyYAML, pytest, Ruff.
+mixed precision (`float32` design state, `float64` physics), pandas,
+matplotlib, PyYAML, pytest, Ruff.
 
 **Spec:**
 `docs/superpowers/specs/2026-08-29-gate2-inverse-design-design.md`
@@ -25,8 +26,10 @@ final frozen maps are replicated exactly into the SciPy verification path.
 
 - Work only on branch `gate2a-inverse-design` in
   `.worktrees/gate2a-inverse-design`.
-- Locked spec/tag: `v0.2-gate2a-inverse-design-locked` at
-  `9224601fa656fede09e8be84db8b7d6cc50a7455`.
+- Original locked tag: `v0.2-gate2a-inverse-design-locked` at
+  `9224601fa656fede09e8be84db8b7d6cc50a7455`; it remains immutable.
+- Prospective amendment tag:
+  `v0.2.1-gate2a-mixed-precision-physics-locked` before production.
 - Do not begin Gate 2B; do not install neuraloperator; do not train U-Net/FNO.
 - PyTorch and SciPy share fixtures/configuration, never production operator,
   assembly, face-flux or residual code.
@@ -47,6 +50,10 @@ final frozen maps are replicated exactly into the SciPy verification path.
   means valid physics/gradients but failed effect, binary budget or robustness.
   `INVALID_RUN` means CG/gradient/agreement/finite/artifact integrity failure.
 - Production settings become immutable before the first 600-iteration run.
+- Logits, filtering, projection and Adam state are CUDA `float32`. Projected
+  `D` is cast to `float64` before conductivity interpolation; operator,
+  Jacobi, forward/adjoint CG, residual and thermal objective are `float64`.
+  Autograd returns the final logits gradient in `float32`.
 
 ---
 
@@ -231,8 +238,9 @@ non-positive `pᵀAp` as invalid.
 - [ ] **Step 4: Add forward/adjoint policy and CUDA tests**
 
 Instantiate the same frozen `CGConfig(tol=1e-6,max_iterations=2000)` for both
-roles. Verify CPU/CUDA solutions against SciPy on `32×32` random conductivity
-and source fixtures with temperature relative L2 `≤5e-5`.
+roles. Verify CPU/CUDA `float64` solutions against SciPy on `32×32` random
+conductivity and source fixtures with temperature relative L2 `≤5e-5` and
+explicit relative residual `≤1e-6`.
 
 - [ ] **Step 5: Verify and commit**
 
@@ -336,7 +344,10 @@ Forward solves `A(k)T=q` under `no_grad`. Backward solves
 `-sum(lambda * apply_steady_operator(T,k))` and differentiates only with
 respect to `k`. Return source gradient `lambda` when required. Append forward
 and adjoint diagnostics to `SolveTrace`; any CG failure raises and invalidates
-the caller.
+the caller. Projected `float32 D` is cast to `float64` before computing
+`k(D)=1+19D³`; temperatures, thermal objective and adjoint remain `float64`,
+and autograd casts the resulting gradient back through `D.to(float64)` to the
+`float32` design path.
 
 - [ ] **Step 6: Verify and commit**
 
@@ -347,7 +358,7 @@ Commit: `feat: add implicit-adjoint steady objective`
 
 ---
 
-### Task 6: Full-pipeline CPU and CUDA gradient gate
+### Task 6: Full-pipeline CPU and CUDA mixed-precision gradient gate
 
 **Files:**
 - Create: `src/waveforge/design/gradient_validation.py`
@@ -375,11 +386,13 @@ Run logits through upsampling, radius-3 filter, implicit volume projection,
 `k(D)`, three solves and normalized objective. Require all five directions to
 meet `1e-4` under the locked adjacency rule.
 
-- [ ] **Step 4: Add mandatory CUDA `float32` test**
+- [ ] **Step 4: Add mandatory CUDA mixed-precision test**
 
-Fail rather than skip when the locked environment reports no CUDA. Require all
-five directions to meet `5e-3`; save every step result to a DataFrame-ready
-record sequence.
+Fail rather than skip when the locked environment reports no CUDA. Start from
+CUDA `float32` logits and assert filter/projection/logit gradient dtypes; assert
+conductivity, forward/adjoint solves, explicit residual and thermal objective
+are CUDA `float64`. Require all five directions to meet `5e-3`; save every step
+result to a DataFrame-ready record sequence.
 
 - [ ] **Step 5: Verify and commit**
 
@@ -425,6 +438,45 @@ Commit: `feat: add pre-registered Gate 2A baselines`
 
 ---
 
+### Task 7A: Pre-production mixed-precision CG qualification
+
+**Files:**
+- Create: `src/waveforge/experiments/qualify_cg.py`
+- Create: `tests/test_cg_qualification.py`
+- Create: `artifacts/gate2_design/preflight/mixed_precision_cg_stress.csv`
+- Create: `artifacts/gate2_design/preflight/mixed_precision_cg_stress.json`
+
+**Interfaces:**
+- Produces deterministic forward/adjoint stress fixtures and machine-readable
+  qualification records before any optimization run.
+
+- [ ] **Step 1: Write failing literal fixture-registry tests**
+
+Require uniform `k=1`, uniform `k=20`, smooth random, high-contrast random,
+straight-path binary, dispersed binary and projected designs at each of
+`beta=1,2,4,8`. Assert fixture IDs, seeds and dtype/device expectations.
+
+- [ ] **Step 2: Implement independent stress qualification**
+
+For every fixture and every required forward/adjoint RHS, run the unchanged
+Jacobi-CG protocol on CUDA `float64`. Record iterations, explicit relative
+residual, convergence, wall time, fixture hash and role. Any non-finite value,
+residual above `1e-6` or 2000-iteration failure is `INVALID_RUN`.
+
+- [ ] **Step 3: Preserve the rejected preflight and version new artifacts**
+
+Keep `cuda_float32_residual_floor.json` unchanged with schema `1` and
+`INVALID_RUN`. Write mixed-precision qualification artifacts with schema `2`,
+new run namespace/config hash and prospective protocol tag.
+
+- [ ] **Step 4: Verify and commit**
+
+Run: `python -m pytest tests/test_cg_qualification.py -v`
+
+Commit: `test: qualify mixed-precision Gate 2A physics`
+
+---
+
 ### Task 8: Optimization runner and numerical smoke run
 
 **Files:**
@@ -455,7 +507,14 @@ Use Adam `lr=0.05`, clip global norm to `1.0`, checkpoint every 50 iterations,
 log all objective components/volumes/CG records, and never early-stop a
 production run. Serialize initial logits before iteration zero.
 
-- [ ] **Step 4: Run one smoke optimization**
+- [ ] **Step 4: Benchmark one complete forward-plus-adjoint iteration**
+
+Run one production-shaped three-scenario objective and backward pass, including
+projection, `float64` physics, direct regularizers and return to `float32`
+logits gradient. Record wall time, peak CUDA memory, all forward/adjoint CG
+diagnostics and dtypes. This benchmark must pass before the smoke run.
+
+- [ ] **Step 5: Run one smoke optimization**
 
 Use the production `64×64` physics and three scenarios but only 10 iterations,
 seed `20260828`, with output under `artifacts/gate2_design/smoke/`. The smoke
@@ -463,7 +522,7 @@ gate requires finite objective/gradients, exact continuous volume, converged CG
 and decreasing best-so-far exact peak at least once. It may not change locked
 production settings.
 
-- [ ] **Step 5: Verify and commit**
+- [ ] **Step 6: Verify and commit**
 
 Run: `python -m pytest tests/test_optimization.py -v`
 
@@ -570,6 +629,8 @@ Commit: `feat: add registered Gate 2A robustness verification`
 
 Write config SHA-256, source hashes, initial-logit hashes, environment identity
 and locked tag SHA into `artifacts/gate2_design/production_manifest.json`.
+Use artifact schema `2` and a new run ID under namespace
+`gate2a_mixed_precision_v1`; never reuse the rejected `float32` preflight ID.
 Verify Git worktree is clean before run start. From this point, source/config
 changes invalidate all production outputs.
 

@@ -105,12 +105,35 @@ schedules и verification rules становятся immutable для production
 
 Во время TDD для fail-closed CG recursive residual был заменён обязательной
 явной проверкой `||b-Ax||₂/||b||₂`. На CUDA `float32` эта проверка выявила
-precision floor выше locked tolerance `1e-6`: даже точное SciPy `float64`
+empirical precision floor выше locked tolerance `1e-6`: даже точное SciPy `float64`
 решение после представления как `float32` даёт residual `4.78e-5` на uniform
 `64×64, k=1` и `5.41e-5` при `k=1.296875`. Следовательно, проблема не является
-недостатком iterations или CG convergence: один `float32` temperature tensor
-не может представить решение с требуемым residual для locked operator scale.
+недостатком iterations или обычной CG convergence: в проверенной CUDA
+`float32` реализации наблюдаемый representation/roundoff floor оказался выше
+locked residual. Это эмпирический результат, а не математическая нижняя граница
+для всех возможных `float32` algorithms.
 
 Ни tolerance, ни dtype молча не изменялись. Gate 2A implementation остановлена
 до выбора между higher-precision physics solve и изменением CUDA residual
 criterion. Production optimization не запускалась.
+
+## 2026-08-29 — Prospective mixed-precision amendment approved
+
+До production optimization пользователь утвердил новый precision contract:
+design/filter/projection/Adam state остаются CUDA `float32`, projected `D`
+переводится в `float64` до conductivity interpolation, а operator, Jacobi,
+forward/adjoint CG, explicit residual и thermal objective выполняются в
+`float64`. Gradient возвращается через autograd в `float32` logits; implicit
+volume-projection derivative не detach'ится.
+
+Residual `1e-6`, maximum `2000` iterations и CUDA directional-gradient
+tolerance `5e-3` не менялись. Старый protocol tag сохраняется; amendment
+получает отдельный tag `v0.2.1-gate2a-mixed-precision-physics-locked`, config
+schema `2`, новый config hash и отдельный production run namespace. Rejected
+CUDA `float32` diagnostic остаётся сохранён как `INVALID_RUN`.
+
+- New config SHA-256:
+  `ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec`.
+- Amended specification SHA-256:
+  `2ac31164574b985f708d4f430bc0ea1c371027005d65ef049b489d7e964638c7`.
+- Production optimization started: `false`.
