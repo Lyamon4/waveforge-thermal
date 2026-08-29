@@ -92,3 +92,11 @@ fail-closed Jacobi-CG protocol, независимость SciPy/PyTorch operato
 baseline и perturbation registries, `N(0,0.1²)` initial logits и точные
 нормировки smooth maximum/TV. Результаты Gate 2 при выборе этих settings не
 просматривались.
+
+## 2026-08-29 — Gate 2A specification approval and lock
+
+Пользователь утвердил фактическую revised specification без дополнительного
+design review. Перед implementation status изменён на
+`approved and locked before Gate 2A implementation`. На момент lock Gate 2A
+optimization не запускалась; objective, thresholds, baselines, material budget,
+schedules и verification rules становятся immutable для production runs.

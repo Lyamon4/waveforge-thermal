@@ -1,6 +1,6 @@
 # WaveForge Thermal — Gate 2 inverse-design specification
 
-**Status:** revised draft for user review after accepted Gate 1
+**Status:** approved and locked before Gate 2A implementation
 
 **Scope:** Gate 2A steady multi-scenario inverse design; Gate 2B remains deferred
 
