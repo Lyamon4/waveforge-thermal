@@ -40,6 +40,7 @@ from waveforge.reproducibility import (
     configure_cuda_reproducibility,
     content_hash,
 )
+from waveforge.verification import nca_verification
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CONFIG_PATH = PROJECT_ROOT / "configs" / "pure_nca_spike.yaml"
@@ -400,6 +401,166 @@ def run_production_phase(
     return manifest
 
 
+def run_verification_phase(output_dir: Path) -> dict[str, Any]:
+    """Verify all registered final designs with independent CPU SciPy physics."""
+    protocol = load_nca_protocol(CONFIG_PATH)
+    verifications = []
+    production_manifests: list[dict[str, Any]] = []
+    production_valid = True
+    for seed in protocol.production.seeds:
+        run_dir = output_dir / f"production_seed_{seed}"
+        manifest_path = run_dir / "production_manifest.json"
+        if not manifest_path.is_file():
+            production_valid = False
+            continue
+        manifest = _read_json(manifest_path)
+        production_manifests.append(manifest)
+        valid = bool(
+            manifest.get("status") == "VALID_PRODUCTION_RUN"
+            and manifest.get("seed") == seed
+            and manifest.get("completed_iterations") in (None, 2000)
+        )
+        production_valid &= valid
+        continuous = np.load(run_dir / "design_continuous_64.npy", allow_pickle=False)
+        binary = np.load(run_dir / "design_binary_64.npy", allow_pickle=False)
+        verifications.append(
+            nca_verification.verify_nca_seed(
+                f"nca_{seed}",
+                binary,
+                continuous_design=continuous,
+                expected_binary_content_hash=manifest.get("binary_design_sha256"),
+                expected_continuous_content_hash=manifest.get(
+                    "continuous_design_sha256"
+                ),
+                production_valid=valid,
+            )
+        )
+
+    if len(verifications) != len(protocol.production.seeds):
+        production_valid = False
+    campaign = nca_verification.classify_nca_campaign(
+        [verification.verdict for verification in verifications],
+        production_valid=production_valid,
+        reproduction_valid=True,
+    )
+
+    def metrics_row(verification, candidate) -> dict[str, Any]:
+        peaks = {
+            record.scenario_id: record.peak_temperature
+            for record in candidate.scenario_records
+        }
+        return {
+            "seed": verification.verdict.seed,
+            "candidate_id": verification.candidate_id,
+            "peak_A": peaks["A"],
+            "peak_B": peaks["B"],
+            "peak_C": peaks["C"],
+            "worst_peak": candidate.worst_peak,
+            "average_peak": candidate.average_peak,
+            "protected_zone_peak": candidate.protected_zone_peak,
+            "binary_material_fraction": verification.verdict.binary_fraction,
+            "total_variation": candidate.total_variation,
+            "transferred_design_sha256": candidate.transferred_design_hash,
+            "total_wall_seconds": candidate.total_wall_seconds,
+            "seed_status": verification.verdict.status.value,
+        }
+
+    _atomic_csv(
+        output_dir / "verified_128_metrics.csv",
+        pd.DataFrame(
+            [metrics_row(item, item.verification_128) for item in verifications]
+        ),
+    )
+    _atomic_csv(
+        output_dir / "verified_256_metrics.csv",
+        pd.DataFrame(
+            [metrics_row(item, item.verification_256) for item in verifications]
+        ),
+    )
+    _atomic_csv(
+        output_dir / "grid_transfer_diagnostics.csv",
+        pd.DataFrame(
+            [
+                {
+                    "seed": item.verdict.seed,
+                    "tmax_128": item.verification_128.worst_peak,
+                    "tmax_256": item.verification_256.worst_peak,
+                    "relative_128_to_256_change": (item.relative_128_to_256_change),
+                }
+                for item in verifications
+            ]
+        ),
+    )
+    _atomic_csv(
+        output_dir / "connectivity_diagnostics.csv",
+        pd.DataFrame(
+            [
+                {
+                    "seed": item.verdict.seed,
+                    "conductive_cell_count": item.connectivity.conductive_cell_count,
+                    "component_count": item.connectivity.component_count,
+                    "sink_connected_cell_count": (
+                        item.connectivity.sink_connected_cell_count
+                    ),
+                    "sink_connected_fraction": (
+                        item.connectivity.sink_connected_fraction
+                    ),
+                    **{
+                        f"source_{scenario}_intersection_cells": count
+                        for scenario, count in (
+                            item.connectivity.source_intersection_cell_counts.items()
+                        )
+                    },
+                    **{
+                        f"source_{scenario}_sink_connected": connected
+                        for scenario, connected in (
+                            item.connectivity.sink_component_source_intersections.items()
+                        )
+                    },
+                }
+                for item in verifications
+            ]
+        ),
+    )
+    comparator_rows: list[dict[str, Any]] = []
+    for item in verifications:
+        for comparator in nca_verification.fixed_comparator_records(
+            item.verification_256.worst_peak,
+            project_root=PROJECT_ROOT,
+        ):
+            comparator_rows.append(
+                {
+                    "seed": item.verdict.seed,
+                    **nca_verification.dataclass_payload(comparator),
+                }
+            )
+    _atomic_csv(output_dir / "comparator_metrics.csv", pd.DataFrame(comparator_rows))
+
+    payload = {
+        "schema_version": 1,
+        "status": campaign.status,
+        "campaign": nca_verification.dataclass_payload(campaign),
+        "seed_verifications": [
+            nca_verification.dataclass_payload(item) for item in verifications
+        ],
+        "production_manifest_hashes": {
+            str(manifest["seed"]): artifact_sha256(
+                output_dir
+                / f"production_seed_{manifest['seed']}"
+                / "production_manifest.json"
+            )
+            for manifest in production_manifests
+        },
+        "config_sha256": artifact_sha256(CONFIG_PATH),
+        "spec_sha256": artifact_sha256(SPEC_PATH),
+        "verification_git_sha": _git_sha(),
+        "primary_authority": "independent_cpu_scipy_256",
+        "secondary_grid_has_verdict_authority": False,
+    }
+    _write_json(output_dir / "nca_verification_verdict.json", payload)
+    return payload
+
+
 def benchmark_complete_steps(
     *,
     sources: Tensor | object,
@@ -723,6 +884,8 @@ def main() -> None:
         if args.seed is None:
             raise ValueError("--seed is required for production")
         run_production_phase(args.output, seed=args.seed)
+    elif args.phase == "verification":
+        run_verification_phase(args.output)
     else:
         raise NotImplementedError(f"phase {args.phase} is not implemented yet")
 
