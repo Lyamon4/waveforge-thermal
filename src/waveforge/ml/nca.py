@@ -54,7 +54,11 @@ def build_static_condition(sources: Tensor) -> Tensor:
     return torch.stack((source_condition, sink_mask), dim=0).unsqueeze(0)
 
 
-def project_nca_material(material_logit: Tensor) -> NCAProjectedDesign:
+def project_nca_material(
+    material_logit: Tensor,
+    *,
+    beta: float = 8.0,
+) -> NCAProjectedDesign:
     """Map the final NCA material channel to the fixed-budget design."""
     if material_logit.shape != (1, 1, 64, 64):
         raise ValueError("material_logit must have shape [1,1,64,64]")
@@ -71,7 +75,7 @@ def project_nca_material(material_logit: Tensor) -> NCAProjectedDesign:
     )
     design, diagnostics = project_volume(
         filtered,
-        beta=8.0,
+        beta=beta,
         target=0.25,
         bracket=(-40.0, 40.0),
         maximum_iterations=80,

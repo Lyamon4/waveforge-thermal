@@ -135,6 +135,10 @@ def evaluate_nca(
     allow_cpu_unit_test: bool = False,
     include_binary_diagnostic: bool = False,
     snapshot_steps: tuple[int, ...] = (),
+    projection_beta: float = 8.0,
+    smooth_max_alpha: float = 500.0,
+    tv_weight: float = 1.0e-3,
+    binarization_weight: float = 0.02,
 ) -> NCAForwardResult:
     """Evaluate the fixed NCA, projection, steady physics and objective."""
     device, dtype = _model_device_and_dtype(model)
@@ -151,7 +155,7 @@ def evaluate_nca(
 
     condition = build_static_condition(sources)
     rollout = model.rollout(condition, snapshot_steps=snapshot_steps)
-    projected = project_nca_material(rollout.material_logit)
+    projected = project_nca_material(rollout.material_logit, beta=projection_beta)
     conductivity = 1.0 + 19.0 * projected.design.to(torch.float64).pow(3)
     solve_trace = trace if trace is not None else SolveTrace()
     temperatures = solve_steady_implicit(
@@ -163,9 +167,9 @@ def evaluate_nca(
     objective = objective_components(
         temperatures,
         projected.design,
-        alpha=500.0,
-        tv_weight=1.0e-3,
-        binarization_weight=0.02,
+        alpha=smooth_max_alpha,
+        tv_weight=tv_weight,
+        binarization_weight=binarization_weight,
     )
     diagnostic_binary: Tensor | None = None
     if include_binary_diagnostic:
@@ -339,13 +343,14 @@ def _write_checkpoint(
     model: PureNCA,
     optimizer: torch.optim.Optimizer,
     seed: int,
-    learning_rate: float,
+    initial_learning_rate: float,
     completed_updates: int,
 ) -> None:
     payload = {
         "schema_version": 1,
         "seed": seed,
-        "learning_rate": learning_rate,
+        "initial_learning_rate": initial_learning_rate,
+        "learning_rate": float(optimizer.param_groups[0]["lr"]),
         "completed_updates": completed_updates,
         "last_iteration": completed_updates - 1,
         "model_state_sha256": model_state_sha256(model),
@@ -450,6 +455,9 @@ def run_nca_training(
     synchronize: Callable[[], None] | None = None,
     clock: Callable[[], float] = time.perf_counter,
     iteration_start_hook: Callable[[int], None] | None = None,
+    iteration_configurator: (
+        Callable[[int, torch.optim.Optimizer], None] | None
+    ) = None,
 ) -> NCARunResult:
     """Run fixed Adam updates, fail closed, and freeze the post-update design."""
     if iterations < 1:
@@ -479,6 +487,8 @@ def run_nca_training(
 
     try:
         for iteration in range(iterations):
+            if iteration_configurator is not None:
+                iteration_configurator(iteration, optimizer)
             if synchronize is not None:
                 synchronize()
             if iteration_start_hook is not None:
@@ -528,7 +538,7 @@ def run_nca_training(
                     model=model,
                     optimizer=optimizer,
                     seed=seed,
-                    learning_rate=learning_rate,
+                    initial_learning_rate=learning_rate,
                     completed_updates=completed_updates,
                 )
 
