@@ -4,22 +4,43 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 from collections.abc import Callable
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+import pandas as pd
 import torch
 
 from waveforge.environment import collect_environment
 from waveforge.experiments.run_inverse_design import gate2_source_batch
+from waveforge.ml.nca import PureNCA, build_static_condition, project_nca_material
+from waveforge.ml.nca2_qualification import (
+    DevelopmentSeedMetrics,
+    NCA2QualificationVerdict,
+    classify_development_seed,
+    select_nca2_protocol,
+    summarize_protocol,
+)
+from waveforge.ml.nca2_schedule import objective_settings_at
 from waveforge.ml.nca2_training import ScheduledNCAController
-from waveforge.ml.nca_training import NCARunResult, NCARunStatus, run_nca_training
+from waveforge.ml.nca_training import (
+    NCARunResult,
+    NCARunStatus,
+    model_state_sha256,
+    run_nca_training,
+)
 from waveforge.reproducibility import (
     artifact_sha256,
     configure_cuda_reproducibility,
+)
+from waveforge.verification.high_fidelity import verify_candidate
+from waveforge.verification.nca_verification import (
+    NCAConnectivityDiagnostic,
+    connectivity_diagnostic,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -29,6 +50,47 @@ SPEC_PATH = (
     / "docs/superpowers/specs/2026-08-30-nca2-stabilized-training-design.md"
 )
 OLD_VERDICT_PATH = PROJECT_ROOT / "artifacts/pure_nca_spike/nca_spike_verdict.json"
+DEVELOPMENT_SEEDS = (20260901, 20260902, 20260903)
+QUALIFICATION_CHECKPOINTS = (500, 550, 600, 650, 700)
+
+
+@dataclass(frozen=True)
+class QualificationRun:
+    """One registered development run and its immutable location."""
+
+    protocol_id: str
+    seed: int
+    run_dir: Path
+    result: Any
+
+    @property
+    def initial_model_hash(self) -> str:
+        return str(self.result.initial_model_hash)
+
+
+@dataclass(frozen=True)
+class FrozenNCA2Design:
+    """Strict post-update design regenerated from a registered checkpoint."""
+
+    continuous_design: np.ndarray
+    binary_design: np.ndarray
+    checkpoint_model_hash: str
+
+
+@dataclass(frozen=True)
+class QualificationCheckpointDiagnostic:
+    """Independent low-grid thermal and engineering checkpoint diagnostic."""
+
+    protocol_id: str
+    seed: int
+    completed_updates: int
+    worst_peak: float
+    binary_fraction: float
+    connectivity: NCAConnectivityDiagnostic
+
+
+class NCA2GateError(RuntimeError):
+    """A locked phase input is missing, inconsistent or unauthorized."""
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -40,6 +102,23 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
         newline="\n",
     )
     temporary.replace(path)
+
+
+def _atomic_csv(path: Path, frame: pd.DataFrame) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(frame.to_csv(index=False), encoding="utf-8", newline="\n")
+    temporary.replace(path)
+
+
+def _json_safe(value: Any) -> Any:
+    if isinstance(value, float) and not np.isfinite(value):
+        return None
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_json_safe(item) for item in value]
+    return value
 
 
 def _git_sha() -> str:
@@ -145,6 +224,125 @@ def validate_runtime_gate(report: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def execute_qualification_runs(
+    *,
+    output_dir: Path,
+    sources: object,
+    training_runner: Callable[..., NCARunResult] = run_nca_training,
+    synchronizer: Callable[[], None] = torch.cuda.synchronize,
+    seed_configurator: Callable[[int], Any] = configure_cuda_reproducibility,
+) -> tuple[QualificationRun, ...]:
+    """Execute the exact two-by-three prospective development registry."""
+    runs: list[QualificationRun] = []
+    for protocol_id in ("A", "B"):
+        for seed in DEVELOPMENT_SEEDS:
+            seed_configurator(seed)
+            controller = ScheduledNCAController(protocol_id)
+            run_dir = (
+                output_dir / "qualification" / f"protocol_{protocol_id}" / str(seed)
+            )
+            result = training_runner(
+                sources=sources,
+                seed=seed,
+                learning_rate=1.0e-3,
+                iterations=700,
+                mode="qualification",
+                output_dir=run_dir,
+                evaluator=controller.evaluate,
+                checkpoint_interval=50,
+                synchronize=synchronizer,
+                iteration_configurator=controller.configure,
+            )
+            runs.append(
+                QualificationRun(
+                    protocol_id=protocol_id,
+                    seed=seed,
+                    run_dir=run_dir,
+                    result=result,
+                )
+            )
+    return tuple(runs)
+
+
+def freeze_nca2_checkpoint(
+    *,
+    checkpoint_path: Path,
+    sources: torch.Tensor,
+    completed_updates: int,
+    protocol_id: str,
+) -> FrozenNCA2Design:
+    """Regenerate the strict design for one exact post-update checkpoint."""
+    del protocol_id
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+    if (
+        checkpoint.get("completed_updates") != completed_updates
+        or checkpoint.get("last_iteration") != completed_updates - 1
+    ):
+        raise RuntimeError("qualification checkpoint metadata mismatch")
+    model = PureNCA().to(device=sources.device, dtype=torch.float32)
+    model.load_state_dict(checkpoint["model_state"], strict=True)
+    checkpoint_hash = model_state_sha256(model)
+    if checkpoint_hash != checkpoint.get("model_state_sha256"):
+        raise RuntimeError("qualification checkpoint model hash mismatch")
+    settings = objective_settings_at(completed_updates - 1)
+    with torch.no_grad():
+        rollout = model.rollout(build_static_condition(sources))
+        projected = project_nca_material(
+            rollout.material_logit,
+            beta=settings.projection_beta,
+        ).design
+        binary = (projected >= 0.5).to(torch.float64)
+    return FrozenNCA2Design(
+        continuous_design=projected[0, 0].cpu().numpy(),
+        binary_design=binary[0, 0].cpu().numpy(),
+        checkpoint_model_hash=checkpoint_hash,
+    )
+
+
+def evaluate_qualification_checkpoints(
+    *,
+    protocol_id: str,
+    seed: int,
+    run_dir: Path,
+    sources: object,
+    finalizer: Callable[..., FrozenNCA2Design] = freeze_nca2_checkpoint,
+    verifier: Callable[..., Any] = verify_candidate,
+) -> tuple[QualificationCheckpointDiagnostic, ...]:
+    """Evaluate all five registered checkpoints with independent SciPy physics."""
+    expected_names = [
+        f"checkpoint_{completed:06d}.pt" for completed in range(50, 701, 50)
+    ]
+    actual_names = sorted(path.name for path in run_dir.glob("checkpoint_*.pt"))
+    if actual_names != expected_names:
+        raise RuntimeError("qualification checkpoint registry is incomplete")
+    rows: list[QualificationCheckpointDiagnostic] = []
+    for completed_updates in QUALIFICATION_CHECKPOINTS:
+        frozen = finalizer(
+            checkpoint_path=run_dir / f"checkpoint_{completed_updates:06d}.pt",
+            sources=sources,
+            completed_updates=completed_updates,
+            protocol_id=protocol_id,
+        )
+        candidate_id = f"{protocol_id}_{seed}_{completed_updates}"
+        verification = verifier(
+            candidate_id,
+            frozen.binary_design,
+            fidelity="low_64",
+        )
+        connectivity = connectivity_diagnostic(frozen.binary_design)
+        rows.append(
+            QualificationCheckpointDiagnostic(
+                protocol_id=protocol_id,
+                seed=seed,
+                completed_updates=completed_updates,
+                worst_peak=float(verification.worst_peak),
+                binary_fraction=float(frozen.binary_design.mean()),
+                connectivity=connectivity,
+            )
+        )
+    return tuple(rows)
+
+
 def build_protocol_manifest(
     *,
     benchmark: dict[str, Any],
@@ -197,9 +395,149 @@ def run_benchmark_phase(output_dir: Path) -> dict[str, Any]:
     return gated
 
 
+def _validate_qualification_gate(output_dir: Path) -> dict[str, Any]:
+    benchmark_path = output_dir / "revised_loop_benchmark.json"
+    manifest_path = output_dir / "protocol_manifest.json"
+    if not benchmark_path.is_file() or not manifest_path.is_file():
+        raise NCA2GateError("runtime benchmark gate artifacts are missing")
+    benchmark = json.loads(benchmark_path.read_text(encoding="utf-8"))
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if (
+        benchmark.get("status") != "PASS"
+        or benchmark.get("qualification_authorized") is not True
+        or manifest.get("qualification_authorized") is not True
+    ):
+        raise NCA2GateError("runtime gate did not authorize qualification")
+    expected = {
+        "config_sha256": artifact_sha256(CONFIG_PATH),
+        "spec_sha256": artifact_sha256(SPEC_PATH),
+        "old_verdict_sha256": artifact_sha256(OLD_VERDICT_PATH),
+    }
+    if any(manifest.get(key) != value for key, value in expected.items()):
+        raise NCA2GateError("runtime gate provenance hash mismatch")
+    return manifest
+
+
+def _engineering_connectivity_pass(
+    diagnostic: QualificationCheckpointDiagnostic,
+) -> bool:
+    intersections = diagnostic.connectivity.sink_component_source_intersections
+    return all(intersections.get(scenario_id, False) for scenario_id in ("A", "B", "C"))
+
+
+def run_qualification_phase(output_dir: Path) -> NCA2QualificationVerdict:
+    """Run the locked six-run development comparison and freeze A/B selection."""
+    manifest = _validate_qualification_gate(output_dir)
+    if not torch.cuda.is_available():
+        raise NCA2GateError("CUDA is unavailable; qualification cannot use CPU")
+    sources = gate2_source_batch(device=torch.device("cuda"))
+    runs = execute_qualification_runs(output_dir=output_dir, sources=sources)
+    diagnostic_rows: list[QualificationCheckpointDiagnostic] = []
+    seed_metrics: list[DevelopmentSeedMetrics] = []
+    run_registry: list[dict[str, Any]] = []
+    run_by_key = {(run.protocol_id, run.seed): run for run in runs}
+    for run in runs:
+        result = run.result
+        numerically_valid = bool(
+            result.status is NCARunStatus.PASS
+            and result.completed_iterations == 700
+            and [record.iteration for record in result.records] == list(range(700))
+        )
+        diagnostics: tuple[QualificationCheckpointDiagnostic, ...] = ()
+        reason_codes = list(getattr(result, "reason_codes", ()))
+        if numerically_valid:
+            try:
+                diagnostics = evaluate_qualification_checkpoints(
+                    protocol_id=run.protocol_id,
+                    seed=run.seed,
+                    run_dir=run.run_dir,
+                    sources=sources,
+                )
+            except (RuntimeError, ValueError) as error:
+                numerically_valid = False
+                reason_codes.append(type(error).__name__)
+        diagnostic_rows.extend(diagnostics)
+        initial_peer = run_by_key[("B" if run.protocol_id == "A" else "A", run.seed)]
+        if run.initial_model_hash != initial_peer.initial_model_hash:
+            numerically_valid = False
+            reason_codes.append("INITIAL_MODEL_MISMATCH")
+        final_diagnostic = diagnostics[-1] if diagnostics else None
+        peaks = (
+            tuple(row.worst_peak for row in diagnostics)
+            if diagnostics
+            else (math.nan,) * 5
+        )
+        metric = classify_development_seed(
+            protocol_id=run.protocol_id,
+            seed=run.seed,
+            checkpoint_peaks=peaks,
+            binary_fraction=(
+                final_diagnostic.binary_fraction if final_diagnostic else math.nan
+            ),
+            numerically_valid=numerically_valid,
+            connectivity_pass=(
+                _engineering_connectivity_pass(final_diagnostic)
+                if final_diagnostic
+                else False
+            ),
+        )
+        seed_metrics.append(metric)
+        result_path = run.run_dir / "nca_run_result.json"
+        run_registry.append(
+            {
+                "protocol_id": run.protocol_id,
+                "seed": run.seed,
+                "status": result.status.value,
+                "completed_iterations": result.completed_iterations,
+                "initial_model_sha256": run.initial_model_hash,
+                "final_model_sha256": result.final_model_hash,
+                "reason_codes": reason_codes,
+                "run_result_sha256": (
+                    artifact_sha256(result_path) if result_path.is_file() else None
+                ),
+            }
+        )
+    protocol_a = summarize_protocol(
+        "A", tuple(metric for metric in seed_metrics if metric.protocol_id == "A")
+    )
+    protocol_b = summarize_protocol(
+        "B", tuple(metric for metric in seed_metrics if metric.protocol_id == "B")
+    )
+    verdict = select_nca2_protocol(protocol_a, protocol_b)
+    metrics_rows = []
+    for row in diagnostic_rows:
+        payload = asdict(row)
+        payload["connectivity"] = json.dumps(
+            payload["connectivity"], sort_keys=True, separators=(",", ":")
+        )
+        metrics_rows.append(payload)
+    metrics_path = output_dir / "qualification_metrics.csv"
+    _atomic_csv(metrics_path, pd.DataFrame(metrics_rows))
+    payload = _json_safe(
+        {
+            "schema_version": 1,
+            **asdict(verdict),
+            "run_registry": run_registry,
+            "artifact_hashes": {
+                "config_sha256": artifact_sha256(CONFIG_PATH),
+                "spec_sha256": artifact_sha256(SPEC_PATH),
+                "old_verdict_sha256": artifact_sha256(OLD_VERDICT_PATH),
+                "protocol_manifest_sha256": artifact_sha256(
+                    output_dir / "protocol_manifest.json"
+                ),
+                "qualification_metrics_sha256": artifact_sha256(metrics_path),
+            },
+            "implementation_git_sha": _git_sha(),
+            "runtime_gate_implementation_git_sha": manifest["implementation_git_sha"],
+        }
+    )
+    _write_json(output_dir / "qualification_verdict.json", payload)
+    return verdict
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("benchmark",))
+    parser.add_argument("phase", choices=("benchmark", "qualification"))
     parser.add_argument(
         "--output",
         type=Path,
@@ -212,6 +550,8 @@ def main() -> None:
     args = _parse_args()
     if args.phase == "benchmark":
         run_benchmark_phase(args.output)
+    elif args.phase == "qualification":
+        run_qualification_phase(args.output)
 
 
 if __name__ == "__main__":

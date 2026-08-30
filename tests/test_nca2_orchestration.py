@@ -4,11 +4,14 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
 from waveforge.experiments.run_nca2_stabilization import (
     benchmark_revised_loop,
     build_protocol_manifest,
+    evaluate_qualification_checkpoints,
+    execute_qualification_runs,
     validate_runtime_gate,
 )
 from waveforge.ml.nca_training import NCARunStatus
@@ -131,4 +134,107 @@ def test_protocol_manifest_keeps_old_result_and_exact_provenance(
             reset_peak_memory=lambda: None,
             peak_allocated_memory=lambda: 0,
             peak_reserved_memory=lambda: 0,
+        )
+
+
+def test_qualification_executes_exact_cartesian_registry(tmp_path: Path) -> None:
+    calls: list[dict] = []
+    configured_seeds: list[int] = []
+
+    def fake_runner(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(
+            status=NCARunStatus.PASS,
+            completed_iterations=700,
+            initial_model_hash=f"initial-{kwargs['seed']}",
+            records=tuple(SimpleNamespace(iteration=index) for index in range(700)),
+        )
+
+    runs = execute_qualification_runs(
+        output_dir=tmp_path,
+        sources=object(),
+        training_runner=fake_runner,
+        synchronizer=lambda: None,
+        seed_configurator=lambda seed: configured_seeds.append(seed),
+    )
+
+    assert [(run.protocol_id, run.seed) for run in runs] == [
+        ("A", 20260901),
+        ("A", 20260902),
+        ("A", 20260903),
+        ("B", 20260901),
+        ("B", 20260902),
+        ("B", 20260903),
+    ]
+    assert all(call["iterations"] == 700 for call in calls)
+    assert all(call["checkpoint_interval"] == 50 for call in calls)
+    assert all(call["mode"] == "qualification" for call in calls)
+    assert configured_seeds == [
+        20260901,
+        20260902,
+        20260903,
+        20260901,
+        20260902,
+        20260903,
+    ]
+    for seed in (20260901, 20260902, 20260903):
+        hashes = [run.initial_model_hash for run in runs if run.seed == seed]
+        assert hashes == [f"initial-{seed}", f"initial-{seed}"]
+
+
+def test_qualification_checkpoint_registry_is_exact_and_independent(
+    tmp_path: Path,
+) -> None:
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    for completed in range(50, 701, 50):
+        (run_dir / f"checkpoint_{completed:06d}.pt").write_bytes(b"checkpoint")
+
+    calls: list[tuple[int, str]] = []
+
+    def fake_finalizer(**kwargs):
+        del kwargs
+        design = np.zeros((64, 64), dtype=np.float64)
+        design[:, :16] = 1.0
+        return SimpleNamespace(continuous_design=design, binary_design=design)
+
+    def fake_verifier(candidate_id, design, *, fidelity):
+        del design
+        calls.append((int(candidate_id.rsplit("_", 1)[1]), fidelity))
+        return SimpleNamespace(worst_peak=0.2 - len(calls) * 0.001)
+
+    diagnostics = evaluate_qualification_checkpoints(
+        protocol_id="B",
+        seed=20260901,
+        run_dir=run_dir,
+        sources=object(),
+        finalizer=fake_finalizer,
+        verifier=fake_verifier,
+    )
+
+    assert [row.completed_updates for row in diagnostics] == [
+        500,
+        550,
+        600,
+        650,
+        700,
+    ]
+    assert calls == [
+        (500, "low_64"),
+        (550, "low_64"),
+        (600, "low_64"),
+        (650, "low_64"),
+        (700, "low_64"),
+    ]
+    assert diagnostics[-1].binary_fraction == 0.25
+
+    (run_dir / "checkpoint_000650.pt").unlink()
+    with pytest.raises(RuntimeError, match="checkpoint registry"):
+        evaluate_qualification_checkpoints(
+            protocol_id="B",
+            seed=20260901,
+            run_dir=run_dir,
+            sources=object(),
+            finalizer=fake_finalizer,
+            verifier=fake_verifier,
         )

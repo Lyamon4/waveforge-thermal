@@ -183,7 +183,10 @@ def _grid_diagnostic(result: CandidateVerification) -> NCAGridDiagnostic:
     )
 
 
-def _connectivity(binary: NDArray[np.float64]) -> NCAConnectivityDiagnostic:
+def connectivity_diagnostic(
+    binary: NDArray[np.float64],
+) -> NCAConnectivityDiagnostic:
+    """Measure four-neighbor high-k connectivity without verdict authority."""
     conductive = binary == 1.0
     visited = np.zeros_like(conductive, dtype=bool)
     components: list[list[tuple[int, int]]] = []
@@ -329,7 +332,7 @@ def verify_nca_seed(
         diagnostic_128=_grid_diagnostic(verification_128),
         diagnostic_256=_grid_diagnostic(verification_256),
         relative_128_to_256_change=relative_change,
-        connectivity=_connectivity(binary),
+        connectivity=connectivity_diagnostic(binary),
         verdict=verdict,
     )
 

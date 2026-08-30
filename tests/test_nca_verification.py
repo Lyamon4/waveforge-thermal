@@ -21,6 +21,7 @@ from waveforge.verification.nca_verification import (
     NCASeedVerdict,
     classify_nca_campaign,
     compare_reproduction,
+    connectivity_diagnostic,
     verify_nca_seed,
 )
 
@@ -65,6 +66,20 @@ def _candidate(
         claimed_worst_peak=None,
         claim_matches=None,
     )
+
+
+def test_public_connectivity_diagnostic_preserves_four_neighbor_contract() -> None:
+    design = np.zeros((64, 64), dtype=np.float64)
+    design[0:4, 10] = 1.0
+    design[3, 10:13] = 1.0
+    design[20, 20] = 1.0
+
+    result = connectivity_diagnostic(design)
+
+    assert result.conductive_cell_count == 7
+    assert result.component_count == 2
+    assert result.sink_connected_cell_count == 6
+    assert result.sink_connected_fraction == pytest.approx(6.0 / 7.0)
 
 
 def test_nca_verification_uses_public_scipy_dual_grid_transfer(monkeypatch) -> None:
