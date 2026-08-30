@@ -36,6 +36,7 @@ from waveforge.ml.nca_training import (
 from waveforge.reproducibility import (
     artifact_sha256,
     configure_cuda_reproducibility,
+    content_hash,
 )
 from waveforge.verification.high_fidelity import verify_candidate
 from waveforge.verification.nca_verification import (
@@ -51,6 +52,7 @@ SPEC_PATH = (
 )
 OLD_VERDICT_PATH = PROJECT_ROOT / "artifacts/pure_nca_spike/nca_spike_verdict.json"
 DEVELOPMENT_SEEDS = (20260901, 20260902, 20260903)
+PRODUCTION_SEEDS = (20260911, 20260912, 20260913)
 QUALIFICATION_CHECKPOINTS = (500, 550, 600, 650, 700)
 
 
@@ -75,6 +77,7 @@ class FrozenNCA2Design:
     continuous_design: np.ndarray
     binary_design: np.ndarray
     checkpoint_model_hash: str
+    snapshots: dict[int, np.ndarray]
 
 
 @dataclass(frozen=True)
@@ -91,6 +94,22 @@ class QualificationCheckpointDiagnostic:
 
 class NCA2GateError(RuntimeError):
     """A locked phase input is missing, inconsistent or unauthorized."""
+
+
+def validate_production_seed(seed: int) -> int:
+    """Reject any post-result replacement of the three registered seeds."""
+    if seed not in PRODUCTION_SEEDS:
+        raise ValueError(f"unregistered production seed: {seed}")
+    return seed
+
+
+def validate_production_checkpoint_registry(run_dir: Path) -> Path:
+    """Require every 50-update checkpoint through the frozen update 1500."""
+    expected = [f"checkpoint_{completed:06d}.pt" for completed in range(50, 1501, 50)]
+    actual = sorted(path.name for path in run_dir.glob("checkpoint_*.pt"))
+    if actual != expected:
+        raise RuntimeError("production checkpoint registry is incomplete")
+    return run_dir / "checkpoint_001500.pt"
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -270,6 +289,7 @@ def freeze_nca2_checkpoint(
     sources: torch.Tensor,
     completed_updates: int,
     protocol_id: str,
+    snapshot_steps: tuple[int, ...] = (),
 ) -> FrozenNCA2Design:
     """Regenerate the strict design for one exact post-update checkpoint."""
     del protocol_id
@@ -286,16 +306,22 @@ def freeze_nca2_checkpoint(
         raise RuntimeError("qualification checkpoint model hash mismatch")
     settings = objective_settings_at(completed_updates - 1)
     with torch.no_grad():
-        rollout = model.rollout(build_static_condition(sources))
+        rollout = model.rollout(
+            build_static_condition(sources),
+            snapshot_steps=snapshot_steps,
+        )
         projected = project_nca_material(
             rollout.material_logit,
             beta=settings.projection_beta,
         ).design
         binary = (projected >= 0.5).to(torch.float64)
     return FrozenNCA2Design(
-        continuous_design=projected[0, 0].cpu().numpy(),
-        binary_design=binary[0, 0].cpu().numpy(),
+        continuous_design=projected.cpu().numpy(),
+        binary_design=binary.cpu().numpy(),
         checkpoint_model_hash=checkpoint_hash,
+        snapshots={
+            step: state[0].cpu().numpy() for step, state in rollout.snapshots.items()
+        },
     )
 
 
@@ -535,14 +561,166 @@ def run_qualification_phase(output_dir: Path) -> NCA2QualificationVerdict:
     return verdict
 
 
+def _validate_production_gate(output_dir: Path) -> tuple[str, dict[str, Any]]:
+    _validate_qualification_gate(output_dir)
+    verdict_path = output_dir / "qualification_verdict.json"
+    if not verdict_path.is_file():
+        raise NCA2GateError("qualification verdict is missing")
+    verdict = json.loads(verdict_path.read_text(encoding="utf-8"))
+    selected = verdict.get("selected_protocol")
+    if (
+        verdict.get("status") != "PASS"
+        or verdict.get("production_authorized") is not True
+        or selected not in ("A", "B")
+    ):
+        raise NCA2GateError("qualification did not authorize production")
+    artifact_hashes = verdict.get("artifact_hashes", {})
+    expected = {
+        "config_sha256": artifact_sha256(CONFIG_PATH),
+        "spec_sha256": artifact_sha256(SPEC_PATH),
+        "old_verdict_sha256": artifact_sha256(OLD_VERDICT_PATH),
+        "protocol_manifest_sha256": artifact_sha256(
+            output_dir / "protocol_manifest.json"
+        ),
+        "qualification_metrics_sha256": artifact_sha256(
+            output_dir / "qualification_metrics.csv"
+        ),
+    }
+    if any(artifact_hashes.get(key) != value for key, value in expected.items()):
+        raise NCA2GateError("qualification provenance hash mismatch")
+    return str(selected), verdict
+
+
+def run_production_phase(
+    output_dir: Path,
+    *,
+    seed: int,
+    training_runner: Callable[..., NCARunResult] = run_nca_training,
+    finalizer: Callable[..., FrozenNCA2Design] = freeze_nca2_checkpoint,
+) -> dict[str, Any]:
+    """Run and atomically freeze one untouched prospective production seed."""
+    validate_production_seed(seed)
+    selected_protocol, qualification = _validate_production_gate(output_dir)
+    if not torch.cuda.is_available():
+        raise NCA2GateError("CUDA is unavailable; production cannot use CPU")
+    final_dir = output_dir / f"production_seed_{seed}"
+    incomplete_dir = output_dir / f"production_seed_{seed}.incomplete"
+    if final_dir.exists() or incomplete_dir.exists():
+        raise NCA2GateError(f"production destination already exists for seed {seed}")
+    incomplete_dir.mkdir(parents=True)
+    configure_cuda_reproducibility(seed)
+    sources = gate2_source_batch(device=torch.device("cuda"))
+    controller = ScheduledNCAController(selected_protocol)
+    result = training_runner(
+        sources=sources,
+        seed=seed,
+        learning_rate=1.0e-3,
+        iterations=1500,
+        mode="production",
+        output_dir=incomplete_dir,
+        evaluator=controller.evaluate,
+        checkpoint_interval=50,
+        synchronize=torch.cuda.synchronize,
+        iteration_configurator=controller.configure,
+    )
+    valid_records = (
+        result.status is NCARunStatus.PASS
+        and result.completed_iterations == 1500
+        and [record.iteration for record in result.records] == list(range(1500))
+    )
+    if not valid_records:
+        invalid = {
+            "schema_version": 1,
+            "status": "NCA2_INVALID_RUN",
+            "seed": seed,
+            "selected_protocol": selected_protocol,
+            "completed_iterations": result.completed_iterations,
+            "reason_codes": list(result.reason_codes),
+        }
+        _write_json(incomplete_dir / "production_manifest.json", invalid)
+        raise NCA2GateError(f"production seed {seed} is numerically invalid")
+    final_checkpoint = validate_production_checkpoint_registry(incomplete_dir)
+    frozen = finalizer(
+        checkpoint_path=final_checkpoint,
+        sources=sources,
+        completed_updates=1500,
+        protocol_id=selected_protocol,
+        snapshot_steps=(0, 1, 2, 4, 8, 16, 32, 48, 64),
+    )
+    if result.final_continuous_design is None or result.final_binary_design is None:
+        raise NCA2GateError("training result did not retain final designs")
+    result_continuous = result.final_continuous_design.numpy()
+    result_binary = result.final_binary_design.numpy()
+    if not np.array_equal(frozen.continuous_design, result_continuous):
+        raise NCA2GateError("checkpoint-regenerated continuous design differs")
+    if not np.array_equal(frozen.binary_design, result_binary):
+        raise NCA2GateError("checkpoint-regenerated binary design differs")
+    if not np.array_equal(
+        frozen.binary_design,
+        (frozen.continuous_design >= 0.5).astype(np.float64),
+    ):
+        raise NCA2GateError("final design violates strict D >= 0.5 threshold")
+    if frozen.checkpoint_model_hash != result.final_model_hash:
+        raise NCA2GateError("final checkpoint model hash differs from run result")
+    np.save(
+        incomplete_dir / "design_continuous_64.npy",
+        frozen.continuous_design,
+        allow_pickle=False,
+    )
+    np.save(
+        incomplete_dir / "design_binary_64.npy",
+        frozen.binary_design,
+        allow_pickle=False,
+    )
+    np.savez(
+        incomplete_dir / "rollout_snapshots.npz",
+        **{f"step_{step}": state for step, state in frozen.snapshots.items()},
+    )
+    checkpoint_hashes = {
+        path.name: artifact_sha256(path)
+        for path in sorted(incomplete_dir.glob("checkpoint_*.pt"))
+    }
+    manifest = {
+        "schema_version": 1,
+        "status": "VALID_PRODUCTION_RUN",
+        "seed": seed,
+        "selected_protocol": selected_protocol,
+        "requested_iterations": 1500,
+        "completed_iterations": 1500,
+        "final_iteration_index": 1499,
+        "checkpoint_interval": 50,
+        "initial_model_sha256": result.initial_model_hash,
+        "final_model_sha256": result.final_model_hash,
+        "continuous_design_sha256": content_hash(frozen.continuous_design),
+        "binary_design_sha256": content_hash(frozen.binary_design),
+        "binary_material_fraction": float(frozen.binary_design.mean()),
+        "qualification_verdict_sha256": artifact_sha256(
+            output_dir / "qualification_verdict.json"
+        ),
+        "qualification_selection_reason": qualification["selection_reason"],
+        "config_sha256": artifact_sha256(CONFIG_PATH),
+        "spec_sha256": artifact_sha256(SPEC_PATH),
+        "implementation_git_sha": _git_sha(),
+        "checkpoint_sha256": checkpoint_hashes,
+        "optimization_metrics_sha256": artifact_sha256(
+            incomplete_dir / "optimization_metrics.csv"
+        ),
+        "cg_records_sha256": artifact_sha256(incomplete_dir / "cg_records.csv"),
+    }
+    _write_json(incomplete_dir / "production_manifest.json", manifest)
+    incomplete_dir.replace(final_dir)
+    return manifest
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("benchmark", "qualification"))
+    parser.add_argument("phase", choices=("benchmark", "qualification", "production"))
     parser.add_argument(
         "--output",
         type=Path,
         default=PROJECT_ROOT / "artifacts/nca2_stabilization",
     )
+    parser.add_argument("--seed", type=int)
     return parser.parse_args()
 
 
@@ -552,6 +730,10 @@ def main() -> None:
         run_benchmark_phase(args.output)
     elif args.phase == "qualification":
         run_qualification_phase(args.output)
+    elif args.phase == "production":
+        if args.seed is None:
+            raise SystemExit("production phase requires --seed")
+        run_production_phase(args.output, seed=args.seed)
 
 
 if __name__ == "__main__":

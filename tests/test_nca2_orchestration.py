@@ -6,15 +6,20 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+import torch
 
+from waveforge.experiments.run_inverse_design import gate2_source_batch
 from waveforge.experiments.run_nca2_stabilization import (
     benchmark_revised_loop,
     build_protocol_manifest,
     evaluate_qualification_checkpoints,
     execute_qualification_runs,
+    freeze_nca2_checkpoint,
+    validate_production_checkpoint_registry,
+    validate_production_seed,
     validate_runtime_gate,
 )
-from waveforge.ml.nca_training import NCARunStatus
+from waveforge.ml.nca_training import NCARunStatus, initialize_nca, model_state_sha256
 from waveforge.reproducibility import artifact_sha256
 
 
@@ -238,3 +243,52 @@ def test_qualification_checkpoint_registry_is_exact_and_independent(
             finalizer=fake_finalizer,
             verifier=fake_verifier,
         )
+
+
+def test_production_seed_registry_rejects_replacement_seed() -> None:
+    for seed in (20260911, 20260912, 20260913):
+        assert validate_production_seed(seed) == seed
+    with pytest.raises(ValueError, match="unregistered production seed"):
+        validate_production_seed(20260914)
+
+
+def test_production_checkpoint_registry_requires_exact_post_update_series(
+    tmp_path: Path,
+) -> None:
+    for completed in range(50, 1501, 50):
+        (tmp_path / f"checkpoint_{completed:06d}.pt").write_bytes(b"checkpoint")
+
+    final = validate_production_checkpoint_registry(tmp_path)
+
+    assert final.name == "checkpoint_001500.pt"
+    (tmp_path / "checkpoint_001450.pt").unlink()
+    with pytest.raises(RuntimeError, match="checkpoint registry"):
+        validate_production_checkpoint_registry(tmp_path)
+
+
+def test_freeze_nca2_checkpoint_uses_post_update_metadata_and_strict_threshold(
+    tmp_path: Path,
+) -> None:
+    model = initialize_nca(17, torch.device("cpu"))
+    checkpoint = {
+        "completed_updates": 1500,
+        "last_iteration": 1499,
+        "model_state_sha256": model_state_sha256(model),
+        "model_state": model.state_dict(),
+    }
+    path = tmp_path / "checkpoint_001500.pt"
+    torch.save(checkpoint, path)
+
+    frozen = freeze_nca2_checkpoint(
+        checkpoint_path=path,
+        sources=gate2_source_batch(device=torch.device("cpu")),
+        completed_updates=1500,
+        protocol_id="B",
+    )
+
+    assert frozen.continuous_design.shape == (64, 64)
+    assert frozen.binary_design.shape == (64, 64)
+    assert np.array_equal(
+        frozen.binary_design,
+        (frozen.continuous_design >= 0.5).astype(np.float64),
+    )
