@@ -599,3 +599,46 @@ Standalone recalculation без импорта NCA qualification/verdict functio
 production records на seed, strict threshold equality, raw design hashes,
 fractions, все three `Tmax_256` comparisons и campaign status
 `NCA_NO_GO_EFFECT`.
+
+## 2026-08-30 — NCA-2 forensic diagnosis и prospective protocol lock
+
+Experiment 1 и его artifacts остаются immutable со статусом
+`NCA_NO_GO_EFFECT`: только `1/3` production seeds прошёл старый feasibility
+gate. Read-only forensic analysis охватил 6000 optimization records, 36000 CG
+records и 60 post-update checkpoints. Все CG solves converged; failures не
+связаны с PDE solver, NaN/Inf или volume projection.
+
+Основное расхождение наблюдается около iterations `220–300`. Seed `20260902`
+установил полное source-to-sink high-k соединение между checkpoints 100 и 200,
+после чего raw gradients снизились и topology стабилизировалась. Seeds
+`20260901` и `20260903` вошли в sustained clipped-gradient regime примерно с
+iteration 250 и продолжали крупно менять binary topology при constant
+`lr=1e-3`. Доля clipped updates составила `0.8925 / 0.05 / 0.885` для seeds
+`20260901 / 20260902 / 20260903`. Лучшие independently reverified intermediate
+failed-seed states имели `Tmax_256=0.1934663` и `0.1947055`, поэтому hidden
+tree-competitive checkpoint у них отсутствовал; best-checkpoint или averaging
+сами по себе не исправляют early basin failure.
+
+До любых NCA-2 qualification/production runs пользователь утвердил новый
+prospective stabilization experiment. Architecture, 64-step rollout,
+conditioning, update scale `0.1`, exact 25% projection и independent SciPy
+verification frozen. Разрешены только objective continuation и выбор между
+двумя заранее заданными LR protocols на development seeds
+`20260901..20260903` по 700 updates. Tie после stability, late-degradation,
+median и worst `Tmax_64` выбирает decay Protocol B. Connectivity публикуется
+как engineering diagnostic, но не является primary thermal hard gate.
+
+Production seeds заранее locked: `20260911`, `20260912`, `20260913`, по 1500
+updates. Primary comparator — tree `Tmax_256=0.1650978093408512`; минимум `2/3`
+seeds должны быть лучше на `2%` (`Tmax<=0.1617958531540342`), а третий не может
+быть хуже tree более чем на `2%` (`Tmax<=0.1683997655276682`). Все runs должны
+быть numerically valid, а все strict-binary fractions — в `[0.24,0.26]`.
+
+До qualification обязателен revised-loop CUDA benchmark. Если projected total
+GPU time превышает `6.6 h`, protocol нельзя сокращать молча: experiment
+останавливается для review.
+
+Полная locked specification:
+`docs/superpowers/specs/2026-08-30-nca2-stabilized-training-design.md`.
+Canonical-LF SHA-256 specification:
+`f2614c173ec44d7193fcae924282e210ce0492c2ee0e7cdd6689d3f9078589ad`.
