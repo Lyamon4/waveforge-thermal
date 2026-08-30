@@ -33,6 +33,7 @@ from waveforge.ml.nca_training import (
     model_state_sha256,
     run_nca_training,
 )
+from waveforge.reporting.nca2 import generate_nca2_report
 from waveforge.reproducibility import (
     artifact_sha256,
     configure_cuda_reproducibility,
@@ -855,7 +856,13 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "phase",
-        choices=("benchmark", "qualification", "production", "verification"),
+        choices=(
+            "benchmark",
+            "qualification",
+            "production",
+            "verification",
+            "report",
+        ),
     )
     parser.add_argument(
         "--output",
@@ -878,6 +885,12 @@ def main() -> None:
         run_production_phase(args.output, seed=args.seed)
     elif args.phase == "verification":
         run_verification_phase(args.output)
+    elif args.phase == "report":
+        generate_nca2_report(
+            args.output,
+            project_root=PROJECT_ROOT,
+            report_git_sha=_git_sha(),
+        )
 
 
 if __name__ == "__main__":
