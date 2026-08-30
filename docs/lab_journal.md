@@ -709,3 +709,24 @@ passing count `2`, один catastrophic collapse и итоговый
 `NCA2_NO_GO_EFFECT`. Artifact manifest содержит 240 entries; полный hash audit
 пройден. Старый Experiment 1 остаётся immutable со статусом
 `NCA_NO_GO_EFFECT`.
+
+## 2026-08-30 — RKNP paper figure pack
+
+После фиксации NCA-2 numerical results добавлен только reporting layer:
+18 paper-grade figures в форматах PNG 300 dpi, SVG и PDF. Никакие design,
+temperature field, threshold, comparator или machine verdict не изменялись.
+Генератор читает frozen CSV/JSON/NPY artifacts и fail-closed требует исходный
+campaign status `NCA2_NO_GO_EFFECT`.
+
+В комплект вошли постановка, scientific workflow, NCA architecture, Gate 1
+convergence, Gate 2A evolution, strong branching-tree baseline, сравнение
+tree/pixel/NCA, все production seeds, success/failure anatomy, NCA rollout,
+temperature maps, training dynamics, protocol qualification, solver-verified
+performance, grid transfer, budget/connectivity, evidence timeline и honest
+graphical abstract. Graphical abstract одновременно показывает лучший seed и
+общий negative stability verdict; unseen-layout generalization не заявляется.
+
+PNG-панели проверены визуально. Выборочные PDF (`fig04`, `fig08`, `fig18`)
+отрендерены Poppler обратно в PNG и проверены на clipping, overlap и broken
+glyphs. Manifest содержит 55 output hashes: 54 figure files и
+`FIGURE_GUIDE.md`.
