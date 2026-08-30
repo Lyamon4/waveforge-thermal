@@ -1,0 +1,18 @@
+{
+  "config_sha256": "f4174fa2be56a712bf8aedfa34cbbac61025601f4d30590e36189be418b13b8f",
+  "determinism": {
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "deterministic_algorithms": true,
+    "mode": "strict",
+    "seed": 20260910,
+    "warn_only": false
+  },
+  "implementation_git_sha": "69d576365bfd7b32a87e4da506bbec0ed7b9b8ff",
+  "old_experiment_status": "NCA_NO_GO_EFFECT",
+  "old_verdict_sha256": "dcb77dad6210790a3fa8301ae8174569e8cf18a2f0761932cccd8041be6d4c48",
+  "qualification_authorized": true,
+  "schema_version": 1,
+  "spec_sha256": "f2614c173ec44d7193fcae924282e210ce0492c2ee0e7cdd6689d3f9078589ad",
+  "status": "PASS"
+}

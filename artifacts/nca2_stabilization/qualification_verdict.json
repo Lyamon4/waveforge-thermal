@@ -1,0 +1,210 @@
+{
+  "artifact_hashes": {
+    "config_sha256": "f4174fa2be56a712bf8aedfa34cbbac61025601f4d30590e36189be418b13b8f",
+    "old_verdict_sha256": "dcb77dad6210790a3fa8301ae8174569e8cf18a2f0761932cccd8041be6d4c48",
+    "protocol_manifest_sha256": "fe7318733691776d48be53d82eaa86a3e088739f67c8653332d17135847c9f1d",
+    "qualification_metrics_sha256": "4b9abb28a33a2787b3708e7a95642c4f121d6525db9a8c0963c0080cad9e6e3b",
+    "spec_sha256": "f2614c173ec44d7193fcae924282e210ce0492c2ee0e7cdd6689d3f9078589ad"
+  },
+  "implementation_git_sha": "69d576365bfd7b32a87e4da506bbec0ed7b9b8ff",
+  "production_authorized": true,
+  "protocols": [
+    {
+      "eligible": true,
+      "median_final_tmax": 0.18908149111379713,
+      "median_late_degradation": 9.341463257928196e-05,
+      "protocol_id": "A",
+      "seeds": [
+        {
+          "checkpoint_peaks": [
+            0.18536701863769292,
+            0.18489826362395503,
+            0.18478681166306885,
+            0.18529184761533915,
+            0.18491122235351848
+          ],
+          "engineering_connectivity_pass": true,
+          "final_binary_fraction": 0.249267578125,
+          "late_best_tmax": 0.18478681166306885,
+          "late_degradation": 0.0006732660698560983,
+          "numerically_valid": true,
+          "protocol_id": "A",
+          "reason_codes": [],
+          "seed": 20260901,
+          "stable": true
+        },
+        {
+          "checkpoint_peaks": [
+            0.19307361567237247,
+            0.19212765305956087,
+            0.19188116600904923,
+            0.19188116600904923,
+            0.19189909051767085
+          ],
+          "engineering_connectivity_pass": true,
+          "final_binary_fraction": 0.250244140625,
+          "late_best_tmax": 0.19188116600904923,
+          "late_degradation": 9.341463257928196e-05,
+          "numerically_valid": true,
+          "protocol_id": "A",
+          "reason_codes": [],
+          "seed": 20260902,
+          "stable": true
+        },
+        {
+          "checkpoint_peaks": [
+            0.19034671744004075,
+            0.2015260894849491,
+            0.18976838926502354,
+            0.1894503260161796,
+            0.18908149111379713
+          ],
+          "engineering_connectivity_pass": true,
+          "final_binary_fraction": 0.250244140625,
+          "late_best_tmax": 0.18908149111379713,
+          "late_degradation": 0.0,
+          "numerically_valid": true,
+          "protocol_id": "A",
+          "reason_codes": [],
+          "seed": 20260903,
+          "stable": true
+        }
+      ],
+      "selected": true,
+      "stable_seed_count": 3,
+      "worst_final_tmax": 0.19189909051767085
+    },
+    {
+      "eligible": true,
+      "median_final_tmax": 0.19148851111912174,
+      "median_late_degradation": 0.0,
+      "protocol_id": "B",
+      "seeds": [
+        {
+          "checkpoint_peaks": [
+            0.18682525897588628,
+            0.18648930722265722,
+            0.18676421903124324,
+            0.18676421903124324,
+            0.18676421903124324
+          ],
+          "engineering_connectivity_pass": true,
+          "final_binary_fraction": 0.249267578125,
+          "late_best_tmax": 0.18648930722265722,
+          "late_degradation": 0.001474142473261439,
+          "numerically_valid": true,
+          "protocol_id": "B",
+          "reason_codes": [],
+          "seed": 20260901,
+          "stable": true
+        },
+        {
+          "checkpoint_peaks": [
+            0.1977885686448941,
+            0.1961148709077703,
+            0.19581225792014256,
+            0.19609023424725372,
+            0.1958028177549635
+          ],
+          "engineering_connectivity_pass": true,
+          "final_binary_fraction": 0.25,
+          "late_best_tmax": 0.1958028177549635,
+          "late_degradation": 0.0,
+          "numerically_valid": true,
+          "protocol_id": "B",
+          "reason_codes": [],
+          "seed": 20260902,
+          "stable": true
+        },
+        {
+          "checkpoint_peaks": [
+            0.1953643102137201,
+            0.19305831073657007,
+            0.1924132287081313,
+            0.19167741486885095,
+            0.19148851111912174
+          ],
+          "engineering_connectivity_pass": true,
+          "final_binary_fraction": 0.250244140625,
+          "late_best_tmax": 0.19148851111912174,
+          "late_degradation": 0.0,
+          "numerically_valid": true,
+          "protocol_id": "B",
+          "reason_codes": [],
+          "seed": 20260903,
+          "stable": true
+        }
+      ],
+      "selected": false,
+      "stable_seed_count": 3,
+      "worst_final_tmax": 0.1958028177549635
+    }
+  ],
+  "run_registry": [
+    {
+      "completed_iterations": 700,
+      "final_model_sha256": "a552b4ed8dd4c2aff5f495d1eed5c0fb078bbb15d6497eb2e3a98c90033671ef",
+      "initial_model_sha256": "e83d3fa97a216ebfc75b7a0816fa47395a2fb1aa6cc879ff844099fb9f551a6d",
+      "protocol_id": "A",
+      "reason_codes": [],
+      "run_result_sha256": "72648aa5bf7624fa14f3edf3e724a44782527ac0d433c13a1585753ad62f9fc2",
+      "seed": 20260901,
+      "status": "PASS"
+    },
+    {
+      "completed_iterations": 700,
+      "final_model_sha256": "91bba02029ec80413a7640cff04177ea22780cc2c99e5457e3db45c17869b9af",
+      "initial_model_sha256": "02491d4122a505be41dab486f3d615f422eb02a882a022e32ac22d0b11f6fcf9",
+      "protocol_id": "A",
+      "reason_codes": [],
+      "run_result_sha256": "695ee6deedd32d597b7dd938c6e71daffbd36006588641dd1f63f0524d0cd2e8",
+      "seed": 20260902,
+      "status": "PASS"
+    },
+    {
+      "completed_iterations": 700,
+      "final_model_sha256": "dfacee21cc009ed29b5a677f886717d14688cca8393faa9bf248803790e08d5b",
+      "initial_model_sha256": "5713fd2b078ff98b7a3bdf704fe5ca17911d128f252c79ce2ed324177a097708",
+      "protocol_id": "A",
+      "reason_codes": [],
+      "run_result_sha256": "6f94622de2777f347292d8f6ad48f145dbddf73e977214d63dcb58e407887f55",
+      "seed": 20260903,
+      "status": "PASS"
+    },
+    {
+      "completed_iterations": 700,
+      "final_model_sha256": "177ca4585967d4cb9bcea8a3e1efabd65b963756e69b59fc1f8e688e5bd55193",
+      "initial_model_sha256": "e83d3fa97a216ebfc75b7a0816fa47395a2fb1aa6cc879ff844099fb9f551a6d",
+      "protocol_id": "B",
+      "reason_codes": [],
+      "run_result_sha256": "3e30a0f68db5303d8e26918f313bcab12d88515b7e3dbd893956f826fe4a77bb",
+      "seed": 20260901,
+      "status": "PASS"
+    },
+    {
+      "completed_iterations": 700,
+      "final_model_sha256": "6a3e35b27dbb34b1c245c55e9a6e5922a00575d1f8d128909d3082d3d8b5bf60",
+      "initial_model_sha256": "02491d4122a505be41dab486f3d615f422eb02a882a022e32ac22d0b11f6fcf9",
+      "protocol_id": "B",
+      "reason_codes": [],
+      "run_result_sha256": "cab86ca144d10a64e3bf659491a3f9e22c7111dc530680f7a72c2575e72790f8",
+      "seed": 20260902,
+      "status": "PASS"
+    },
+    {
+      "completed_iterations": 700,
+      "final_model_sha256": "d8099092ee445e49ca1fdd3cc376d910ffd1d390e6c94b94330f6f6a42d7780a",
+      "initial_model_sha256": "5713fd2b078ff98b7a3bdf704fe5ca17911d128f252c79ce2ed324177a097708",
+      "protocol_id": "B",
+      "reason_codes": [],
+      "run_result_sha256": "b99fbc609875259331deaf04b648d161c7e3267b997fa79c2f10064182f4b520",
+      "seed": 20260903,
+      "status": "PASS"
+    }
+  ],
+  "runtime_gate_implementation_git_sha": "69d576365bfd7b32a87e4da506bbec0ed7b9b8ff",
+  "schema_version": 1,
+  "selected_protocol": "A",
+  "selection_reason": "LOWER_MEDIAN_FINAL_TMAX",
+  "status": "PASS"
+}

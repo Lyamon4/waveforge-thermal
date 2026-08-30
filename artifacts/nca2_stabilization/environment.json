@@ -1,0 +1,36 @@
+{
+  "bf16_supported": true,
+  "compute_capability": [
+    8,
+    9
+  ],
+  "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "cuda_available": true,
+  "determinism": {
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "deterministic_algorithms": true,
+    "mode": "strict",
+    "seed": 20260910,
+    "warn_only": false
+  },
+  "gpu": "NVIDIA GeForce RTX 4060",
+  "logical_cpu_count": 12,
+  "nvidia_smi": "Sun Aug 30 13:11:09 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 591.86                 Driver Version: 591.86         CUDA Version: 13.1     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                  Driver-Model | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 4060      WDDM  |   00000000:01:00.0 Off |                  N/A |\n|  0%   41C    P5            N/A  /  115W |     345MiB /   8188MiB |     33%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|    0   N/A  N/A           34296      C   ...s\\Python\\Python311\\python.exe      N/A      |\n+-----------------------------------------------------------------------------------------+\n",
+  "physical_cpu_count": 6,
+  "platform": "Windows-10-10.0.26200-SP0",
+  "python": "3.11.9",
+  "pytorch_selector": {
+    "build": "Stable 2.13.0",
+    "checked_at": "2026-08-28",
+    "compute_platform": "CUDA 13.0",
+    "language": "Python",
+    "os": "Windows",
+    "package": "Pip",
+    "url": "https://pytorch.org/get-started/locally/"
+  },
+  "torch": "2.13.0+cu130",
+  "torch_cuda_build": "13.0",
+  "torch_install_command": "pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu130",
+  "windows_version": "10.0.26200"
+}

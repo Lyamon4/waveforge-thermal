@@ -642,3 +642,70 @@ GPU time превышает `6.6 h`, protocol нельзя сокращать м
 `docs/superpowers/specs/2026-08-30-nca2-stabilized-training-design.md`.
 Canonical-LF SHA-256 specification:
 `f2614c173ec44d7193fcae924282e210ce0492c2ee0e7cdd6689d3f9078589ad`.
+
+## 2026-08-30 — NCA-2 benchmark и protocol qualification
+
+Revised-loop CUDA benchmark на RTX 4060 дал unrounded mean
+`1.9285067000018898 s/update`. Locked campaign projection составила
+`2.249924483335538 h` для qualification и `2.410633375002362 h` для
+production, всего `4.6605578583379 h`. Runtime gate `6.6 h` пройден без
+изменения protocol.
+
+Qualification выполнила ровно шесть preregistered development runs:
+Protocols A/B × seeds `20260901`, `20260902`, `20260903`, по 700 updates.
+Оба protocol дали `3/3` numerically stable development seeds. Protocol A
+(constant `lr=1e-3`) был выбран по заранее зафиксированному третьему
+lexicographic criterion `LOWER_MEDIAN_FINAL_TMAX`, а не post-hoc visual
+selection:
+
+- Protocol A: median final binary `Tmax_64=0.18908149111379713`, worst
+  `0.19189909051767085`;
+- Protocol B: median final binary `Tmax_64=0.19148851111912174`, worst
+  `0.1958028177549635`.
+
+Qualification verdict hash:
+`d4300e35b4b96d546683c45e57e17a68e373d8c34030d8f5d4c82ec5e8b70205`.
+Result-producing implementation SHA для всей production campaign:
+`69d576365bfd7b32a87e4da506bbec0ed7b9b8ff`.
+
+## 2026-08-30 — NCA-2 production и independent verdict
+
+Три untouched production seeds (`20260911`, `20260912`, `20260913`)
+выполнены последовательно на RTX 4060 по 1500 updates. Все runs имеют статус
+`VALID_PRODUCTION_RUN`, ровно 30 checkpoints (`50..1500`), finite execution и
+полные hash registries. Frozen strict-binary material fractions равны
+`0.250244140625`, `0.250732421875`, `0.2490234375`; все проходят locked range
+`[0.24,0.26]`.
+
+Independent CPU SciPy verification использовала exact `4×4`
+nearest-neighbor replication на `256×256` и заново rasterized source maps.
+Primary unrounded results:
+
+| Seed | Tmax 256 | Improvement vs tree | Primary pass | Noncollapse pass |
+|---:|---:|---:|---|---|
+| `20260911` | `0.1893982971956948` | `-0.14718843303774093` | false | false |
+| `20260912` | `0.15483529959128456` | `0.06216018123159504` | true | true |
+| `20260913` | `0.1611499978371461` | `0.023911955703510773` | true | true |
+
+Два seed прошли основной effect threshold
+`Tmax<=0.1617958531540342`, но seed `20260911` превысил заранее locked
+noncollapse threshold `0.1683997655276682`. Поэтому campaign verdict:
+`NCA2_NO_GO_EFFECT` с reason `CATASTROPHIC_COLLAPSE`. Требование stability не
+переписано, несмотря на сильный median result.
+
+Across-seed mean/median/range `Tmax_256`:
+`0.1684611982080418 / 0.1611499978371461 /
+[0.15483529959128456, 0.1893982971956948]`. Все три designs получили
+`ENGINEERING_CONNECTIVITY_PASS`: каждый source footprint пересекает
+sink-connected high-k material. Это подтверждает, что failure seed
+`20260911` является недостаточной общей тепловой topology, а не technical
+solver failure или отсутствием любого пути к sink.
+
+Secondary `128×128 → 256×256` relative changes малы:
+`0.001744810531738611`, `0.002682051267293818`,
+`0.0020423944351583546`; неожиданной resolution sensitivity не обнаружено.
+Independent recomputation из raw CSV подтвердил все tree improvements,
+passing count `2`, один catastrophic collapse и итоговый
+`NCA2_NO_GO_EFFECT`. Artifact manifest содержит 240 entries; полный hash audit
+пройден. Старый Experiment 1 остаётся immutable со статусом
+`NCA_NO_GO_EFFECT`.
