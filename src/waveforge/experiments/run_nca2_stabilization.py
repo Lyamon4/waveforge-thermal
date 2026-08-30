@@ -39,6 +39,13 @@ from waveforge.reproducibility import (
     content_hash,
 )
 from waveforge.verification.high_fidelity import verify_candidate
+from waveforge.verification.nca2_verification import (
+    PREVIOUS_WAVEFORGE_PEAKS,
+    TREE_PEAK_256,
+    NCA2SeedVerification,
+    classify_nca2_campaign,
+    verify_nca2_seed,
+)
 from waveforge.verification.nca_verification import (
     NCAConnectivityDiagnostic,
     connectivity_diagnostic,
@@ -712,9 +719,144 @@ def run_production_phase(
     return manifest
 
 
+def _scenario_peak_map(verification: Any) -> dict[str, float]:
+    return {
+        record.scenario_id: float(record.peak_temperature)
+        for record in verification.scenario_records
+    }
+
+
+def run_verification_phase(
+    output_dir: Path,
+    *,
+    verifier: Callable[..., NCA2SeedVerification] = verify_nca2_seed,
+    gate_validator: Callable[[Path], Any] = _validate_production_gate,
+) -> dict[str, Any]:
+    """Independently verify all frozen seeds and publish the primary verdict."""
+    gate_validator(output_dir)
+    verifications: list[NCA2SeedVerification] = []
+    rows_128: list[dict[str, Any]] = []
+    rows_256: list[dict[str, Any]] = []
+    connectivity_rows: list[dict[str, Any]] = []
+    comparator_rows: list[dict[str, Any]] = []
+    for seed in PRODUCTION_SEEDS:
+        run_dir = output_dir / f"production_seed_{seed}"
+        manifest_path = run_dir / "production_manifest.json"
+        if not manifest_path.is_file():
+            raise NCA2GateError(f"production manifest is missing for seed {seed}")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if (
+            manifest.get("status") != "VALID_PRODUCTION_RUN"
+            or manifest.get("seed") != seed
+        ):
+            raise NCA2GateError(f"production seed {seed} is not valid")
+        continuous = np.load(run_dir / "design_continuous_64.npy", allow_pickle=False)
+        binary = np.load(run_dir / "design_binary_64.npy", allow_pickle=False)
+        result = verifier(
+            seed=seed,
+            binary_design=binary,
+            continuous_design=continuous,
+            expected_binary_content_hash=manifest["binary_design_sha256"],
+            expected_continuous_content_hash=manifest["continuous_design_sha256"],
+            numerically_valid=True,
+        )
+        verifications.append(result)
+        for fidelity_result, destination in (
+            (result.verification_128, rows_128),
+            (result.verification_256, rows_256),
+        ):
+            peaks = _scenario_peak_map(fidelity_result)
+            destination.append(
+                {
+                    "seed": seed,
+                    "peak_A": peaks["A"],
+                    "peak_B": peaks["B"],
+                    "peak_C": peaks["C"],
+                    "worst_peak": fidelity_result.worst_peak,
+                    "average_peak": fidelity_result.average_peak,
+                    "protected_zone_peak": fidelity_result.protected_zone_peak,
+                    "binary_material_fraction": fidelity_result.material_fraction,
+                    "total_wall_seconds": fidelity_result.total_wall_seconds,
+                    "relative_128_to_256_change": (result.relative_128_to_256_change),
+                }
+            )
+        connectivity = result.connectivity
+        source_sink_intersections = connectivity.sink_component_source_intersections
+        connectivity_rows.append(
+            {
+                "seed": seed,
+                "engineering_connectivity_pass": (result.engineering_connectivity_pass),
+                "component_count": connectivity.component_count,
+                "conductive_cell_count": connectivity.conductive_cell_count,
+                "sink_connected_cell_count": (connectivity.sink_connected_cell_count),
+                "sink_connected_fraction": connectivity.sink_connected_fraction,
+                **{
+                    f"source_{scenario}_sink_connected": source_sink_intersections[
+                        scenario
+                    ]
+                    for scenario in ("A", "B", "C")
+                },
+            }
+        )
+        comparator_rows.append(
+            {
+                "seed": seed,
+                "comparator_id": "parametric_branching_tree",
+                "comparator_tmax_256": TREE_PEAK_256,
+                "nca_tmax_256": result.verdict.peak_256,
+                "nca_relative_improvement": result.verdict.tree_improvement,
+            }
+        )
+        for previous_seed, previous_peak in PREVIOUS_WAVEFORGE_PEAKS.items():
+            comparator_rows.append(
+                {
+                    "seed": seed,
+                    "comparator_id": f"waveforge_{previous_seed}",
+                    "comparator_tmax_256": previous_peak,
+                    "nca_tmax_256": result.verdict.peak_256,
+                    "nca_relative_improvement": (
+                        result.previous_waveforge_relative_differences[previous_seed]
+                    ),
+                }
+            )
+    campaign = classify_nca2_campaign(tuple(result.verdict for result in verifications))
+    path_128 = output_dir / "verified_128_metrics.csv"
+    path_256 = output_dir / "verified_256_metrics.csv"
+    connectivity_path = output_dir / "connectivity_metrics.csv"
+    comparator_path = output_dir / "comparator_metrics.csv"
+    _atomic_csv(path_128, pd.DataFrame(rows_128))
+    _atomic_csv(path_256, pd.DataFrame(rows_256))
+    _atomic_csv(connectivity_path, pd.DataFrame(connectivity_rows))
+    _atomic_csv(comparator_path, pd.DataFrame(comparator_rows))
+    payload = {
+        "schema_version": 1,
+        "campaign": asdict(campaign),
+        "seeds": [
+            {
+                "seed": result.seed,
+                "verdict": asdict(result.verdict),
+                "engineering_connectivity_pass": (result.engineering_connectivity_pass),
+            }
+            for result in verifications
+        ],
+        "artifact_hashes": {
+            "verified_128_metrics_sha256": artifact_sha256(path_128),
+            "verified_256_metrics_sha256": artifact_sha256(path_256),
+            "connectivity_metrics_sha256": artifact_sha256(connectivity_path),
+            "comparator_metrics_sha256": artifact_sha256(comparator_path),
+        },
+        "implementation_git_sha": _git_sha(),
+    }
+    _write_json(output_dir / "nca2_verdict.json", payload)
+    return payload
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("phase", choices=("benchmark", "qualification", "production"))
+    parser.add_argument(
+        "phase",
+        choices=("benchmark", "qualification", "production", "verification"),
+    )
     parser.add_argument(
         "--output",
         type=Path,
@@ -734,6 +876,8 @@ def main() -> None:
         if args.seed is None:
             raise SystemExit("production phase requires --seed")
         run_production_phase(args.output, seed=args.seed)
+    elif args.phase == "verification":
+        run_verification_phase(args.output)
 
 
 if __name__ == "__main__":
