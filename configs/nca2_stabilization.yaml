@@ -1,0 +1,155 @@
+schema_version: 1
+scope: pure_nca_fixed_abc_stabilization
+
+architecture:
+  grid: [64, 64]
+  mutable_channels: 16
+  material_channel: 0
+  hidden_channels: 15
+  condition_channels: 2
+  perception_width: 64
+  rollout_steps: 64
+  update_scale: 0.1
+  padding_mode: reflect
+  activation: SiLU
+  parameter_count: 11472
+  initial_state: zeros
+  final_layer_initialization: zeros
+
+conditioning:
+  source_aggregation: sum
+  fixed_source_scale: 25.0
+  sink_mask: bottom_cell_row
+  persistent_every_step: true
+  clamp_overlaps: false
+
+precision:
+  neural_dtype: float32
+  projection_dtype: float32
+  physics_dtype: float64
+  device: cuda
+
+physics:
+  scenarios: [A, B, C]
+  k_low: 1.0
+  k_high: 20.0
+  interpolation_power: 3.0
+  harmonic_epsilon: 1.0e-12
+  cg_relative_residual_tolerance: 1.0e-6
+  cg_maximum_iterations: 2000
+
+parameterization:
+  gaussian_sigma: 1.0
+  gaussian_radius: 3
+  gaussian_padding: reflect
+  gaussian_normalization: unit_sum
+  projection_bracket: [-40.0, 40.0]
+  projection_maximum_iterations: 80
+  projection_mean_tolerance: 1.0e-6
+  binary_threshold: 0.5
+
+objective:
+  stages:
+    - start_inclusive: 0
+      stop_exclusive: 250
+      projection_beta: 2.0
+      smooth_max_alpha: 100.0
+      binarization_weight: 0.0
+    - start_inclusive: 250
+      stop_exclusive: 500
+      projection_beta: 4.0
+      smooth_max_alpha: 250.0
+      binarization_weight: 0.01
+    - start_inclusive: 500
+      stop_exclusive: 1500
+      projection_beta: 8.0
+      smooth_max_alpha: 500.0
+      binarization_weight: 0.02
+  tv_weight: 0.001
+  material_penalty: 0.0
+  target_material_fraction: 0.25
+
+optimizer:
+  name: Adam
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+
+learning_rate_protocols:
+  protocol_a:
+    protocol_id: A
+    stages:
+      - start_inclusive: 0
+        stop_exclusive: 1500
+        learning_rate: 0.001
+  protocol_b:
+    protocol_id: B
+    stages:
+      - start_inclusive: 0
+        stop_exclusive: 250
+        learning_rate: 0.001
+      - start_inclusive: 250
+        stop_exclusive: 500
+        learning_rate: 0.0003
+      - start_inclusive: 500
+        stop_exclusive: 1500
+        learning_rate: 0.0001
+
+development:
+  seeds: [20260901, 20260902, 20260903]
+  iterations: 700
+  checkpoint_interval: 50
+  evaluation_checkpoints: [500, 550, 600, 650, 700]
+  stable_seeds_required: 2
+  binary_budget_minimum: 0.24
+  binary_budget_maximum: 0.26
+  maximum_late_degradation: 0.05
+  late_degradation_absolute_tolerance: 0.001
+  tmax_relative_tolerance: 0.001
+  practical_tie_protocol: B
+  connectivity_has_selection_authority: false
+
+production:
+  seeds: [20260911, 20260912, 20260913]
+  iterations: 1500
+  diagnostic_interval: 10
+  checkpoint_interval: 50
+  batch_size: 1
+  early_stopping: false
+  final_iteration_index: 1499
+
+verification:
+  primary_resolution: 256
+  secondary_resolution: 128
+  tree_peak: 0.1650978093408512
+  primary_improvement_fraction: 0.02
+  pass_peak: 0.1617958531540342
+  noncollapse_peak: 0.1683997655276682
+  binary_budget_minimum: 0.24
+  binary_budget_maximum: 0.26
+  passing_seeds_required: 2
+  connectivity_has_primary_authority: false
+  previous_waveforge:
+    20260828: 0.156506824943584
+    20260829: 0.1574716324313547
+    20260830: 0.15663546358885735
+
+runtime:
+  warmup_steps: 3
+  measured_steps: 10
+  qualification_updates: 4200
+  production_updates: 4500
+  total_updates: 8700
+  maximum_projected_gpu_hours: 6.6
+
+hashing:
+  mode: canonical_lf_text_raw_binary
+  text_extensions: [.md, .json, .csv, .yaml, .yml]
+
+statuses:
+  - NCA2_STABILITY_GO
+  - NCA2_NO_GO_EFFECT
+  - NCA2_INVALID_RUN
+  - NCA2_QUALIFICATION_FAIL
+  - NCA2_RUNTIME_REVIEW_REQUIRED
