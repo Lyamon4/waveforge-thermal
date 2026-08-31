@@ -5,6 +5,7 @@ import pytest
 from waveforge.ml.multitask_protocol import (
     DEVELOPMENT_SEED,
     PRODUCTION_SEEDS,
+    recovery_settings_at,
     settings_at,
 )
 
@@ -55,3 +56,35 @@ def test_protocol_locks_new_model_seeds() -> None:
 def test_schedule_rejects_out_of_range_updates(update: int, total_updates: int) -> None:
     with pytest.raises(ValueError, match="update"):
         settings_at(update, total_updates)
+
+
+@pytest.mark.parametrize(
+    ("update", "learning_rate", "stage_id"),
+    [
+        (1500, 1.0e-4, 4),
+        (2249, 1.0e-4, 4),
+        (2250, 3.0e-5, 5),
+        (2999, 3.0e-5, 5),
+    ],
+)
+def test_recovery_schedule_keeps_final_objective_and_decays_learning_rate(
+    update: int,
+    learning_rate: float,
+    stage_id: int,
+) -> None:
+    stage = recovery_settings_at(update)
+
+    assert stage.stage_id == stage_id
+    assert stage.beta == 8.0
+    assert stage.alpha == 500.0
+    assert stage.binary_weight == 0.02
+    assert stage.tv_weight == 0.001
+    assert stage.learning_rate == learning_rate
+
+
+@pytest.mark.parametrize("update", [1499, 3000])
+def test_recovery_schedule_rejects_updates_outside_locked_extension(
+    update: int,
+) -> None:
+    with pytest.raises(ValueError, match="recovery update"):
+        recovery_settings_at(update)

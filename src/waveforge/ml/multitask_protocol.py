@@ -8,6 +8,9 @@ DEVELOPMENT_SEED = 2026083101
 PRODUCTION_SEEDS = (2026083102, 2026083103, 2026083104)
 VALIDATION_INTERVAL = 250
 PILOT_UPDATES = 1500
+RECOVERY_START_UPDATES = 1500
+RECOVERY_DECAY_UPDATE = 2250
+RECOVERY_TOTAL_UPDATES = 3000
 TV_WEIGHT = 1.0e-3
 TARGET_MATERIAL_FRACTION = 0.25
 PRIMARY_BINARY_CELL_COUNT = 1024
@@ -47,3 +50,16 @@ def settings_at(update: int, total_updates: int) -> MultitaskStage:
     if update < second_boundary:
         return MultitaskStage(2, 4.0, 250.0, 0.01, TV_WEIGHT, 3.0e-4)
     return MultitaskStage(3, 8.0, 500.0, 0.02, TV_WEIGHT, 1.0e-4)
+
+
+def recovery_settings_at(update: int) -> MultitaskStage:
+    """Return the locked final-objective settings for NCA-MT2A recovery."""
+    if (
+        isinstance(update, bool)
+        or not isinstance(update, int)
+        or not RECOVERY_START_UPDATES <= update < RECOVERY_TOTAL_UPDATES
+    ):
+        raise ValueError("recovery update must lie in [1500,3000)")
+    if update < RECOVERY_DECAY_UPDATE:
+        return MultitaskStage(4, 8.0, 500.0, 0.02, TV_WEIGHT, 1.0e-4)
+    return MultitaskStage(5, 8.0, 500.0, 0.02, TV_WEIGHT, 3.0e-5)
