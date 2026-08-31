@@ -286,9 +286,7 @@ def _load_checkpoint(
     model: nn.Module,
     optimizer: torch.optim.Optimizer,
 ) -> tuple[list[MultitaskIterationRecord], str]:
-    payload = torch.load(
-        path, map_location=torch.device(config.device), weights_only=False
-    )
+    payload = torch.load(path, map_location="cpu", weights_only=False)
     if payload.get("schema_version") != 1:
         raise ValueError("unsupported multi-task checkpoint schema")
     stored_config = payload["config"]

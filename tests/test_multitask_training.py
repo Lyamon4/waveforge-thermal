@@ -150,6 +150,58 @@ def test_resume_restores_model_optimizer_and_rng_exactly(tmp_path: Path) -> None
     )
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is required")
+def test_cuda_resume_keeps_cpu_rng_state_on_cpu(tmp_path: Path) -> None:
+    config = MultitaskRunConfig(
+        model_seed=1234,
+        task_seed=5678,
+        total_updates=2,
+        microbatch_size=1,
+        checkpoint_interval=1,
+        mode="unit",
+        device="cuda",
+    )
+
+    def task_provider(
+        seed: int, update: int, microbatch_index: int
+    ) -> SourceLayoutTask:
+        return fake_task(float(1 + update), update)
+
+    first = run_multitask_training(
+        config=config,
+        task_provider=task_provider,
+        evaluator=fake_evaluator,
+        output_dir=tmp_path,
+        model_factory=model_factory,
+        maximum_updates_this_call=1,
+    )
+    assert first.status is MultitaskRunStatus.INCOMPLETE
+    assert first.last_checkpoint is not None
+
+    resumed = run_multitask_training(
+        config=config,
+        task_provider=task_provider,
+        evaluator=fake_evaluator,
+        output_dir=tmp_path,
+        model_factory=model_factory,
+        resume_checkpoint=first.last_checkpoint,
+    )
+    uninterrupted = run_multitask_training(
+        config=config,
+        task_provider=task_provider,
+        evaluator=fake_evaluator,
+        output_dir=None,
+        model_factory=model_factory,
+    )
+
+    assert resumed.status is MultitaskRunStatus.PASS
+    assert resumed.completed_updates == 2
+    assert resumed.final_model_hash == uninterrupted.final_model_hash
+    assert [record.mean_total_objective for record in resumed.records] == pytest.approx(
+        [record.mean_total_objective for record in uninterrupted.records]
+    )
+
+
 def test_any_cg_failure_marks_run_invalid_without_optimizer_step() -> None:
     evaluator_calls = 0
 
