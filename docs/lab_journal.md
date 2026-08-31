@@ -730,3 +730,28 @@ PNG-панели проверены визуально. Выборочные PDF
 отрендерены Poppler обратно в PNG и проверены на clipping, overlap и broken
 glyphs. Manifest содержит 55 output hashes: 54 figure files и
 `FIGURE_GUIDE.md`.
+
+## 2026-08-31 — Multi-task generative NCA pivot
+
+До реализации и новых result-producing runs согласован новый основной вопрос:
+одна shared NCA обучается напрямую через differentiable physics на
+процедурно меняющихся трёх-hotspot layouts, после чего её weights полностью
+замораживаются и проверяются на untouched ID/OOD layouts без task-specific
+optimization. Старые pure-NCA и NCA-2 verdicts остаются immutable negative
+stability evidence и не заменяются новым experiment.
+
+Новый experiment изолирован в branch `multitask-generative-nca`, созданной от
+NCA source SHA `e89b2667be49c8adc77fc239443b3e2902227df6`. До изменений исходная
+ветка прошла `326` tests, `ruff check` и `ruff format --check`.
+
+Для честного одинакового binary material budget prospective primary readout
+выбирает ровно 1024 cells по наибольшему `D` с row-major tie-break; legacy
+threshold `D>=0.5` остаётся diagnostic. Три production seeds, frozen splits,
+causal shuffled-condition test и claims относительно tested direct-gradient
+optimizer фиксируются до test inspection.
+
+AMD EPYC 9754-scale задача принята только как secondary extreme-OOD
+application benchmark после заморозки weights. Она использует публичный
+package scale, восемь synthetic CCD regions и synthetic workload envelopes,
+но не заявляет proprietary AMD thermal stack, per-die powers или точные
+junction temperatures.
