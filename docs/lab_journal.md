@@ -761,3 +761,20 @@ training остаётся на разных procedural three-hotspot layouts, з
 weights проверяются на EPYC 9754-scale benchmark без дообучения. До первого
 кода создан подробный TDD implementation plan; A100 остаётся выключенной до
 готовности benchmark/pilot command.
+
+## 2026-08-31 — Prospective A100 runtime-budget amendment
+
+После запуска только environment preflight и result-independent throughput
+benchmark, но до pilot learning curves, validation results и production,
+пользователь разрешил использовать оплаченный A100 budget максимально полезно
+в пределах примерно `$7`. Первый измеренный `M=1` throughput показал около
+`1.6 s/update`, поэтому исходные шесть production training hours не помещают
+заранее locked минимум `5,000` updates для каждого из трёх production seeds.
+
+Prospectively фиксируется восемь суммарных production training hours при цене
+offer `$0.633/hour`; максимум самой production allocation равен `$5.064`, а
+остаток campaign budget предназначен для benchmark, pilot и проверки. Поправка
+не меняет architecture, task distribution, weights schedule, seeds, splits,
+comparators или scientific thresholds. Исходный шестичасовой benchmark verdict
+сохраняется отдельно; machine-readable amendment создаётся только из полного
+измерения `M=1/2/4` до запуска pilot.

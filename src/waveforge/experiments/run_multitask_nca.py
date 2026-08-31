@@ -96,7 +96,7 @@ def calculate_runtime_gate(
     seconds_per_update: float,
     remaining_hours: float,
 ) -> RuntimeGate:
-    """Allocate at most six hours equally and require 5k updates per seed."""
+    """Allocate a prospective time budget equally and require 5k updates per seed."""
     if (
         not math.isfinite(seconds_per_update)
         or seconds_per_update <= 0.0
@@ -311,6 +311,83 @@ def run_benchmark(
     }
     _write_json(output_dir / "benchmark_verdict.json", payload)
     return payload
+
+
+def lock_runtime_budget_amendment(
+    output_dir: Path,
+    *,
+    production_training_hours: float,
+    maximum_campaign_cost_usd: float,
+    hourly_cost_usd: float,
+) -> dict[str, object]:
+    """Prospectively revise only runtime after measurement and before pilot."""
+    if any(
+        (output_dir / name).exists()
+        for name in (
+            "pilot_verdict.json",
+            "production_registry.json",
+            "production_verdict.json",
+        )
+    ):
+        raise MultitaskGateError("runtime budget must be locked before pilot")
+    values = (
+        production_training_hours,
+        maximum_campaign_cost_usd,
+        hourly_cost_usd,
+    )
+    if any(not math.isfinite(value) or value <= 0.0 for value in values):
+        raise ValueError("runtime budget values must be finite and positive")
+    production_cost = production_training_hours * hourly_cost_usd
+    if production_cost > maximum_campaign_cost_usd:
+        raise ValueError("production allocation exceeds maximum campaign cost")
+
+    verdict_path = output_dir / "benchmark_verdict.json"
+    original = _read_json(verdict_path)
+    if original.get("status") != "PASS":
+        raise MultitaskGateError("runtime amendment requires a PASS benchmark")
+    original_path = output_dir / "benchmark_verdict_original.json"
+    if not original_path.exists():
+        _write_json(original_path, original)
+    else:
+        original = _read_json(original_path)
+
+    seconds_per_update = float(original["selected_median_seconds_per_update"])
+    runtime = calculate_runtime_gate(
+        seconds_per_update=seconds_per_update,
+        remaining_hours=production_training_hours,
+    )
+    amended = dict(original)
+    amended.update(
+        {
+            "schema_version": 2,
+            "production_updates_per_seed": runtime.updates_per_seed,
+            "production_runtime_authorized": runtime.production_authorized,
+            "remaining_training_hours": production_training_hours,
+            "runtime_budget_amended": True,
+            "runtime_budget_amendment_artifact": "runtime_budget_amendment.json",
+        }
+    )
+    amendment: dict[str, object] = {
+        "schema_version": 1,
+        "status": "LOCKED_BEFORE_PILOT",
+        "prospective_before_pilot": True,
+        "scientific_parameters_changed": False,
+        "original_training_hours": float(original["remaining_training_hours"]),
+        "production_training_hours": production_training_hours,
+        "hourly_cost_usd": hourly_cost_usd,
+        "maximum_campaign_cost_usd": maximum_campaign_cost_usd,
+        "maximum_production_cost_usd": production_cost,
+        "selected_median_seconds_per_update": seconds_per_update,
+        "production_updates_per_seed": runtime.updates_per_seed,
+        "production_runtime_authorized": runtime.production_authorized,
+        "reason": (
+            "Measured A100 throughput made the original six-hour allocation "
+            "insufficient for the preregistered 5000-update minimum."
+        ),
+    }
+    _write_json(output_dir / "runtime_budget_amendment.json", amendment)
+    _write_json(verdict_path, amended)
+    return amended
 
 
 def _score_binary_design(
@@ -569,6 +646,7 @@ def _production_registry(output_dir: Path) -> dict[str, object]:
     registry = create_production_registry(
         updates_per_seed=int(benchmark["production_updates_per_seed"]),
         microbatch_size=int(benchmark["selected_microbatch_size"]),
+        training_hours_cap=float(benchmark["remaining_training_hours"]),
         source_sha256=_aggregate_source_hash(repository_root),
         spec_sha256=artifact_sha256(
             repository_root
@@ -651,6 +729,7 @@ def run_production(output_dir: Path) -> dict[str, object]:
     registry = _production_registry(output_dir)
     total_updates = int(registry["updates_per_seed"])
     microbatch_size = int(registry["microbatch_size"])
+    training_hours_cap = float(registry["training_hours_cap"])
     splits = build_frozen_splits()
     write_split_manifest(output_dir / "split_manifest.json", splits)
     provider = _leak_safe_provider(splits)
@@ -705,12 +784,12 @@ def run_production(output_dir: Path) -> dict[str, object]:
                 }
                 _write_json(output_dir / "production_verdict.json", payload)
                 return payload
-            if time.perf_counter() - campaign_started > 6.0 * 3600.0:
+            if time.perf_counter() - campaign_started > training_hours_cap * 3600.0:
                 payload = {
                     "schema_version": 1,
                     "status": "INVALID_RUN",
                     "failed_seed": seed,
-                    "reason_codes": ["SIX_HOUR_TRAINING_CAP_EXCEEDED"],
+                    "reason_codes": ["LOCKED_TRAINING_CAP_EXCEEDED"],
                 }
                 _write_json(output_dir / "production_verdict.json", payload)
                 return payload
@@ -734,6 +813,7 @@ def run_production(output_dir: Path) -> dict[str, object]:
         "updates_per_seed": total_updates,
         "microbatch_size": microbatch_size,
         "training_wall_seconds": time.perf_counter() - campaign_started,
+        "training_hours_cap": training_hours_cap,
         "frozen_models": frozen_rows,
         "test_sets_accessed": False,
     }
@@ -768,10 +848,20 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--phase",
         required=True,
-        choices=("preflight", "benchmark", "pilot", "production", "test", "hashes"),
+        choices=(
+            "preflight",
+            "benchmark",
+            "budget",
+            "pilot",
+            "production",
+            "test",
+            "hashes",
+        ),
     )
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--remaining-hours", type=float, default=6.0)
+    parser.add_argument("--remaining-hours", type=float, default=8.0)
+    parser.add_argument("--maximum-campaign-cost-usd", type=float, default=7.0)
+    parser.add_argument("--hourly-cost-usd", type=float, default=0.633)
     return parser
 
 
@@ -782,6 +872,13 @@ def main() -> None:
         run_preflight(args.output)
     elif args.phase == "benchmark":
         run_benchmark(args.output, remaining_hours=args.remaining_hours)
+    elif args.phase == "budget":
+        lock_runtime_budget_amendment(
+            args.output,
+            production_training_hours=args.remaining_hours,
+            maximum_campaign_cost_usd=args.maximum_campaign_cost_usd,
+            hourly_cost_usd=args.hourly_cost_usd,
+        )
     elif args.phase == "pilot":
         run_pilot(args.output)
     elif args.phase == "production":

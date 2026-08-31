@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import re
 from pathlib import Path
 
@@ -19,6 +20,7 @@ def create_production_registry(
     *,
     updates_per_seed: int,
     microbatch_size: int,
+    training_hours_cap: float,
     source_sha256: str,
     spec_sha256: str,
     config_sha256: str,
@@ -29,6 +31,7 @@ def create_production_registry(
         "production_seeds": list(PRODUCTION_SEEDS),
         "updates_per_seed": updates_per_seed,
         "microbatch_size": microbatch_size,
+        "training_hours_cap": training_hours_cap,
         "source_sha256": source_sha256,
         "spec_sha256": spec_sha256,
         "config_sha256": config_sha256,
@@ -52,6 +55,14 @@ def validate_production_registry(registry: dict[str, object]) -> None:
         raise ProvenanceError("production update count is outside [5000,15000]")
     if registry.get("microbatch_size") not in (1, 2, 4):
         raise ProvenanceError("production microbatch is not registered")
+    hours = registry.get("training_hours_cap")
+    if (
+        isinstance(hours, bool)
+        or not isinstance(hours, (int, float))
+        or not math.isfinite(float(hours))
+        or float(hours) <= 0.0
+    ):
+        raise ProvenanceError("production training hours cap is invalid")
     hashes = (
         registry.get("source_sha256"),
         registry.get("spec_sha256"),

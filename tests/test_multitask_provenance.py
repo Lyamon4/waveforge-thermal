@@ -20,6 +20,7 @@ def test_registry_rejects_replacement_or_reordered_production_seeds() -> None:
     registry = create_production_registry(
         updates_per_seed=5000,
         microbatch_size=2,
+        training_hours_cap=8.0,
         source_sha256="a" * 64,
         spec_sha256="b" * 64,
         config_sha256="c" * 64,
@@ -35,12 +36,27 @@ def test_registry_rejects_changed_or_malformed_hashes() -> None:
     registry = create_production_registry(
         updates_per_seed=5000,
         microbatch_size=2,
+        training_hours_cap=8.0,
         source_sha256="a" * 64,
         spec_sha256="b" * 64,
         config_sha256="c" * 64,
     )
     registry["spec_sha256"] = "changed"
     with pytest.raises(ProvenanceError, match="hash"):
+        validate_production_registry(registry)
+
+
+def test_registry_requires_locked_positive_training_hours_cap() -> None:
+    registry = create_production_registry(
+        updates_per_seed=5000,
+        microbatch_size=1,
+        training_hours_cap=8.0,
+        source_sha256="a" * 64,
+        spec_sha256="b" * 64,
+        config_sha256="c" * 64,
+    )
+    registry["training_hours_cap"] = 0.0
+    with pytest.raises(ProvenanceError, match="hours"):
         validate_production_registry(registry)
 
 

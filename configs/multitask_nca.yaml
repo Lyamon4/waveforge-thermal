@@ -18,6 +18,9 @@ test_id_tasks: 32
 test_ood_tasks: 16
 pilot_updates: 1500
 checkpoint_interval: 250
+production_training_hours_cap: 8.0
+maximum_campaign_cost_usd: 7.0
+a100_hourly_cost_usd: 0.633
 target_material_fraction: 0.25
 primary_binary_cell_count: 1024
 tv_weight: 0.001

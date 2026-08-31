@@ -14,6 +14,7 @@ from waveforge.experiments.run_multitask_nca import (
     build_parser,
     calculate_runtime_gate,
     classify_pilot,
+    lock_runtime_budget_amendment,
     select_microbatch,
     validate_production_gate,
 )
@@ -35,6 +36,61 @@ def test_runtime_gate_caps_each_seed_at_15000_updates() -> None:
     )
     assert verdict.production_authorized is True
     assert verdict.updates_per_seed == 15_000
+
+
+def test_eight_hour_budget_fits_minimum_updates_at_measured_a100_rate() -> None:
+    verdict = calculate_runtime_gate(
+        seconds_per_update=1.62,
+        remaining_hours=8.0,
+    )
+    assert verdict.production_authorized is True
+    assert verdict.updates_per_seed == 5925
+
+
+def test_budget_amendment_preserves_original_benchmark_and_fails_after_pilot(
+    tmp_path: Path,
+) -> None:
+    original = {
+        "schema_version": 1,
+        "status": "PASS",
+        "selected_microbatch_size": 1,
+        "selected_median_seconds_per_update": 1.62,
+        "production_updates_per_seed": 4444,
+        "production_runtime_authorized": False,
+        "remaining_training_hours": 6.0,
+        "candidates": [],
+    }
+    (tmp_path / "benchmark_verdict.json").write_text(
+        json.dumps(original), encoding="utf-8"
+    )
+
+    amended = lock_runtime_budget_amendment(
+        tmp_path,
+        production_training_hours=8.0,
+        maximum_campaign_cost_usd=7.0,
+        hourly_cost_usd=0.633,
+    )
+
+    assert amended["production_updates_per_seed"] == 5925
+    assert amended["production_runtime_authorized"] is True
+    preserved = json.loads(
+        (tmp_path / "benchmark_verdict_original.json").read_text(encoding="utf-8")
+    )
+    assert preserved == original
+    amendment = json.loads(
+        (tmp_path / "runtime_budget_amendment.json").read_text(encoding="utf-8")
+    )
+    assert amendment["prospective_before_pilot"] is True
+    assert amendment["maximum_campaign_cost_usd"] == 7.0
+
+    (tmp_path / "pilot_verdict.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(MultitaskGateError, match="before pilot"):
+        lock_runtime_budget_amendment(
+            tmp_path,
+            production_training_hours=8.0,
+            maximum_campaign_cost_usd=7.0,
+            hourly_cost_usd=0.633,
+        )
 
 
 def test_microbatch_selection_uses_throughput_and_two_percent_tie_break() -> None:

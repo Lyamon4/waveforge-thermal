@@ -21,4 +21,5 @@ def test_supervisor_jobs_do_not_autorestart_scientific_failures() -> None:
         )
         assert "autostart=false" in config
         assert "autorestart=false" in config
+        assert 'WAVEFORGE_REMAINING_HOURS="8.0"' in config
         assert f" {name}" in config

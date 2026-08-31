@@ -173,10 +173,19 @@ new loop. Record median and p90 seconds/update, tasks/second, NCA time,
 projection time, forward physics time, adjoint time, GPU memory, and CUDA
 utilization.
 
-The benchmark determines the production update count. Three production models
-receive at most six total A100 training hours, at least 5,000 updates per seed,
-and at most 15,000 updates per seed. If fewer than 5,000 updates per seed fit,
-production is not authorized.
+The benchmark determines the production update count. Before pilot inspection,
+the user prospectively increased the production allocation from six to eight
+total A100 training hours because the paid A100 benchmark showed that six hours
+would not fit the already locked minimum. The maximum total campaign spend is
+`$7.00` at the observed `$0.633/hour` offer. This amendment changes only paid
+runtime; architecture, task distribution, schedules, seeds, validation, and
+success criteria remain unchanged.
+
+Three production models share at most eight total A100 training hours, receive
+at least 5,000 updates per seed, and at most 15,000 updates per seed. If fewer
+than 5,000 updates per seed fit, production is not authorized. Preserve the
+original six-hour benchmark verdict and write a separate machine-readable
+runtime-budget amendment before the pilot.
 
 ## 11. Pilot
 
