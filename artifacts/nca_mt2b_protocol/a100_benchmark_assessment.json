@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "status": "PASS_WITH_AUTHORIZED_SEQUENTIAL_FALLBACK",
+  "protocol_commit": "a1a8bc280318c35ec23b7fb0670a787b526b6c92",
+  "protocol_bundle_sha256": "567606c870720ca48001868efa9db1c6918e42345a1892932826c1ab0691d103",
+  "environment": {
+    "device": "NVIDIA A100-SXM4-40GB",
+    "torch": "2.11.0+cu128",
+    "cuda": "12.8"
+  },
+  "raw_benchmark_artifacts": {
+    "a100_benchmark": {
+      "path": "artifacts/nca_mt2b_protocol/a100_benchmark.json",
+      "sha256": "6af87c60a2f3afc965dfb1692fb999ec674ded9f9bded931da3f74dc7529578e"
+    },
+    "local_fixed_operator_benchmark": {
+      "path": "artifacts/nca_mt2b_protocol/local_fixed_operator_benchmark.json",
+      "sha256": "9f02613e4898d8e64fc43f10c26fc5b06cd45f0433f0e9621545920acbfe7329"
+    }
+  },
+  "fixed_operator": {
+    "accepted": true,
+    "rhs_count": 12,
+    "ordinary_batched_cg_seconds": 0.48963169381022453,
+    "reusable_sparse_lu_seconds": 0.003039192408323288,
+    "speedup": 161.1058557757956,
+    "maximum_absolute_error": 2.7200464103316335e-14,
+    "maximum_relative_error": 2.449180342491292e-14
+  },
+  "true_batch4": {
+    "accepted": false,
+    "reason": "locked_gradient_relative_l2_tolerance_exceeded",
+    "tolerance": 1e-6,
+    "raw_gradient_relative_l2_error": 4.180836640443886e-6,
+    "physics_gradient_relative_l2_error": 3.862905032292474e-6,
+    "gradient_cosine": 1.0,
+    "design_gradient_relative_l2_error": 0.0,
+    "root_cause": "FP32_Conv2d_parameter_gradient_batch_reduction_order"
+  },
+  "selected_training_mode": {
+    "id": "scenario_vectorized_sequential",
+    "description": "four tasks accumulated sequentially; three scenarios inside each task solved by the agreement-passing B1 batched solver",
+    "scientific_batch_size": 4,
+    "changes_scientific_protocol": false,
+    "raw_seconds_per_update": 3.0317736957222223,
+    "physics_seconds_per_update": 2.977728782221675,
+    "raw_tasks_per_second": 1.3193596888989199,
+    "physics_tasks_per_second": 1.3433056844806435,
+    "initial_gradient_relative_l2_error_maximum": 0.0,
+    "five_step_gradient_relative_l2_error_maximum": 3.260448022679441e-10,
+    "five_step_temperature_max_absolute_error_maximum": 2.3314683517128287e-15
+  },
+  "direct_gradient_reference_benchmark": {
+    "median_seconds_per_step": 1.4729053508490324,
+    "steps_per_reference": 600,
+    "existing_reference_count": 8,
+    "remaining_reference_count": 24,
+    "projected_remaining_reference_hours": 5.89162140339613,
+    "parallel_worker_benchmark_authorized": false,
+    "parallel_workers_improved_throughput": false
+  },
+  "runtime_projection": {
+    "raw_training_hours": 1.684318719845679,
+    "physics_training_hours": 1.6542937679009304,
+    "paired_training_hours": 3.3386124877466097,
+    "remaining_reference_hours": 5.89162140339613,
+    "validation_and_final_verification_allowance_hours": 0.05,
+    "projected_total_a100_hours": 9.280233891142739,
+    "projected_cost_usd_at_0_6696296296_per_hour": 6.214319583402249,
+    "within_locked_10_hour_pilot_cap": true
+  },
+  "benchmark_execution_note": {
+    "actual_new_instance_elapsed_hours_at_assessment": 0.8126333675781886,
+    "locked_benchmark_maximum_hours": 0.5,
+    "engineering_benchmark_budget_exceeded": true,
+    "scientific_results_inspected": false,
+    "long_training_started": false
+  },
+  "long_training_authorized": false,
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}

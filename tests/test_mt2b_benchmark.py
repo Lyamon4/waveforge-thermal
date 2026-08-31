@@ -72,6 +72,76 @@ def test_benchmark_report_is_fail_closed_and_declares_sealed_tests() -> None:
     assert report["test_ood_accessed"] is False
 
 
+def test_benchmark_report_selects_passing_fallback_not_failed_fast_candidate() -> None:
+    measurements = (
+        BatchMeasurement(
+            mode="vectorized",
+            variant="RAW",
+            batch_size=4,
+            median_seconds_per_update=0.8,
+            tasks_per_second=5.0,
+            peak_memory_bytes=800,
+            agreement_pass=False,
+            gradient_relative_l2_error=4.0e-6,
+        ),
+        BatchMeasurement(
+            mode="vectorized",
+            variant="PHYSICS",
+            batch_size=4,
+            median_seconds_per_update=0.9,
+            tasks_per_second=4.4,
+            peak_memory_bytes=800,
+            agreement_pass=False,
+            gradient_relative_l2_error=4.0e-6,
+        ),
+        BatchMeasurement(
+            mode="scenario_vectorized_sequential",
+            variant="RAW",
+            batch_size=4,
+            median_seconds_per_update=3.0,
+            tasks_per_second=4 / 3,
+            peak_memory_bytes=400,
+            agreement_pass=True,
+            gradient_relative_l2_error=0.0,
+        ),
+        BatchMeasurement(
+            mode="scenario_vectorized_sequential",
+            variant="PHYSICS",
+            batch_size=4,
+            median_seconds_per_update=3.1,
+            tasks_per_second=4 / 3.1,
+            peak_memory_bytes=400,
+            agreement_pass=True,
+            gradient_relative_l2_error=3.3e-10,
+        ),
+    )
+    fixed = FixedOperatorMeasurement(
+        rhs_count=12,
+        ordinary_seconds=0.49,
+        reusable_seconds=0.003,
+        speedup=161.0,
+        maximum_absolute_error=3.0e-14,
+        maximum_relative_error=3.0e-14,
+        agreement_pass=True,
+    )
+
+    report = build_benchmark_report(
+        batch_measurements=measurements,
+        fixed_operator=fixed,
+        environment={"device": "NVIDIA A100-SXM4-40GB"},
+        runtime_projection=project_paired_runtime(
+            raw_tasks_per_second=4 / 3,
+            physics_tasks_per_second=4 / 3.1,
+            validation_seconds=0.0,
+            reference_seconds=0.0,
+        ),
+    )
+
+    assert report["status"] == "PASS"
+    assert report["selected_training_mode"] == "scenario_vectorized_sequential"
+    assert report["rejected_training_modes"] == ["vectorized"]
+
+
 def test_fixed_operator_only_cli_writes_benchmark_without_training(
     tmp_path: Path,
 ) -> None:

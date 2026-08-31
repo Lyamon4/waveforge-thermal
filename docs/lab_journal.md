@@ -858,3 +858,44 @@ checkpoint `001750`) не проходил gate. Machine verdict поэтому 
 pilot gap устраняется только дополнительными 1500 updates той же architecture;
 он не отменяет evidence обученного source-dependent rule и не авторизует
 post-hoc изменение текущего protocol.
+
+## 2026-08-31 — NCA-MT2B prospective protocol and A100 benchmark
+
+До просмотра новых training/validation результатов зафиксирован paired
+RAW-versus-PHYSICS experiment. Protocol commit
+`a1a8bc280318c35ec23b7fb0670a787b526b6c92`, tag
+`v0.7-nca-mt2b-protocol-locked`, protocol bundle SHA-256
+`567606c870720ca48001868efa9db1c6918e42345a1892932826c1ab0691d103`.
+Physics-transformed conditioning содержит только deterministic low-k
+`T_mean/T_max`; teacher topologies, gradient references, adjoint sensitivities
+и test statistics в conditioning отсутствуют. ID/OOD test registries не
+открывались.
+
+На A100 SXM4 40 GB reusable sparse-LU conditioning solve совпал с ordinary
+batched CG с maximum absolute error `2.7200464103316335e-14` и дал measured
+speedup `161.1058557757956x`. True vectorized batch-4 был fail-closed отклонён:
+температуры и design gradients совпали, но FP32 Conv2d parameter-gradient
+reduction order дал relative L2 `3.86e-6..4.18e-6` против locked `1e-6`.
+Порог после измерения не менялся.
+
+Разрешённый fallback сохраняет четыре задачи последовательными и vectorizes
+только три независимых thermal scenarios внутри каждой задачи. Он прошёл
+исходный допуск: после пяти Adam steps maximum gradient relative L2 равен
+`3.260448022679441e-10`, temperature absolute error
+`2.3314683517128287e-15`. Measured RAW/PHYSICS batch-4 update times равны
+`3.0317736957222223 s` и `2.977728782221675 s`; paired 2000-update training
+projection равен `3.3386124877466097 h`.
+
+Отдельный A100 benchmark 600-step direct-gradient baseline дал median
+`1.4729053508490324 s/step`. Для 24 ещё отсутствующих validation references
+projection равен `5.89162140339613 h`. Вместе с conservative `0.05 h` на
+validation/final verification полный MT2B projection равен
+`9.280233891142739 A100 h` или примерно `$6.2143` при текущей ставке. Это
+в пределах locked 10-hour pilot cap. Long training не запускался и остаётся
+неавторизованным.
+
+Фактическое инженерное benchmark-время на новой instance достигло примерно
+`0.813 h`, превысив prospective `0.5 h` benchmark allocation из-за повторного
+подключения, root-cause diagnostics и проверки safe fallback. Это прозрачно
+зафиксировано как cost/schedule deviation; scientific model, objective,
+task stream, thresholds и sealed splits не менялись.

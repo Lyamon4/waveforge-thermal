@@ -1,0 +1,25 @@
+{
+  "batch_measurements": [],
+  "environment": {
+    "cuda": "13.0",
+    "device": "cpu",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9",
+    "torch": "2.13.0+cu130"
+  },
+  "fixed_operator": {
+    "agreement_pass": true,
+    "maximum_absolute_error": 3.441691376337985e-14,
+    "maximum_relative_error": 3.098962882335943e-14,
+    "ordinary_seconds": 0.9428578999941237,
+    "reusable_seconds": 0.0033122000168077648,
+    "rhs_count": 12,
+    "speedup": 284.66212644453526
+  },
+  "long_training_started": false,
+  "runtime_projection": null,
+  "schema_version": 1,
+  "status": "PASS",
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}

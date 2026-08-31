@@ -32,7 +32,7 @@ from waveforge.physics.grid import Grid2D
 
 @dataclass(frozen=True)
 class BatchMeasurement:
-    mode: Literal["sequential", "vectorized"]
+    mode: Literal["sequential", "vectorized", "scenario_vectorized_sequential"]
     variant: Literal["RAW", "PHYSICS"]
     batch_size: int
     median_seconds_per_update: float
@@ -100,14 +100,44 @@ def build_benchmark_report(
     runtime_projection: RuntimeProjection | None,
 ) -> dict[str, object]:
     """Build the fail-closed benchmark artifact without test-split access."""
-    agreements = [fixed_operator.agreement_pass] + [
-        item.agreement_pass for item in batch_measurements
+    variants = {item.variant for item in batch_measurements}
+    modes = {item.mode for item in batch_measurements}
+    eligible_modes = [
+        mode
+        for mode in modes
+        if all(
+            any(
+                item.mode == mode
+                and item.variant == variant
+                and item.batch_size == 4
+                and item.agreement_pass
+                for item in batch_measurements
+            )
+            for variant in variants
+        )
     ]
+    selected_mode = (
+        max(
+            eligible_modes,
+            key=lambda mode: min(
+                item.tasks_per_second
+                for item in batch_measurements
+                if item.mode == mode and item.variant in variants
+            ),
+        )
+        if eligible_modes
+        else None
+    )
+    benchmark_pass = fixed_operator.agreement_pass and (
+        not batch_measurements or selected_mode is not None
+    )
     return {
         "schema_version": 1,
-        "status": "PASS" if all(agreements) else "FAIL_NUMERICAL_AGREEMENT",
+        "status": "PASS" if benchmark_pass else "FAIL_NUMERICAL_AGREEMENT",
         "environment": environment,
         "batch_measurements": [asdict(item) for item in batch_measurements],
+        "selected_training_mode": selected_mode,
+        "rejected_training_modes": sorted(modes - set(eligible_modes)),
         "fixed_operator": asdict(fixed_operator),
         "runtime_projection": (
             asdict(runtime_projection) if runtime_projection is not None else None
