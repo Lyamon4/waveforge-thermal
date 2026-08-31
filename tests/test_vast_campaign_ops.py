@@ -5,9 +5,9 @@ from pathlib import Path
 
 def test_vast_wrapper_runs_locked_cli_in_foreground() -> None:
     root = Path(__file__).resolve().parents[1]
-    script = (root / "ops" / "vast" / "run_campaign_phase.sh").read_text(
-        encoding="utf-8"
-    )
+    path = root / "ops" / "vast" / "run_campaign_phase.sh"
+    assert b"\r\n" not in path.read_bytes()
+    script = path.read_text(encoding="utf-8")
     assert "set -euo pipefail" in script
     assert "exec .venv/bin/python -m waveforge.experiments.run_multitask_nca" in script
     assert '"$1"' in script
@@ -27,9 +27,9 @@ def test_supervisor_jobs_do_not_autorestart_scientific_failures() -> None:
 
 def test_parallel_launcher_runs_exact_registered_seeds_then_finalizes() -> None:
     root = Path(__file__).resolve().parents[1]
-    script = (root / "ops" / "vast" / "run_parallel_production.sh").read_text(
-        encoding="utf-8"
-    )
+    path = root / "ops" / "vast" / "run_parallel_production.sh"
+    assert b"\r\n" not in path.read_bytes()
+    script = path.read_text(encoding="utf-8")
     for seed in (2026083102, 2026083103, 2026083104):
         assert f"--seed {seed}" in script
     assert "wait" in script
