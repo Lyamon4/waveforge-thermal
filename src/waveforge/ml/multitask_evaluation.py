@@ -113,7 +113,7 @@ def _score_frozen_task(
     with torch.no_grad():
         condition = build_static_condition(conditioning_sources)
         rollout = model.rollout(condition)
-        continuous = project_nca_material(rollout.material_logit, beta=8.0).design[0, 0]
+        continuous = project_nca_material(rollout.material_logit, beta=8.0).design
         binary, budget = exact_cardinality_binary(
             continuous,
             count=PRIMARY_BINARY_CELL_COUNT,

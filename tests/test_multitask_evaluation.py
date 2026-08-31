@@ -2,16 +2,24 @@
 
 from __future__ import annotations
 
+import math
+from pathlib import Path
+
 import numpy as np
 import pytest
+import torch
 
 from waveforge.ml.multitask_evaluation import (
     ValidationSummary,
     condition_causality_summary,
+    evaluate_frozen_checkpoint,
     pairwise_binary_diversity,
     select_validation_checkpoint,
     summarize_against_reference,
 )
+from waveforge.ml.multitask_tasks import sample_primary_task
+from waveforge.ml.nca import PureNCA
+from waveforge.ml.nca_training import model_state_sha256
 
 
 def summary(
@@ -114,3 +122,31 @@ def test_pairwise_binary_diversity_reports_hamming_and_jaccard() -> None:
 def test_pairwise_binary_diversity_rejects_nonbinary_designs() -> None:
     with pytest.raises(ValueError, match="binary"):
         pairwise_binary_diversity([np.array([[0.5]]), np.array([[1.0]])])
+
+
+def test_frozen_checkpoint_evaluation_reads_out_a_64_grid_design(
+    tmp_path: Path,
+) -> None:
+    model = PureNCA()
+    checkpoint = tmp_path / "checkpoint_000000.pt"
+    torch.save(
+        {
+            "schema_version": 1,
+            "completed_updates": 0,
+            "model_state_sha256": model_state_sha256(model),
+            "model_state": model.state_dict(),
+        },
+        checkpoint,
+    )
+
+    result = evaluate_frozen_checkpoint(
+        checkpoint,
+        (sample_primary_task(1234, 0),),
+        split_name="validation",
+        device=torch.device("cpu"),
+    )
+
+    assert len(result.tasks) == 1
+    assert result.tasks[0].binary_design.shape == (64, 64)
+    assert result.tasks[0].binary_material_fraction == 0.25
+    assert math.isfinite(result.tasks[0].peak_temperature)
