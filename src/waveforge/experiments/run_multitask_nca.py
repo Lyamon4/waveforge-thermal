@@ -32,6 +32,8 @@ from waveforge.ml.multitask_protocol import (
     DEVELOPMENT_SEED,
     PILOT_UPDATES,
     PRODUCTION_SEEDS,
+    RECOVERY_START_UPDATES,
+    RECOVERY_TOTAL_UPDATES,
 )
 from waveforge.ml.multitask_provenance import (
     build_hash_manifest,
@@ -40,6 +42,7 @@ from waveforge.ml.multitask_provenance import (
     validate_production_registry,
 )
 from waveforge.ml.multitask_tasks import (
+    VALIDATION_SEED,
     FrozenTaskSplits,
     SourceLayoutTask,
     build_frozen_splits,
@@ -73,6 +76,24 @@ class PilotStatus(StrEnum):
     PILOT_CONDITIONAL = "PILOT_CONDITIONAL"
     PILOT_KILL = "PILOT_KILL"
     INVALID_RUN = "INVALID_RUN"
+
+
+class RecoveryStatus(StrEnum):
+    """Machine-readable outcomes of the prospective NCA-MT2A recovery."""
+
+    RECOVERY_GO = "RECOVERY_GO"
+    RECOVERY_NO_GO = "RECOVERY_NO_GO"
+    INVALID_RUN = "INVALID_RUN"
+
+
+RECOVERY_SOURCE_CHECKPOINT_SHA256 = (
+    "6e5d4539aace0ae35c10260bf458bfdfb4c818e194d074c561c9855a8dbe12fb"
+)
+RECOVERY_ORIGINAL_MEDIAN_TMAX = 0.2035900680052531
+RECOVERY_MAXIMUM_MEDIAN_GRADIENT_GAP = 0.15
+RECOVERY_MINIMUM_MATCHED_WINS = 23
+RECOVERY_RUNTIME_CAP_HOURS = 1.25
+RECOVERY_VALIDATION_ALLOWANCE_HOURS = 0.25
 
 
 @dataclass(frozen=True)
@@ -164,6 +185,41 @@ def classify_pilot(
     if median_gradient_gap <= 0.15:
         return PilotStatus.PILOT_GO
     return PilotStatus.PILOT_CONDITIONAL
+
+
+def classify_recovery(
+    *,
+    numerically_valid: bool,
+    completed_updates: int,
+    binary_budget_valid: bool,
+    matched_condition_wins: int,
+    source_independent: bool,
+    selected_median_tmax: float,
+    original_median_tmax: float,
+    median_gradient_gap: float,
+) -> RecoveryStatus:
+    """Apply the locked recovery gate without accessing test tasks."""
+    numerical_values = (
+        selected_median_tmax,
+        original_median_tmax,
+        median_gradient_gap,
+    )
+    if (
+        not numerically_valid
+        or completed_updates != RECOVERY_TOTAL_UPDATES
+        or not binary_budget_valid
+        or not all(math.isfinite(value) for value in numerical_values)
+        or original_median_tmax <= 0.0
+    ):
+        return RecoveryStatus.INVALID_RUN
+    if (
+        matched_condition_wins >= RECOVERY_MINIMUM_MATCHED_WINS
+        and not source_independent
+        and selected_median_tmax < original_median_tmax
+        and median_gradient_gap <= RECOVERY_MAXIMUM_MEDIAN_GRADIENT_GAP
+    ):
+        return RecoveryStatus.RECOVERY_GO
+    return RecoveryStatus.RECOVERY_NO_GO
 
 
 def registered_test_baseline_jobs() -> tuple[dict[str, object], ...]:
@@ -535,6 +591,156 @@ def _summary_payload(summary: object) -> dict[str, object]:
     return asdict(summary)  # type: ignore[arg-type]
 
 
+def build_recovery_validation_tasks() -> tuple[SourceLayoutTask, ...]:
+    """Construct only the exposed development validation tasks, never test tasks."""
+    return tuple(sample_primary_task(VALIDATION_SEED, index) for index in range(32))
+
+
+def prepare_recovery_source(
+    source_output_dir: Path,
+    recovery_output_dir: Path,
+) -> tuple[Path, dict[str, object]]:
+    """Verify and copy the immutable pilot checkpoint into a separate directory."""
+    if source_output_dir.resolve() == recovery_output_dir.resolve():
+        raise MultitaskGateError("recovery output must be separate from pilot output")
+    pilot_verdict_path = source_output_dir / "pilot_verdict.json"
+    pilot_verdict = _read_json(pilot_verdict_path)
+    if pilot_verdict.get("status") != PilotStatus.PILOT_KILL.value:
+        raise MultitaskGateError("recovery requires the immutable PILOT_KILL result")
+    selected = str(pilot_verdict.get("selected_checkpoint", "")).replace("\\", "/")
+    if (
+        selected != "pilot/checkpoint_001500.pt"
+        or int(pilot_verdict.get("completed_updates", -1)) != RECOVERY_START_UPDATES
+    ):
+        raise MultitaskGateError("pilot verdict does not identify the locked source")
+
+    source_checkpoint = source_output_dir / "pilot" / "checkpoint_001500.pt"
+    if not source_checkpoint.is_file():
+        raise MultitaskGateError("locked recovery source checkpoint is missing")
+    source_sha256 = artifact_sha256(source_checkpoint)
+    if source_sha256 != RECOVERY_SOURCE_CHECKPOINT_SHA256:
+        raise MultitaskGateError("locked recovery source SHA-256 mismatch")
+
+    recovery_output_dir.mkdir(parents=True, exist_ok=True)
+    copied_checkpoint = recovery_output_dir / "checkpoint_001500.pt"
+    if copied_checkpoint.is_file():
+        if artifact_sha256(copied_checkpoint) != RECOVERY_SOURCE_CHECKPOINT_SHA256:
+            raise MultitaskGateError("existing recovery checkpoint SHA-256 mismatch")
+    else:
+        shutil.copy2(source_checkpoint, copied_checkpoint)
+    if artifact_sha256(copied_checkpoint) != RECOVERY_SOURCE_CHECKPOINT_SHA256:
+        raise MultitaskGateError("copied recovery checkpoint SHA-256 mismatch")
+
+    provenance: dict[str, object] = {
+        "schema_version": 1,
+        "status": "LOCKED_SOURCE_VERIFIED",
+        "source_pilot_status": PilotStatus.PILOT_KILL.value,
+        "source_checkpoint": "pilot/checkpoint_001500.pt",
+        "source_checkpoint_sha256": source_sha256,
+        "copied_checkpoint": copied_checkpoint.name,
+        "source_pilot_verdict_sha256": artifact_sha256(pilot_verdict_path),
+        "source_completed_updates": RECOVERY_START_UPDATES,
+        "target_completed_updates": RECOVERY_TOTAL_UPDATES,
+        "first_new_global_update": RECOVERY_START_UPDATES,
+        "last_new_global_update": RECOVERY_TOTAL_UPDATES - 1,
+        "test_splits_accessed": False,
+    }
+    _write_json(recovery_output_dir / "recovery_provenance.json", provenance)
+    return copied_checkpoint, provenance
+
+
+def _read_recovery_gradient_references(
+    source_output_dir: Path,
+    validation_tasks: tuple[SourceLayoutTask, ...],
+) -> dict[str, float]:
+    payload = _read_json(source_output_dir / "pilot_gradient_references.json")
+    raw_peaks = payload.get("peaks")
+    if not isinstance(raw_peaks, dict):
+        raise MultitaskGateError("pilot gradient references are corrupted")
+    references: dict[str, float] = {}
+    for task in validation_tasks[:8]:
+        if task.task_id not in raw_peaks:
+            raise MultitaskGateError("a locked pilot gradient reference is missing")
+        value = float(raw_peaks[task.task_id])
+        if not math.isfinite(value) or value <= 0.0:
+            raise MultitaskGateError("a locked pilot gradient reference is invalid")
+        references[task.task_id] = value
+    return references
+
+
+def _evaluate_recovery_checkpoints(
+    recovery_dir: Path,
+    validation_tasks: tuple[SourceLayoutTask, ...],
+    gradient_references: dict[str, float],
+) -> tuple[Path, list[dict[str, object]]]:
+    summaries = []
+    rows: list[dict[str, object]] = []
+    expected_updates = set(
+        range(RECOVERY_START_UPDATES, RECOVERY_TOTAL_UPDATES + 1, 250)
+    )
+    checkpoints = {
+        int(path.stem.split("_")[-1]): path
+        for path in recovery_dir.glob("checkpoint_*.pt")
+    }
+    if set(checkpoints) != expected_updates:
+        raise MultitaskGateError("recovery checkpoint registry is incomplete")
+    comparison_ids = tuple(task.task_id for task in validation_tasks[:8])
+    for completed in sorted(checkpoints):
+        checkpoint = checkpoints[completed]
+        evaluation = evaluate_frozen_checkpoint(
+            checkpoint,
+            validation_tasks,
+            split_name="validation",
+            device=torch.device("cuda"),
+        )
+        task_ids = tuple(item.task_id for item in evaluation.tasks)
+        peaks = tuple(item.peak_temperature for item in evaluation.tasks)
+        peak_summary = summarize_against_reference(
+            completed_updates=completed,
+            split_name="validation",
+            task_ids=task_ids,
+            candidate_peaks=peaks,
+            reference_peaks={task_id: 1.0 for task_id in task_ids},
+        )
+        comparison_peaks = tuple(
+            next(
+                item.peak_temperature
+                for item in evaluation.tasks
+                if item.task_id == task_id
+            )
+            for task_id in comparison_ids
+        )
+        gap_summary = summarize_against_reference(
+            completed_updates=completed,
+            split_name="validation",
+            task_ids=comparison_ids,
+            candidate_peaks=comparison_peaks,
+            reference_peaks=gradient_references,
+        )
+        summaries.append(peak_summary)
+        rows.append(
+            {
+                "checkpoint": checkpoint.name,
+                "checkpoint_sha256": artifact_sha256(checkpoint),
+                "peak_summary": _summary_payload(peak_summary),
+                "gradient_gap_summary": _summary_payload(gap_summary),
+            }
+        )
+    selected_summary = select_validation_checkpoint(summaries)
+    selected = recovery_dir / f"checkpoint_{selected_summary.completed_updates:06d}.pt"
+    _write_json(
+        recovery_dir / "recovery_checkpoint_validation.json",
+        {
+            "schema_version": 1,
+            "rows": rows,
+            "selected_checkpoint": selected.name,
+            "selection_split": "development_validation_only",
+            "test_splits_accessed": False,
+        },
+    )
+    return selected, rows
+
+
 def _evaluate_pilot_checkpoints(
     pilot_dir: Path,
     splits: FrozenTaskSplits,
@@ -701,6 +907,177 @@ def run_pilot(output_dir: Path) -> dict[str, object]:
         "condition_causality": asdict(causality),
         "binary_diversity": asdict(diversity),
         "binary_budget_valid": binary_budget_valid,
+    }
+    _write_json(verdict_path, payload)
+    return payload
+
+
+def _write_invalid_recovery(
+    recovery_dir: Path,
+    *,
+    reason_codes: list[str],
+) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "status": RecoveryStatus.INVALID_RUN.value,
+        "reason_codes": reason_codes,
+        "test_splits_accessed": False,
+        "production_authorized": False,
+    }
+    _write_json(recovery_dir / "recovery_verdict.json", payload)
+    return payload
+
+
+def run_recovery(
+    recovery_dir: Path,
+    source_output_dir: Path,
+) -> dict[str, object]:
+    """Extend the immutable 1500-update pilot using validation-only recovery."""
+    verdict_path = recovery_dir / "recovery_verdict.json"
+    if verdict_path.is_file():
+        return _read_json(verdict_path)
+
+    source_checkpoint, provenance = prepare_recovery_source(
+        source_output_dir,
+        recovery_dir,
+    )
+    benchmark = _read_json(source_output_dir / "benchmark_verdict.json")
+    seconds_per_update = float(benchmark["selected_median_seconds_per_update"])
+    if not math.isfinite(seconds_per_update) or seconds_per_update <= 0.0:
+        raise MultitaskGateError("recovery runtime source measurement is invalid")
+    training_hours = (
+        (RECOVERY_TOTAL_UPDATES - RECOVERY_START_UPDATES) * seconds_per_update / 3600.0
+    )
+    projected_hours = training_hours + RECOVERY_VALIDATION_ALLOWANCE_HOURS
+    runtime_projection = {
+        "schema_version": 1,
+        "seconds_per_update": seconds_per_update,
+        "new_updates": RECOVERY_TOTAL_UPDATES - RECOVERY_START_UPDATES,
+        "projected_training_hours": training_hours,
+        "validation_allowance_hours": RECOVERY_VALIDATION_ALLOWANCE_HOURS,
+        "projected_total_hours": projected_hours,
+        "runtime_cap_hours": RECOVERY_RUNTIME_CAP_HOURS,
+        "authorized": projected_hours <= RECOVERY_RUNTIME_CAP_HOURS,
+    }
+    _write_json(recovery_dir / "recovery_runtime_projection.json", runtime_projection)
+    if projected_hours > RECOVERY_RUNTIME_CAP_HOURS:
+        raise MultitaskGateError("projected recovery runtime exceeds 1.25 A100 hours")
+
+    microbatch_size = int(
+        _read_json(source_output_dir / "pilot_verdict.json")["microbatch_size"]
+    )
+    if microbatch_size != 1:
+        raise MultitaskGateError("recovery requires locked microbatch size 1")
+    configure_cuda_reproducibility(DEVELOPMENT_SEED)
+    existing_checkpoints = sorted(recovery_dir.glob("checkpoint_*.pt"))
+    resume = existing_checkpoints[-1] if existing_checkpoints else source_checkpoint
+    while True:
+        result = run_multitask_training(
+            config=MultitaskRunConfig(
+                model_seed=DEVELOPMENT_SEED,
+                task_seed=DEVELOPMENT_SEED,
+                total_updates=RECOVERY_TOTAL_UPDATES,
+                microbatch_size=1,
+                checkpoint_interval=250,
+                mode="recovery",
+                device="cuda",
+                schedule_id="recovery_final_decay",
+                resume_from_total_updates=RECOVERY_START_UPDATES,
+            ),
+            output_dir=recovery_dir,
+            resume_checkpoint=resume,
+            maximum_updates_this_call=250,
+            synchronize=torch.cuda.synchronize,
+        )
+        if result.status is MultitaskRunStatus.INVALID_RUN:
+            return _write_invalid_recovery(
+                recovery_dir,
+                reason_codes=list(result.reason_codes),
+            )
+        resume = result.last_checkpoint
+        if result.completed_updates == RECOVERY_TOTAL_UPDATES:
+            break
+
+    try:
+        validation_tasks = build_recovery_validation_tasks()
+        references = _read_recovery_gradient_references(
+            source_output_dir,
+            validation_tasks,
+        )
+        selected, validation_rows = _evaluate_recovery_checkpoints(
+            recovery_dir,
+            validation_tasks,
+            references,
+        )
+        matched = evaluate_frozen_checkpoint(
+            selected,
+            validation_tasks,
+            split_name="validation",
+            device=torch.device("cuda"),
+        )
+        shuffled = evaluate_frozen_checkpoint(
+            selected,
+            validation_tasks,
+            split_name="validation",
+            conditioning_tasks=validation_tasks[1:] + validation_tasks[:1],
+            device=torch.device("cuda"),
+        )
+        causality = condition_causality_summary(
+            matched=[item.peak_temperature for item in matched.tasks],
+            shuffled=[item.peak_temperature for item in shuffled.tasks],
+        )
+        diversity = pairwise_binary_diversity(
+            [item.binary_design for item in matched.tasks]
+        )
+        selected_row = next(
+            row for row in validation_rows if row["checkpoint"] == selected.name
+        )
+        selected_peak = float(selected_row["peak_summary"]["median_peak"])
+        median_gap = float(selected_row["gradient_gap_summary"]["median_relative_gap"])
+        binary_budget_valid = all(
+            item.binary_material_fraction == 0.25 for item in matched.tasks
+        )
+        source_independent = diversity.mean_hamming_fraction == 0.0
+        status = classify_recovery(
+            numerically_valid=True,
+            completed_updates=result.completed_updates,
+            binary_budget_valid=binary_budget_valid,
+            matched_condition_wins=causality.matched_win_count,
+            source_independent=source_independent,
+            selected_median_tmax=selected_peak,
+            original_median_tmax=RECOVERY_ORIGINAL_MEDIAN_TMAX,
+            median_gradient_gap=median_gap,
+        )
+    except (KeyError, OSError, RuntimeError, ValueError, FloatingPointError) as error:
+        return _write_invalid_recovery(
+            recovery_dir,
+            reason_codes=[f"RECOVERY_EVALUATION_INVALID:{type(error).__name__}"],
+        )
+
+    payload = {
+        "schema_version": 1,
+        "status": status.value,
+        "completed_updates": result.completed_updates,
+        "new_global_update_range": [
+            RECOVERY_START_UPDATES,
+            RECOVERY_TOTAL_UPDATES - 1,
+        ],
+        "selected_checkpoint": selected.name,
+        "selected_checkpoint_sha256": artifact_sha256(selected),
+        "source_checkpoint_sha256": provenance["source_checkpoint_sha256"],
+        "original_validation_median_tmax": RECOVERY_ORIGINAL_MEDIAN_TMAX,
+        "selected_validation_median_tmax": selected_peak,
+        "validation_median_improved": (selected_peak < RECOVERY_ORIGINAL_MEDIAN_TMAX),
+        "median_gap_to_direct_gradient": median_gap,
+        "maximum_allowed_median_gap": RECOVERY_MAXIMUM_MEDIAN_GRADIENT_GAP,
+        "condition_causality": asdict(causality),
+        "binary_diversity": asdict(diversity),
+        "source_independent": source_independent,
+        "binary_budget_valid": binary_budget_valid,
+        "runtime_projection": runtime_projection,
+        "test_splits_accessed": False,
+        "production_authorized": status is RecoveryStatus.RECOVERY_GO,
+        "production_started": False,
     }
     _write_json(verdict_path, payload)
     return payload
@@ -1359,6 +1736,7 @@ def build_parser() -> argparse.ArgumentParser:
             "benchmark",
             "budget",
             "pilot",
+            "recovery",
             "production-lock",
             "production-seed",
             "production-finalize",
@@ -1368,6 +1746,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--source-output", type=Path)
     parser.add_argument("--remaining-hours", type=float, default=8.0)
     parser.add_argument("--maximum-campaign-cost-usd", type=float, default=7.0)
     parser.add_argument("--hourly-cost-usd", type=float, default=0.633)
@@ -1392,6 +1771,10 @@ def main() -> None:
         )
     elif args.phase == "pilot":
         run_pilot(args.output)
+    elif args.phase == "recovery":
+        if args.source_output is None:
+            raise MultitaskGateError("recovery requires --source-output")
+        run_recovery(args.output, args.source_output)
     elif args.phase == "production-lock":
         lock_production_registry(args.output)
     elif args.phase == "production-seed":

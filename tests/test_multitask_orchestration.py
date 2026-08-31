@@ -4,19 +4,27 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
+import numpy as np
 import pytest
 
+import waveforge.experiments.run_multitask_nca as campaign
 from waveforge.experiments.run_multitask_nca import (
     BenchmarkCandidate,
     MultitaskGateError,
     PilotStatus,
+    RecoveryStatus,
     assemble_production_payload,
     build_parser,
+    build_recovery_validation_tasks,
     calculate_runtime_gate,
     classify_pilot,
+    classify_recovery,
     lock_runtime_budget_amendment,
+    prepare_recovery_source,
     registered_test_baseline_jobs,
+    run_recovery,
     select_microbatch,
     validate_production_gate,
 )
@@ -186,6 +194,193 @@ def test_pilot_gate_distinguishes_go_conditional_kill_and_invalid() -> None:
     )
 
 
+def test_recovery_gate_requires_every_locked_effect_condition() -> None:
+    common = {
+        "numerically_valid": True,
+        "completed_updates": 3000,
+        "binary_budget_valid": True,
+        "matched_condition_wins": 23,
+        "source_independent": False,
+        "selected_median_tmax": 0.19,
+        "original_median_tmax": 0.2035900680052531,
+        "median_gradient_gap": 0.15,
+    }
+    assert classify_recovery(**common) is RecoveryStatus.RECOVERY_GO
+    assert (
+        classify_recovery(**(common | {"matched_condition_wins": 22}))
+        is RecoveryStatus.RECOVERY_NO_GO
+    )
+    assert (
+        classify_recovery(**(common | {"selected_median_tmax": 0.21}))
+        is RecoveryStatus.RECOVERY_NO_GO
+    )
+    assert (
+        classify_recovery(**(common | {"median_gradient_gap": 0.1500000001}))
+        is RecoveryStatus.RECOVERY_NO_GO
+    )
+    assert (
+        classify_recovery(**(common | {"completed_updates": 2999}))
+        is RecoveryStatus.INVALID_RUN
+    )
+
+
+def test_recovery_source_hash_is_enforced_before_copy(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    source_checkpoint = source / "pilot" / "checkpoint_001500.pt"
+    source_checkpoint.parent.mkdir(parents=True)
+    source_checkpoint.write_bytes(b"immutable pilot checkpoint")
+    (source / "pilot_verdict.json").write_text(
+        json.dumps(
+            {
+                "status": "PILOT_KILL",
+                "selected_checkpoint": "pilot/checkpoint_001500.pt",
+                "completed_updates": 1500,
+            }
+        ),
+        encoding="utf-8",
+    )
+    recovery = tmp_path / "recovery"
+
+    with pytest.raises(MultitaskGateError, match="SHA-256"):
+        prepare_recovery_source(source, recovery)
+
+    original_hash = campaign.artifact_sha256
+
+    def accepted_hash(path: Path) -> str:
+        if path == source_checkpoint or path == recovery / "checkpoint_001500.pt":
+            return campaign.RECOVERY_SOURCE_CHECKPOINT_SHA256
+        return original_hash(path)
+
+    monkeypatch.setattr(campaign, "artifact_sha256", accepted_hash)
+    copied, provenance = prepare_recovery_source(source, recovery)
+
+    assert copied.read_bytes() == source_checkpoint.read_bytes()
+    assert provenance["source_checkpoint_sha256"] == (
+        campaign.RECOVERY_SOURCE_CHECKPOINT_SHA256
+    )
+    assert provenance["source_pilot_status"] == "PILOT_KILL"
+    assert provenance["test_splits_accessed"] is False
+
+
+def test_recovery_validation_registry_never_constructs_test_tasks(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[int, int]] = []
+
+    def fake_sample(seed: int, index: int) -> object:
+        calls.append((seed, index))
+        return object()
+
+    monkeypatch.setattr(campaign, "sample_primary_task", fake_sample)
+    tasks = build_recovery_validation_tasks()
+
+    assert len(tasks) == 32
+    assert calls == [(campaign.VALIDATION_SEED, index) for index in range(32)]
+
+
+def test_recovery_orchestration_uses_validation_only_and_never_starts_production(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "source"
+    recovery = tmp_path / "recovery"
+    source.mkdir()
+    (source / "benchmark_verdict.json").write_text(
+        json.dumps({"selected_median_seconds_per_update": 1.0}), encoding="utf-8"
+    )
+    (source / "pilot_verdict.json").write_text(
+        json.dumps({"microbatch_size": 1}), encoding="utf-8"
+    )
+
+    def fake_prepare(source_dir: Path, recovery_dir: Path) -> tuple[Path, dict]:
+        assert source_dir == source
+        recovery_dir.mkdir()
+        checkpoint = recovery_dir / "checkpoint_001500.pt"
+        checkpoint.write_bytes(b"source")
+        return checkpoint, {"source_checkpoint_sha256": "a" * 64}
+
+    final_checkpoint = recovery / "checkpoint_003000.pt"
+
+    def fake_training(**kwargs: object) -> SimpleNamespace:
+        final_checkpoint.write_bytes(b"final")
+        return SimpleNamespace(
+            status=campaign.MultitaskRunStatus.PASS,
+            completed_updates=3000,
+            last_checkpoint=final_checkpoint,
+            reason_codes=(),
+        )
+
+    validation_tasks = tuple(object() for _ in range(32))
+
+    def fake_checkpoint_evaluation(*args: object, **kwargs: object) -> SimpleNamespace:
+        call_index = fake_checkpoint_evaluation.calls
+        fake_checkpoint_evaluation.calls += 1
+        peak = 0.19 if call_index == 0 else 0.20
+        tasks = tuple(
+            SimpleNamespace(
+                peak_temperature=peak,
+                binary_material_fraction=0.25,
+                binary_design=np.asarray([1.0, 0.0] if index % 2 == 0 else [0.0, 1.0]),
+            )
+            for index in range(32)
+        )
+        return SimpleNamespace(tasks=tasks)
+
+    fake_checkpoint_evaluation.calls = 0
+
+    monkeypatch.setattr(campaign, "prepare_recovery_source", fake_prepare)
+    monkeypatch.setattr(campaign, "configure_cuda_reproducibility", lambda seed: None)
+    monkeypatch.setattr(campaign, "run_multitask_training", fake_training)
+    monkeypatch.setattr(
+        campaign, "build_recovery_validation_tasks", lambda: validation_tasks
+    )
+    monkeypatch.setattr(
+        campaign,
+        "_read_recovery_gradient_references",
+        lambda source_dir, tasks: {"task": 0.1},
+    )
+    monkeypatch.setattr(
+        campaign,
+        "_evaluate_recovery_checkpoints",
+        lambda recovery_dir, tasks, references: (
+            final_checkpoint,
+            [
+                {
+                    "checkpoint": final_checkpoint.name,
+                    "peak_summary": {"median_peak": 0.19},
+                    "gradient_gap_summary": {"median_relative_gap": 0.10},
+                }
+            ],
+        ),
+    )
+    monkeypatch.setattr(
+        campaign, "evaluate_frozen_checkpoint", fake_checkpoint_evaluation
+    )
+    monkeypatch.setattr(campaign, "artifact_sha256", lambda path: "b" * 64)
+    monkeypatch.setattr(
+        campaign,
+        "build_frozen_splits",
+        lambda: pytest.fail("recovery accessed frozen ID/OOD task construction"),
+    )
+    monkeypatch.setattr(
+        campaign,
+        "run_production",
+        lambda path: pytest.fail("recovery started production"),
+    )
+
+    verdict = run_recovery(recovery, source)
+
+    assert verdict["status"] == "RECOVERY_GO"
+    assert verdict["completed_updates"] == 3000
+    assert verdict["new_global_update_range"] == [1500, 2999]
+    assert verdict["test_splits_accessed"] is False
+    assert verdict["production_authorized"] is True
+    assert verdict["production_started"] is False
+
+
 def test_production_requires_benchmark_and_pilot_go(tmp_path: Path) -> None:
     with pytest.raises(MultitaskGateError, match="benchmark"):
         validate_production_gate(tmp_path)
@@ -218,6 +413,7 @@ def test_production_requires_benchmark_and_pilot_go(tmp_path: Path) -> None:
         "benchmark",
         "budget",
         "pilot",
+        "recovery",
         "production-lock",
         "production-seed",
         "production-finalize",
@@ -247,3 +443,18 @@ def test_parser_accepts_parallel_seed_and_worker_count(tmp_path: Path) -> None:
     )
     assert parsed.seed == 2026083103
     assert parsed.worker_count == 3
+
+
+def test_parser_accepts_a_separate_recovery_source_directory(tmp_path: Path) -> None:
+    source = tmp_path / "source"
+    parsed = build_parser().parse_args(
+        [
+            "--phase",
+            "recovery",
+            "--output",
+            str(tmp_path / "recovery"),
+            "--source-output",
+            str(source),
+        ]
+    )
+    assert parsed.source_output == source
