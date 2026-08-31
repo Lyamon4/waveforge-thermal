@@ -1,0 +1,24 @@
+schema_version: 1
+experiment: multitask_generative_nca
+grid_size: 64
+source_count: 3
+source_size: 0.20
+source_power: 1.0
+primary_x_range: [0.20, 0.80]
+primary_y_range: [0.55, 0.82]
+ood_left_x_range: [0.10, 0.18]
+ood_right_x_range: [0.82, 0.90]
+validation_seed: 2026083141
+test_id_seed: 2026083142
+test_ood_seed: 2026083143
+development_seed: 2026083101
+production_seeds: [2026083102, 2026083103, 2026083104]
+validation_tasks: 32
+test_id_tasks: 32
+test_ood_tasks: 16
+pilot_updates: 1500
+checkpoint_interval: 250
+target_material_fraction: 0.25
+primary_binary_cell_count: 1024
+tv_weight: 0.001
+gradient_clip_norm: 1.0
