@@ -1,6 +1,6 @@
 # WaveForge multi-task generative NCA
 
-**Status:** prospective design for final user review before implementation  
+**Status:** approved for implementation before result-producing runs
 **Date:** 2026-08-31  
 **Source branch:** `ml-warmstart-spike`  
 **Source SHA:** `e89b2667be49c8adc77fc239443b3e2902227df6`  

@@ -755,3 +755,9 @@ application benchmark после заморозки weights. Она исполь
 package scale, восемь synthetic CCD regions и synthetic workload envelopes,
 но не заявляет proprietary AMD thermal stack, per-die powers или точные
 junction temperatures.
+
+Пользователь утвердил двухуровневую постановку и начало реализации: primary
+training остаётся на разных procedural three-hotspot layouts, затем frozen
+weights проверяются на EPYC 9754-scale benchmark без дообучения. До первого
+кода создан подробный TDD implementation plan; A100 остаётся выключенной до
+готовности benchmark/pilot command.
