@@ -379,6 +379,15 @@ def run_multitask_training(
     if maximum_updates_this_call is not None:
         end_update = min(end_update, start_update + maximum_updates_this_call)
     last_checkpoint = resume_checkpoint
+    if output_dir is not None and resume_checkpoint is None:
+        last_checkpoint = _write_checkpoint(
+            output_dir,
+            config=config,
+            model=model,
+            optimizer=optimizer,
+            records=records,
+            initial_model_hash=initial_model_hash,
+        )
     failure_reason: str | None = None
 
     try:

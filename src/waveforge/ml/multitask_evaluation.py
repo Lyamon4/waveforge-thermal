@@ -49,6 +49,9 @@ class ValidationSummary:
     split_name: str
     task_count: int
     invalid_count: int
+    median_peak: float
+    p90_peak: float
+    worst_peak: float
     median_relative_gap: float
     p90_relative_gap: float
     worst_relative_gap: float
@@ -186,6 +189,7 @@ def summarize_against_reference(
     if len(task_ids) != len(candidate_peaks) or len(task_ids) < 1:
         raise ValueError("task IDs and candidate peaks must have equal nonzero length")
     gaps: list[float] = []
+    valid_peaks: list[float] = []
     invalid_count = 0
     for task_id, candidate in zip(task_ids, candidate_peaks, strict=True):
         if task_id not in reference_peaks:
@@ -198,19 +202,28 @@ def summarize_against_reference(
         ):
             invalid_count += 1
             continue
+        valid_peaks.append(candidate)
         gaps.append((candidate - reference) / reference)
     if gaps:
         gap_array = np.asarray(gaps, dtype=np.float64)
+        peak_array = np.asarray(valid_peaks, dtype=np.float64)
+        median_peak = float(np.median(peak_array))
+        p90_peak = float(np.quantile(peak_array, 0.9))
+        worst_peak = float(np.max(peak_array))
         median = float(np.median(gap_array))
         p90 = float(np.quantile(gap_array, 0.9))
         worst = float(np.max(gap_array))
     else:
+        median_peak = p90_peak = worst_peak = math.inf
         median = p90 = worst = math.inf
     return ValidationSummary(
         completed_updates=completed_updates,
         split_name=split_name,
         task_count=len(task_ids),
         invalid_count=invalid_count,
+        median_peak=median_peak,
+        p90_peak=p90_peak,
+        worst_peak=worst_peak,
         median_relative_gap=median,
         p90_relative_gap=p90,
         worst_relative_gap=worst,
@@ -227,6 +240,9 @@ def select_validation_checkpoint(
         if item.split_name != "validation":
             raise ValueError("checkpoint selection may only use validation summaries")
         numerical = (
+            item.median_peak,
+            item.p90_peak,
+            item.worst_peak,
             item.median_relative_gap,
             item.p90_relative_gap,
             item.worst_relative_gap,
@@ -236,8 +252,8 @@ def select_validation_checkpoint(
     return min(
         summaries,
         key=lambda item: (
-            item.median_relative_gap,
-            item.p90_relative_gap,
+            item.median_peak,
+            item.p90_peak,
             item.invalid_count,
             item.completed_updates,
         ),

@@ -104,6 +104,7 @@ def test_microbatch_averages_four_task_losses_before_one_adam_step(
     assert result.records[0].task_exposures == 4
     assert result.records[0].gradient_norm_before_clipping == pytest.approx(2.5)
     assert result.records[0].mean_total_objective == pytest.approx(2.5)
+    assert (tmp_path / "checkpoint_000000.pt").is_file()
 
 
 def test_resume_restores_model_optimizer_and_rng_exactly(tmp_path: Path) -> None:

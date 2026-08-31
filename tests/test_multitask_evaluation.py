@@ -26,6 +26,9 @@ def summary(
         split_name="validation",
         task_count=32,
         invalid_count=invalid,
+        median_peak=median,
+        p90_peak=p90,
+        worst_peak=0.5,
         median_relative_gap=median,
         p90_relative_gap=p90,
         worst_relative_gap=0.5,
@@ -49,6 +52,9 @@ def test_checkpoint_selection_rejects_nonvalidation_or_nonfinite_summary() -> No
         split_name="test_id",
         task_count=32,
         invalid_count=0,
+        median_peak=0.1,
+        p90_peak=0.2,
+        worst_peak=0.3,
         median_relative_gap=0.1,
         p90_relative_gap=0.2,
         worst_relative_gap=0.3,
@@ -88,6 +94,8 @@ def test_validation_summary_uses_unrounded_paired_relative_gaps() -> None:
     )
     assert result.task_count == 3
     assert result.invalid_count == 0
+    assert result.median_peak == pytest.approx(1.1)
+    assert result.p90_peak == pytest.approx(1.18)
     assert result.median_relative_gap == pytest.approx(0.1)
     assert result.p90_relative_gap == pytest.approx(0.18)
     assert result.worst_relative_gap == pytest.approx(0.2)
