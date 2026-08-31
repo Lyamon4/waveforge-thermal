@@ -1,0 +1,19 @@
+{
+  "artifacts": {
+    "checkpoint_001500.pt": "6e5d4539aace0ae35c10260bf458bfdfb4c818e194d074c561c9855a8dbe12fb",
+    "checkpoint_001750.pt": "c360a6ee55483ff3eaff92ab169dd17acbd0cca2d6b9898dab3dceb04da884a2",
+    "checkpoint_002000.pt": "c22d2b9a4a8693730a402f19a6ae04b6a43c8417cfd9483dacf97740cd8aa786",
+    "checkpoint_002250.pt": "a209b20a0919b83c6f76973444cb95c9fea36c2501e0b7482edd6896f8cf9bf9",
+    "checkpoint_002500.pt": "302a8ed7a1a93bbdef8d2c0aa61609494d828625a010bc2e7b3f8fa1c8d333eb",
+    "checkpoint_002750.pt": "82f65c5f86cdfd3c1f502f9b8c4b09d381ba083959b623285566a705ba31a473",
+    "checkpoint_003000.pt": "0ff05c9b0549c114a78a48437ed4b9daba0da1f8b6dd2a3a18332195095ededf",
+    "environment.json": "1b2fa4745c02c68f877b60aa2e755be2574f27d4ff244c60578d04f80d5dc72c",
+    "multitask_run_result.json": "36e33a3144febfc9094a3f23faacaf7dba87b32cb86218f855a5f72328bc867f",
+    "recovery_checkpoint_validation.json": "fdde2780e85769408158fc6f77c8d258d02100d57dbce9f988ba3b7dde167a03",
+    "recovery_provenance.json": "dedb13e7528e23055c5ea184a63604921c62753a972308f7178b1aae0fa1306c",
+    "recovery_runtime_projection.json": "90a13d69074b44ff8dda487a8b2ef19e07864fa7f85fbef56c545fae82c04e53",
+    "recovery_verdict.json": "84c44c619ecd70b40b6756b533ad57e5db419b5c4110aa9fc42063e354fcc188",
+    "training_metrics.csv": "3614e9cc0ac4cc6fba7fdcb75b2aa7df4f10f86a5ff5295185fe548dc0350c80"
+  },
+  "schema_version": 1
+}

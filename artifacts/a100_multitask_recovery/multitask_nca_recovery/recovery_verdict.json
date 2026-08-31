@@ -1,0 +1,44 @@
+{
+  "binary_budget_valid": true,
+  "binary_diversity": {
+    "mean_hamming_fraction": 0.2645785424017137,
+    "mean_jaccard_similarity": 0.32073137667951584,
+    "pair_count": 496
+  },
+  "completed_updates": 3000,
+  "condition_causality": {
+    "matched_win_count": 32,
+    "matched_win_fraction": 1.0,
+    "median_relative_matched_advantage": 0.34027044060343614,
+    "pass_gate": true,
+    "task_count": 32
+  },
+  "maximum_allowed_median_gap": 0.15,
+  "median_gap_to_direct_gradient": 0.221539891039984,
+  "new_global_update_range": [
+    1500,
+    2999
+  ],
+  "original_validation_median_tmax": 0.2035900680052531,
+  "production_authorized": false,
+  "production_started": false,
+  "runtime_projection": {
+    "authorized": true,
+    "new_updates": 1500,
+    "projected_total_hours": 0.9244366562512975,
+    "projected_training_hours": 0.6744366562512975,
+    "runtime_cap_hours": 1.25,
+    "schema_version": 1,
+    "seconds_per_update": 1.618647975003114,
+    "validation_allowance_hours": 0.25
+  },
+  "schema_version": 1,
+  "selected_checkpoint": "checkpoint_003000.pt",
+  "selected_checkpoint_sha256": "0ff05c9b0549c114a78a48437ed4b9daba0da1f8b6dd2a3a18332195095ededf",
+  "selected_validation_median_tmax": 0.19974574509949944,
+  "source_checkpoint_sha256": "6e5d4539aace0ae35c10260bf458bfdfb4c818e194d074c561c9855a8dbe12fb",
+  "source_independent": false,
+  "status": "RECOVERY_NO_GO",
+  "test_splits_accessed": false,
+  "validation_median_improved": true
+}

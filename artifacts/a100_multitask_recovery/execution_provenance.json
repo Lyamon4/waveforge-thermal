@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "experiment": "NCA-MT2A_recovery",
+  "status": "RECOVERY_NO_GO",
+  "branch": "multitask-generative-nca",
+  "result_producing_git_sha": "9386c189328c531b06a8f68f7502fcba04c9be32",
+  "result_generation_git_sha": "9386c189328c531b06a8f68f7502fcba04c9be32",
+  "source_pilot_status": "PILOT_KILL",
+  "source_checkpoint": "checkpoint_001500.pt",
+  "source_checkpoint_sha256": "6e5d4539aace0ae35c10260bf458bfdfb4c818e194d074c561c9855a8dbe12fb",
+  "selected_checkpoint": "checkpoint_003000.pt",
+  "selected_checkpoint_sha256": "0ff05c9b0549c114a78a48437ed4b9daba0da1f8b6dd2a3a18332195095ededf",
+  "locked_spec_sha256": "f51234eed1164719bff5fdad8f541851847908666a814b7d3ab8cc2042b1c871",
+  "implementation_file_sha256": {
+    "multitask_protocol.py": "bd573fc148e73eca86f669fd281fec80dd154445b03fc56e367d486d60bcd410",
+    "multitask_training.py": "58beef57b556180eed54ff8dc22f12fd1ab215135737fee4b16030d23e01efb4",
+    "run_multitask_nca.py": "968baeba63a3160741edb7558cd8a8ade2eb64ff458b4aa66434927b2e8b4e9a",
+    "run_campaign_phase.sh": "e43769d4e546d0d1227805f279b767bf012a2012bbc9ff9c10c497c9e5fe435e"
+  },
+  "remote_hash_manifest_sha256": "b6d39b0ca63edefe5b126612e0fb7838f9a04b3cbccf9677aad3ef08cbe166de",
+  "remote_local_hash_mismatch_count": 0,
+  "machine_verdict_sha256": "84c44c619ecd70b40b6756b533ad57e5db419b5c4110aa9fc42063e354fcc188",
+  "independent_recalculation": {
+    "device": "NVIDIA GeForce RTX 4060",
+    "json_sha256": "91f1f88d1e9af59c73be548918ade449f9bcd9035909922a218162c378350eb4",
+    "csv_sha256": "130e5cb717398969f0b49bd7ffaec883bf3235b2b045350dd72d67d395b88a18",
+    "absolute_validation_median_difference": 0.0,
+    "absolute_median_gap_difference": 0.0,
+    "status": "RECOVERY_NO_GO"
+  },
+  "a100": {
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0",
+    "compute_capability": [8, 0],
+    "float64_smoke_passed": true
+  },
+  "test_splits_accessed": false,
+  "production_started": false,
+  "instance_stopped_after_sync": true
+}

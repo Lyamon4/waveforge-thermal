@@ -1,0 +1,14 @@
+{
+  "copied_checkpoint": "checkpoint_001500.pt",
+  "first_new_global_update": 1500,
+  "last_new_global_update": 2999,
+  "schema_version": 1,
+  "source_checkpoint": "pilot/checkpoint_001500.pt",
+  "source_checkpoint_sha256": "6e5d4539aace0ae35c10260bf458bfdfb4c818e194d074c561c9855a8dbe12fb",
+  "source_completed_updates": 1500,
+  "source_pilot_status": "PILOT_KILL",
+  "source_pilot_verdict_sha256": "b4f328f012aec710953b076354ed28cf1eb9228e651e246e5546c0d89f2829f8",
+  "status": "LOCKED_SOURCE_VERIFIED",
+  "target_completed_updates": 3000,
+  "test_splits_accessed": false
+}

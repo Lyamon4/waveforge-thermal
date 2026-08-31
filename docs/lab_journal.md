@@ -816,3 +816,45 @@ objective, task sequence, weights или thresholds. CUDA regression-test
 С удалённой A100 скачаны 29 artifacts. Полный remote/local SHA-256 audit дал
 `0` несовпадений. Vast instance остановлена после синхронизации, production
 осталась неавторизованной.
+
+## 2026-08-31 — Prospective NCA-MT2A recovery result
+
+После immutable `PILOT_KILL` пользователь prospectively утвердил узкую
+undertraining hypothesis: восстановить checkpoint `001500` вместе с Adam/RNG и
+продолжить ту же shared NCA ещё на 1500 procedural tasks. До запуска были
+зафиксированы global updates `1500..2999`, fixed final objective и два LR
+segments: `1e-4` до update `2250`, затем `3e-5`. Architecture, raw
+source/sink conditioning, 64-step rollout, exact 25% projection и validation
+split не менялись. ID/OOD test splits оставались untouched.
+
+Result-producing implementation SHA:
+`9386c189328c531b06a8f68f7502fcba04c9be32`. Source pilot checkpoint SHA-256:
+`6e5d4539aace0ae35c10260bf458bfdfb4c818e194d074c561c9855a8dbe12fb`.
+Перед A100 execution локально прошли `417` tests и оба Ruff checks; remote
+focused suite прошёл `56` tests. Реальный one-update smoke на RTX 4060
+восстановил cumulative records и выполнил global update `1500` с finite
+gradients и нулевой material error.
+
+A100 recovery завершил `3000/3000` cumulative updates. Новые 1500 updates
+заняли `2434.7063333199476 s`; median update time равен
+`1.6614712694863556 s`. Все gradients конечны, а maximum projection/material
+error равен `5.960464477539064e-08`. Selected checkpoint `003000` снизил
+validation median `Tmax` с `0.2035900680052531` до
+`0.19974574509949944`, то есть на `1.8882664284263894%`. Exact binary budget
+соблюдён; matched conditioning победил cyclic shuffle в `32/32` задачах;
+mean pairwise Hamming fraction равен `0.2645785424017137`.
+
+Несмотря на это, median gap к восьми locked 600-step direct-gradient
+references равен `0.221539891039984`, выше prospective threshold `0.15`.
+Даже minimum gap среди recovery checkpoints (`0.216517679813223` на
+checkpoint `001750`) не проходил gate. Machine verdict поэтому честно равен
+`RECOVERY_NO_GO`; production не запускался.
+
+Все зарегистрированные remote artifacts синхронизированы локально; hash audit
+дал `0` несовпадений. Selected checkpoint независимо пересчитан на RTX 4060 по
+32 matched и 32 shuffled tasks: median `Tmax`, gradient gap, budget и causality
+совпали с A100 artifact значениями с абсолютным расхождением `0.0`. Vast A100
+остановлена после синхронизации. Результат опровергает узкую гипотезу, что
+pilot gap устраняется только дополнительными 1500 updates той же architecture;
+он не отменяет evidence обученного source-dependent rule и не авторизует
+post-hoc изменение текущего protocol.
