@@ -23,3 +23,15 @@ def test_supervisor_jobs_do_not_autorestart_scientific_failures() -> None:
         assert "autorestart=false" in config
         assert 'WAVEFORGE_REMAINING_HOURS="8.0"' in config
         assert f" {name}" in config
+
+
+def test_parallel_launcher_runs_exact_registered_seeds_then_finalizes() -> None:
+    root = Path(__file__).resolve().parents[1]
+    script = (root / "ops" / "vast" / "run_parallel_production.sh").read_text(
+        encoding="utf-8"
+    )
+    for seed in (2026083102, 2026083103, 2026083104):
+        assert f"--seed {seed}" in script
+    assert "wait" in script
+    assert "--phase production-finalize" in script
+    assert "--worker-count 3" in script

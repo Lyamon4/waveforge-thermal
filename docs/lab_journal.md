@@ -778,3 +778,12 @@ offer `$0.633/hour`; максимум самой production allocation раве�
 comparators или scientific thresholds. Исходный шестичасовой benchmark verdict
 сохраняется отдельно; machine-readable amendment создаётся только из полного
 измерения `M=1/2/4` до запуска pilot.
+
+Наблюдаемая A100 utilization около `38%` при менее `1 GB` VRAM объясняется
+малой `64x64` задачей и последовательными CG/kernel-launch dependencies, а не
+нехваткой batch memory. По запросу пользователя до production добавлена только
+execution-level qualification одного, двух и трёх независимых workers. Она не
+меняет число updates, model/task seeds или objective; допускается лишь
+сократить оплачиваемое wall-clock одновременным выполнением заранее
+зарегистрированных production seeds. Worker count фиксируется по aggregate
+throughput до production, а не по качеству designs.

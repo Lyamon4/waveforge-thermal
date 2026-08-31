@@ -187,6 +187,17 @@ than 5,000 updates per seed fit, production is not authorized. Preserve the
 original six-hour benchmark verdict and write a separate machine-readable
 runtime-budget amendment before the pilot.
 
+Because the complete update uses a small `64x64` FP64 iterative solve and may
+be kernel-launch limited, execution concurrency is qualified before production
+without changing a scientific parameter. Compare one, two, and three isolated
+workers on short fixed-task benchmark runs after the pilot gate and before
+production. Select maximum aggregate completed updates/second; candidates
+within 5% are tied and the smaller worker count wins. Every worker must remain
+finite, satisfy projection and CG checks, and fit A100 memory. The locked
+updates per seed are not increased after this measurement. Concurrency may
+only reduce paid wall-clock; all three registered seeds and their individual
+artifacts remain separate.
+
 ## 11. Pilot
 
 The development model seed is `2026083101`. The pilot runs 1,500 updates with

@@ -11,6 +11,7 @@ from waveforge.experiments.run_multitask_nca import (
     BenchmarkCandidate,
     MultitaskGateError,
     PilotStatus,
+    assemble_production_payload,
     build_parser,
     calculate_runtime_gate,
     classify_pilot,
@@ -106,6 +107,41 @@ def test_test_baseline_registry_uses_locked_tasks_and_multistarts() -> None:
     assert {job["start_index"] for job in multi} == {0, 1, 2, 3}
 
 
+def test_parallel_production_payload_requires_all_registered_seeds() -> None:
+    shards = [
+        {
+            "status": "PASS",
+            "seed": seed,
+            "completed_updates": 5925,
+            "training_wall_seconds": 100.0,
+            "selected_checkpoint": f"checkpoint_{seed}.pt",
+            "frozen_checkpoint": f"frozen_seed_{seed}.pt",
+            "frozen_sha256": "a" * 64,
+        }
+        for seed in (2026083102, 2026083103, 2026083104)
+    ]
+    payload = assemble_production_payload(
+        shards,
+        updates_per_seed=5925,
+        microbatch_size=1,
+        training_hours_cap=8.0,
+        worker_count=3,
+    )
+    assert payload["status"] == "PASS"
+    assert payload["production_seeds"] == [2026083102, 2026083103, 2026083104]
+    assert payload["worker_count"] == 3
+    assert payload["test_sets_accessed"] is False
+
+    with pytest.raises(MultitaskGateError, match="registered seeds"):
+        assemble_production_payload(
+            shards[:2],
+            updates_per_seed=5925,
+            microbatch_size=1,
+            training_hours_cap=8.0,
+            worker_count=2,
+        )
+
+
 def test_microbatch_selection_uses_throughput_and_two_percent_tie_break() -> None:
     selected = select_microbatch(
         [
@@ -177,9 +213,37 @@ def test_production_requires_benchmark_and_pilot_go(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize(
     "phase",
-    ["preflight", "benchmark", "pilot", "production", "test", "hashes"],
+    [
+        "preflight",
+        "benchmark",
+        "budget",
+        "pilot",
+        "production-lock",
+        "production-seed",
+        "production-finalize",
+        "production",
+        "test",
+        "hashes",
+    ],
 )
 def test_parser_accepts_every_locked_phase(phase: str, tmp_path: Path) -> None:
     parser = build_parser()
     parsed = parser.parse_args(["--phase", phase, "--output", str(tmp_path)])
     assert parsed.phase == phase
+
+
+def test_parser_accepts_parallel_seed_and_worker_count(tmp_path: Path) -> None:
+    parsed = build_parser().parse_args(
+        [
+            "--phase",
+            "production-seed",
+            "--output",
+            str(tmp_path),
+            "--seed",
+            "2026083103",
+            "--worker-count",
+            "3",
+        ]
+    )
+    assert parsed.seed == 2026083103
+    assert parsed.worker_count == 3

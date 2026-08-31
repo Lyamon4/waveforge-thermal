@@ -196,6 +196,47 @@ def registered_test_baseline_jobs() -> tuple[dict[str, object], ...]:
     return tuple(jobs)
 
 
+def assemble_production_payload(
+    shards: list[dict[str, object]],
+    *,
+    updates_per_seed: int,
+    microbatch_size: int,
+    training_hours_cap: float,
+    worker_count: int,
+) -> dict[str, object]:
+    """Assemble immutable independently written production seed shards."""
+    seeds = [int(shard.get("seed", -1)) for shard in shards]
+    if seeds != list(PRODUCTION_SEEDS):
+        raise MultitaskGateError(
+            "production shards must contain exact registered seeds"
+        )
+    if any(
+        shard.get("status") != "PASS"
+        or int(shard.get("completed_updates", -1)) != updates_per_seed
+        for shard in shards
+    ):
+        raise MultitaskGateError("a production shard is incomplete or invalid")
+    if worker_count not in (1, 2, 3):
+        raise MultitaskGateError("production worker count must lie in [1,3]")
+    return {
+        "schema_version": 2,
+        "status": "PASS",
+        "production_seeds": list(PRODUCTION_SEEDS),
+        "updates_per_seed": updates_per_seed,
+        "microbatch_size": microbatch_size,
+        "training_hours_cap": training_hours_cap,
+        "worker_count": worker_count,
+        "maximum_seed_training_wall_seconds": max(
+            float(shard["training_wall_seconds"]) for shard in shards
+        ),
+        "summed_seed_training_wall_seconds": sum(
+            float(shard["training_wall_seconds"]) for shard in shards
+        ),
+        "frozen_models": shards,
+        "test_sets_accessed": False,
+    }
+
+
 def _read_json(path: Path) -> dict[str, object]:
     if not path.is_file():
         raise MultitaskGateError(f"required artifact is missing: {path.name}")
@@ -857,6 +898,121 @@ def run_production(output_dir: Path) -> dict[str, object]:
     return payload
 
 
+def lock_production_registry(output_dir: Path) -> dict[str, object]:
+    """Freeze production identity once benchmark and pilot authorize it."""
+    validate_production_gate(output_dir)
+    return _production_registry(output_dir)
+
+
+def run_production_seed(output_dir: Path, seed: int) -> dict[str, object]:
+    """Train and validation-freeze exactly one registered production seed."""
+    validate_production_gate(output_dir)
+    if seed not in PRODUCTION_SEEDS:
+        raise MultitaskGateError("requested production seed is not registered")
+    registry_path = output_dir / "production_registry.json"
+    if not registry_path.is_file():
+        raise MultitaskGateError("production registry must be locked before shards")
+    registry = _read_json(registry_path)
+    validate_production_registry(registry)
+    total_updates = int(registry["updates_per_seed"])
+    microbatch_size = int(registry["microbatch_size"])
+    training_hours_cap = float(registry["training_hours_cap"])
+    splits = build_frozen_splits()
+    provider = _leak_safe_provider(splits)
+    seed_dir = output_dir / "production" / f"seed_{seed}"
+    verdict_path = seed_dir / "production_seed_verdict.json"
+    if verdict_path.is_file():
+        return _read_json(verdict_path)
+
+    configure_cuda_reproducibility(seed)
+    started = time.perf_counter()
+    existing = sorted(seed_dir.glob("checkpoint_*.pt"))
+    resume: Path | None = existing[-1] if existing else None
+    while True:
+        result = run_multitask_training(
+            config=MultitaskRunConfig(
+                model_seed=seed,
+                task_seed=seed,
+                total_updates=total_updates,
+                microbatch_size=microbatch_size,
+                checkpoint_interval=250,
+                mode="production",
+                device="cuda",
+            ),
+            output_dir=seed_dir,
+            task_provider=provider,
+            resume_checkpoint=resume,
+            maximum_updates_this_call=250,
+            synchronize=torch.cuda.synchronize,
+        )
+        if result.status is MultitaskRunStatus.INVALID_RUN:
+            payload = {
+                "schema_version": 1,
+                "status": "INVALID_RUN",
+                "seed": seed,
+                "completed_updates": result.completed_updates,
+                "reason_codes": list(result.reason_codes),
+            }
+            _write_json(verdict_path, payload)
+            return payload
+        if time.perf_counter() - started > training_hours_cap * 3600.0:
+            payload = {
+                "schema_version": 1,
+                "status": "INVALID_RUN",
+                "seed": seed,
+                "completed_updates": result.completed_updates,
+                "reason_codes": ["LOCKED_TRAINING_CAP_EXCEEDED"],
+            }
+            _write_json(verdict_path, payload)
+            return payload
+        resume = result.last_checkpoint
+        if result.completed_updates == total_updates:
+            break
+
+    selected, _ = _select_production_checkpoint(seed_dir, splits)
+    frozen_dir = output_dir / "frozen"
+    frozen_dir.mkdir(parents=True, exist_ok=True)
+    frozen_path = frozen_dir / f"frozen_seed_{seed}.pt"
+    shutil.copy2(selected, frozen_path)
+    payload = {
+        "schema_version": 1,
+        "status": "PASS",
+        "seed": seed,
+        "completed_updates": total_updates,
+        "training_wall_seconds": time.perf_counter() - started,
+        "selected_checkpoint": str(selected.relative_to(output_dir)),
+        "frozen_checkpoint": str(frozen_path.relative_to(output_dir)),
+        "frozen_sha256": artifact_sha256(frozen_path),
+    }
+    _write_json(verdict_path, payload)
+    return payload
+
+
+def finalize_parallel_production(
+    output_dir: Path,
+    *,
+    worker_count: int,
+) -> dict[str, object]:
+    """Fail closed unless all registered seed shards are complete and frozen."""
+    registry = _read_json(output_dir / "production_registry.json")
+    validate_production_registry(registry)
+    shards = [
+        _read_json(
+            output_dir / "production" / f"seed_{seed}" / "production_seed_verdict.json"
+        )
+        for seed in PRODUCTION_SEEDS
+    ]
+    payload = assemble_production_payload(
+        shards,
+        updates_per_seed=int(registry["updates_per_seed"]),
+        microbatch_size=int(registry["microbatch_size"]),
+        training_hours_cap=float(registry["training_hours_cap"]),
+        worker_count=worker_count,
+    )
+    _write_json(output_dir / "production_verdict.json", payload)
+    return payload
+
+
 def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
     if not rows:
         raise MultitaskGateError(f"cannot write empty metrics table: {path.name}")
@@ -1203,6 +1359,9 @@ def build_parser() -> argparse.ArgumentParser:
             "benchmark",
             "budget",
             "pilot",
+            "production-lock",
+            "production-seed",
+            "production-finalize",
             "production",
             "test",
             "hashes",
@@ -1212,6 +1371,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--remaining-hours", type=float, default=8.0)
     parser.add_argument("--maximum-campaign-cost-usd", type=float, default=7.0)
     parser.add_argument("--hourly-cost-usd", type=float, default=0.633)
+    parser.add_argument("--seed", type=int)
+    parser.add_argument("--worker-count", type=int, default=1)
     return parser
 
 
@@ -1231,6 +1392,17 @@ def main() -> None:
         )
     elif args.phase == "pilot":
         run_pilot(args.output)
+    elif args.phase == "production-lock":
+        lock_production_registry(args.output)
+    elif args.phase == "production-seed":
+        if args.seed is None:
+            raise MultitaskGateError("production-seed requires --seed")
+        run_production_seed(args.output, args.seed)
+    elif args.phase == "production-finalize":
+        finalize_parallel_production(
+            args.output,
+            worker_count=args.worker_count,
+        )
     elif args.phase == "production":
         run_production(args.output)
     elif args.phase == "test":
