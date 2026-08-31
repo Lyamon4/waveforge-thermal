@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+phase="$1"
+remaining_hours="${WAVEFORGE_REMAINING_HOURS:-6.0}"
+
+cd /workspace/waveforge-thermal
+exec .venv/bin/python -m waveforge.experiments.run_multitask_nca \
+  --phase "$phase" \
+  --output /workspace/waveforge-results/multitask_nca \
+  --remaining-hours "$remaining_hours"
