@@ -19,12 +19,19 @@ from torch import Tensor, nn
 
 from waveforge.design.differentiable_solver import SolveTrace
 from waveforge.design.parameterization import VolumeProjectionError
-from waveforge.ml.multitask_protocol import MultitaskStage, settings_at
+from waveforge.ml.multitask_protocol import (
+    RECOVERY_START_UPDATES,
+    RECOVERY_TOTAL_UPDATES,
+    MultitaskStage,
+    recovery_settings_at,
+    settings_at,
+)
 from waveforge.ml.multitask_tasks import SourceLayoutTask, sample_primary_task
 from waveforge.ml.nca_training import evaluate_nca, initialize_nca, model_state_sha256
 from waveforge.physics.cg import CGConvergenceError
 
-MultitaskMode = Literal["unit", "benchmark", "pilot", "production"]
+MultitaskMode = Literal["unit", "benchmark", "pilot", "production", "recovery"]
+MultitaskSchedule = Literal["relative_continuation", "recovery_final_decay"]
 
 
 class MultitaskRunStatus(StrEnum):
@@ -47,6 +54,8 @@ class MultitaskRunConfig:
     mode: MultitaskMode = "production"
     device: str = "cuda"
     gradient_clip_norm: float = 1.0
+    schedule_id: MultitaskSchedule = "relative_continuation"
+    resume_from_total_updates: int | None = None
 
     def __post_init__(self) -> None:
         integer_fields = (
@@ -69,6 +78,30 @@ class MultitaskRunConfig:
             raise ValueError("checkpoint_interval must be positive")
         if self.gradient_clip_norm <= 0.0:
             raise ValueError("gradient_clip_norm must be positive")
+        if self.mode not in {"unit", "benchmark", "pilot", "production", "recovery"}:
+            raise ValueError("unsupported multi-task training mode")
+        if self.schedule_id not in {
+            "relative_continuation",
+            "recovery_final_decay",
+        }:
+            raise ValueError("unsupported multi-task training schedule")
+        if self.mode == "recovery":
+            if self.schedule_id != "recovery_final_decay":
+                raise ValueError("recovery mode requires the locked recovery schedule")
+            if self.total_updates != RECOVERY_TOTAL_UPDATES:
+                raise ValueError("recovery mode requires exactly 3000 total updates")
+            if (
+                isinstance(self.resume_from_total_updates, bool)
+                or not isinstance(self.resume_from_total_updates, int)
+                or self.resume_from_total_updates < 1
+                or self.resume_from_total_updates >= self.total_updates
+            ):
+                raise ValueError("recovery mode requires a valid declared source total")
+        elif (
+            self.schedule_id != "relative_continuation"
+            or self.resume_from_total_updates is not None
+        ):
+            raise ValueError("checkpoint extension is permitted only in recovery mode")
         if self.mode != "unit" and torch.device(self.device).type != "cuda":
             raise ValueError("non-unit multi-task training requires CUDA")
 
@@ -290,15 +323,66 @@ def _load_checkpoint(
     if payload.get("schema_version") != 1:
         raise ValueError("unsupported multi-task checkpoint schema")
     stored_config = payload["config"]
-    locked_fields = ("model_seed", "task_seed", "total_updates", "microbatch_size")
-    if any(stored_config[field] != getattr(config, field) for field in locked_fields):
+    common_locked_fields = (
+        "model_seed",
+        "task_seed",
+        "microbatch_size",
+        "checkpoint_interval",
+        "device",
+        "gradient_clip_norm",
+    )
+    if any(
+        stored_config[field] != getattr(config, field) for field in common_locked_fields
+    ):
         raise ValueError("resume checkpoint does not match locked run configuration")
+    stored_schedule = stored_config.get("schedule_id", "relative_continuation")
+    stored_total_updates = stored_config["total_updates"]
+    completed_updates = payload["completed_updates"]
+    stored_records = payload["records"]
+    if completed_updates != len(stored_records):
+        raise ValueError("corrupted checkpoint record count")
+
+    if config.schedule_id == "recovery_final_decay":
+        if stored_schedule == "relative_continuation":
+            if (
+                config.mode != "recovery"
+                or stored_config.get("mode") != "pilot"
+                or stored_total_updates != config.resume_from_total_updates
+                or config.resume_from_total_updates != RECOVERY_START_UPDATES
+            ):
+                raise ValueError(
+                    "checkpoint does not match locked recovery source total"
+                )
+            if completed_updates != stored_total_updates:
+                raise ValueError("recovery requires a complete source checkpoint")
+        elif stored_schedule == "recovery_final_decay":
+            locked_recovery_fields = (
+                "mode",
+                "total_updates",
+                "schedule_id",
+                "resume_from_total_updates",
+            )
+            if any(
+                stored_config.get(field) != getattr(config, field)
+                for field in locked_recovery_fields
+            ):
+                raise ValueError(
+                    "resume checkpoint does not match locked run configuration"
+                )
+            if not RECOVERY_START_UPDATES <= completed_updates <= config.total_updates:
+                raise ValueError("corrupted recovery checkpoint update count")
+        else:
+            raise ValueError("checkpoint uses an unsupported recovery schedule")
+    elif (
+        stored_schedule != "relative_continuation"
+        or stored_total_updates != config.total_updates
+    ):
+        raise ValueError("resume checkpoint does not match locked run configuration")
+
     model.load_state_dict(payload["model_state"])
     optimizer.load_state_dict(payload["optimizer_state"])
     _restore_rng(payload["rng_state"])
-    records = [MultitaskIterationRecord(**record) for record in payload["records"]]
-    if payload["completed_updates"] != len(records):
-        raise ValueError("corrupted checkpoint record count")
+    records = [MultitaskIterationRecord(**record) for record in stored_records]
     if payload["model_state_sha256"] != model_state_sha256(model):  # type: ignore[arg-type]
         raise ValueError("checkpoint model hash mismatch")
     return records, str(payload["initial_model_hash"])
@@ -390,7 +474,11 @@ def run_multitask_training(
 
     try:
         for update in range(start_update, end_update):
-            stage = settings_at(update, config.total_updates)
+            stage = (
+                recovery_settings_at(update)
+                if config.schedule_id == "recovery_final_decay"
+                else settings_at(update, config.total_updates)
+            )
             optimizer.param_groups[0]["lr"] = stage.learning_rate
             if synchronize is not None:
                 synchronize()

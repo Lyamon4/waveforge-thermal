@@ -73,6 +73,27 @@ def fake_evaluator(
     )
 
 
+def recovery_evaluator(
+    model: nn.Module,
+    sources: Tensor,
+    stage: MultitaskStage,
+    *,
+    allow_cpu_unit_test: bool,
+) -> MultitaskForward:
+    assert not allow_cpu_unit_test
+    assert stage.beta == 8.0
+    value = sources.mean()
+    loss = next(model.parameters()) * value
+    return MultitaskForward(
+        loss=loss,
+        thermal_smooth=float(loss.detach()),
+        exact_tmax=float(loss.detach()),
+        continuous_material_fraction=0.25,
+        projection_absolute_error=0.0,
+        solve_trace=None,
+    )
+
+
 def model_factory(seed: int, device: torch.device) -> nn.Module:
     torch.manual_seed(seed)
     return OneParameterModel().to(device)
@@ -200,6 +221,154 @@ def test_cuda_resume_keeps_cpu_rng_state_on_cpu(tmp_path: Path) -> None:
     assert [record.mean_total_objective for record in resumed.records] == pytest.approx(
         [record.mean_total_objective for record in uninterrupted.records]
     )
+
+
+def _synthetic_completed_pilot_checkpoint(tmp_path: Path) -> Path:
+    source_dir = tmp_path / "source"
+    source = run_multitask_training(
+        config=unit_config(updates=1, microbatch_size=1),
+        task_provider=lambda seed, update, microbatch: fake_task(1.0, update),
+        evaluator=fake_evaluator,
+        output_dir=source_dir,
+        model_factory=model_factory,
+    )
+    assert source.last_checkpoint is not None
+    payload = torch.load(source.last_checkpoint, map_location="cpu", weights_only=False)
+    record = payload["records"][0]
+    payload["config"]["total_updates"] = 1500
+    payload["config"]["checkpoint_interval"] = 250
+    payload["config"]["mode"] = "pilot"
+    payload["config"]["device"] = "cuda"
+    payload["completed_updates"] = 1500
+    payload["records"] = [dict(record, update=update) for update in range(1500)]
+    checkpoint = source_dir / "checkpoint_001500.pt"
+    torch.save(payload, checkpoint)
+    return checkpoint
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is required")
+def test_recovery_extends_only_a_completed_1500_update_checkpoint(
+    tmp_path: Path,
+) -> None:
+    checkpoint = _synthetic_completed_pilot_checkpoint(tmp_path)
+    config = MultitaskRunConfig(
+        model_seed=1234,
+        task_seed=5678,
+        total_updates=3000,
+        microbatch_size=1,
+        checkpoint_interval=250,
+        mode="recovery",
+        device="cuda",
+        schedule_id="recovery_final_decay",
+        resume_from_total_updates=1500,
+    )
+
+    result = run_multitask_training(
+        config=config,
+        task_provider=lambda seed, update, microbatch: fake_task(1.0, update),
+        evaluator=recovery_evaluator,
+        output_dir=tmp_path / "recovery",
+        model_factory=model_factory,
+        resume_checkpoint=checkpoint,
+        maximum_updates_this_call=1,
+    )
+
+    assert result.status is MultitaskRunStatus.INCOMPLETE
+    assert result.completed_updates == 1501
+    assert result.records[-1].update == 1500
+    assert result.records[-1].stage_id == 4
+    assert result.records[-1].learning_rate == 1.0e-4
+
+    resumed = run_multitask_training(
+        config=config,
+        task_provider=lambda seed, update, microbatch: fake_task(1.0, update),
+        evaluator=recovery_evaluator,
+        output_dir=tmp_path / "recovery",
+        model_factory=model_factory,
+        resume_checkpoint=result.last_checkpoint,
+        maximum_updates_this_call=1,
+    )
+    assert resumed.completed_updates == 1502
+    assert resumed.records[-1].update == 1501
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is required")
+def test_recovery_rejects_an_incomplete_source_checkpoint(tmp_path: Path) -> None:
+    checkpoint = _synthetic_completed_pilot_checkpoint(tmp_path)
+    payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
+    payload["completed_updates"] = 1499
+    payload["records"] = payload["records"][:1499]
+    torch.save(payload, checkpoint)
+    config = MultitaskRunConfig(
+        model_seed=1234,
+        task_seed=5678,
+        total_updates=3000,
+        microbatch_size=1,
+        checkpoint_interval=250,
+        mode="recovery",
+        device="cuda",
+        schedule_id="recovery_final_decay",
+        resume_from_total_updates=1500,
+    )
+
+    with pytest.raises(ValueError, match="complete source checkpoint"):
+        run_multitask_training(
+            config=config,
+            output_dir=tmp_path / "recovery",
+            model_factory=model_factory,
+            resume_checkpoint=checkpoint,
+            maximum_updates_this_call=1,
+        )
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is required")
+def test_recovery_rejects_a_mismatched_declared_source_total(tmp_path: Path) -> None:
+    checkpoint = _synthetic_completed_pilot_checkpoint(tmp_path)
+    config = MultitaskRunConfig(
+        model_seed=1234,
+        task_seed=5678,
+        total_updates=3000,
+        microbatch_size=1,
+        checkpoint_interval=250,
+        mode="recovery",
+        device="cuda",
+        schedule_id="recovery_final_decay",
+        resume_from_total_updates=1499,
+    )
+
+    with pytest.raises(ValueError, match="locked recovery source total"):
+        run_multitask_training(
+            config=config,
+            output_dir=tmp_path / "recovery",
+            model_factory=model_factory,
+            resume_checkpoint=checkpoint,
+            maximum_updates_this_call=1,
+        )
+
+
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is required")
+def test_ordinary_resume_rejects_a_total_update_extension(tmp_path: Path) -> None:
+    checkpoint = _synthetic_completed_pilot_checkpoint(tmp_path)
+    config = MultitaskRunConfig(
+        model_seed=1234,
+        task_seed=5678,
+        total_updates=3000,
+        microbatch_size=1,
+        checkpoint_interval=250,
+        mode="unit",
+        device="cuda",
+    )
+
+    with pytest.raises(ValueError, match="locked run configuration"):
+        run_multitask_training(
+            config=config,
+            task_provider=lambda seed, update, microbatch: fake_task(1.0, update),
+            evaluator=fake_evaluator,
+            output_dir=tmp_path / "rejected",
+            model_factory=model_factory,
+            resume_checkpoint=checkpoint,
+            maximum_updates_this_call=1,
+        )
 
 
 def test_any_cg_failure_marks_run_invalid_without_optimizer_step() -> None:
