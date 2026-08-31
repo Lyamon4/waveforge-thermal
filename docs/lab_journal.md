@@ -787,3 +787,32 @@ execution-level qualification одного, двух и трёх независ�
 сократить оплачиваемое wall-clock одновременным выполнением заранее
 зарегистрированных production seeds. Worker count фиксируется по aggregate
 throughput до production, а не по качеству designs.
+
+## 2026-08-31 — A100 multi-task pilot result
+
+A100 pilot завершил все 1500 prospective updates на procedural source layouts.
+Выбран последний checkpoint `001500`: frozen validation median `Tmax` снизился
+с `0.7354277963332028` до `0.2035900680052531`. Matched source conditioning
+победил cyclically shuffled conditioning в `31/32` задачах; mean pairwise
+binary Hamming fraction равен `0.2642615533644153`, а exact binary material
+fraction соблюдена. Это подтверждает, что shared NCA выучила различающее
+source-dependent design rule, а не одну постоянную topology.
+
+Однако median gap к заранее рассчитанному 600-step direct-gradient comparator
+равен `0.22094352626409075`, что превышает locked `20%` kill boundary.
+Machine verdict поэтому равен `PILOT_KILL`; production seeds не запускались,
+порог после просмотра результата не менялся.
+
+Кампания выявила два infrastructure defects после безопасной записи
+checkpoints. Первый загружал CPU RNG state на CUDA при resume; второй повторно
+индексировал уже двумерный projected design в frozen evaluation. Исправления
+коммитов `dd5599798873c77285a5c22d9cd23f8ab6370259` и
+`6e1e38d0f277c4cd58f8d81341edc6cd796b851c` не меняют architecture,
+objective, task sequence, weights или thresholds. CUDA regression-test
+подтвердил exact resumed/uninterrupted identity; frozen-evaluation test
+подтвердил `64x64` readout, exact budget и конечный thermal solve. После обоих
+исправлений итоговый полный локальный suite прошёл `401` test.
+
+С удалённой A100 скачаны 29 artifacts. Полный remote/local SHA-256 audit дал
+`0` несовпадений. Vast instance остановлена после синхронизации, production
+осталась неавторизованной.

@@ -1,0 +1,195 @@
+{
+  "rows": [
+    {
+      "checkpoint": "checkpoint_000000.pt",
+      "gradient_gap_summary": {
+        "completed_updates": 0,
+        "invalid_count": 0,
+        "median_peak": 0.7436805332302205,
+        "median_relative_gap": 3.809668559299717,
+        "p90_peak": 0.8158006031126048,
+        "p90_relative_gap": 4.127898549835987,
+        "split_name": "validation",
+        "task_count": 8,
+        "worst_peak": 0.8288534739236474,
+        "worst_relative_gap": 4.4704988750759656
+      },
+      "peak_summary": {
+        "completed_updates": 0,
+        "invalid_count": 0,
+        "median_peak": 0.7354277963332028,
+        "median_relative_gap": -0.26457220366679723,
+        "p90_peak": 0.8198503096409903,
+        "p90_relative_gap": -0.1801496903590097,
+        "split_name": "validation",
+        "task_count": 32,
+        "worst_peak": 0.8587156330153912,
+        "worst_relative_gap": -0.14128436698460878
+      }
+    },
+    {
+      "checkpoint": "checkpoint_000250.pt",
+      "gradient_gap_summary": {
+        "completed_updates": 250,
+        "invalid_count": 0,
+        "median_peak": 0.20734710122865196,
+        "median_relative_gap": 0.3337346811838188,
+        "p90_peak": 0.24872501857106583,
+        "p90_relative_gap": 0.5202591631603168,
+        "split_name": "validation",
+        "task_count": 8,
+        "worst_peak": 0.2984541373852414,
+        "worst_relative_gap": 0.7690936538450323
+      },
+      "peak_summary": {
+        "completed_updates": 250,
+        "invalid_count": 0,
+        "median_peak": 0.21944014045931134,
+        "median_relative_gap": -0.7805598595406886,
+        "p90_peak": 0.2711466257569749,
+        "p90_relative_gap": -0.7288533742430251,
+        "split_name": "validation",
+        "task_count": 32,
+        "worst_peak": 0.31996429443222646,
+        "worst_relative_gap": -0.6800357055677735
+      }
+    },
+    {
+      "checkpoint": "checkpoint_000500.pt",
+      "gradient_gap_summary": {
+        "completed_updates": 500,
+        "invalid_count": 0,
+        "median_peak": 0.1941606990725328,
+        "median_relative_gap": 0.25646069620030604,
+        "p90_peak": 0.23869507787653974,
+        "p90_relative_gap": 0.47396577767740533,
+        "split_name": "validation",
+        "task_count": 8,
+        "worst_peak": 0.31871835071531973,
+        "worst_relative_gap": 0.8892102369705984
+      },
+      "peak_summary": {
+        "completed_updates": 500,
+        "invalid_count": 0,
+        "median_peak": 0.20816319036964948,
+        "median_relative_gap": -0.7918368096303505,
+        "p90_peak": 0.3110847903021403,
+        "p90_relative_gap": -0.6889152096978597,
+        "split_name": "validation",
+        "task_count": 32,
+        "worst_peak": 0.3535466903911481,
+        "worst_relative_gap": -0.6464533096088518
+      }
+    },
+    {
+      "checkpoint": "checkpoint_000750.pt",
+      "gradient_gap_summary": {
+        "completed_updates": 750,
+        "invalid_count": 0,
+        "median_peak": 0.18850703349900716,
+        "median_relative_gap": 0.22716001569517638,
+        "p90_peak": 0.2433784716899573,
+        "p90_relative_gap": 0.4375724579656608,
+        "split_name": "validation",
+        "task_count": 8,
+        "worst_peak": 0.3121910174943745,
+        "worst_relative_gap": 0.8505193215794651
+      },
+      "peak_summary": {
+        "completed_updates": 750,
+        "invalid_count": 0,
+        "median_peak": 0.20758728170393714,
+        "median_relative_gap": -0.7924127182960629,
+        "p90_peak": 0.2583627047343957,
+        "p90_relative_gap": -0.7416372952656043,
+        "split_name": "validation",
+        "task_count": 32,
+        "worst_peak": 0.3121910174943745,
+        "worst_relative_gap": -0.6878089825056255
+      }
+    },
+    {
+      "checkpoint": "checkpoint_001000.pt",
+      "gradient_gap_summary": {
+        "completed_updates": 1000,
+        "invalid_count": 0,
+        "median_peak": 0.18861143801176097,
+        "median_relative_gap": 0.22196766011678565,
+        "p90_peak": 0.24069746229546218,
+        "p90_relative_gap": 0.4315135492320882,
+        "split_name": "validation",
+        "task_count": 8,
+        "worst_peak": 0.30655082584417603,
+        "worst_relative_gap": 0.8170869579263644
+      },
+      "peak_summary": {
+        "completed_updates": 1000,
+        "invalid_count": 0,
+        "median_peak": 0.20655133265433673,
+        "median_relative_gap": -0.7934486673456632,
+        "p90_peak": 0.2549399049745823,
+        "p90_relative_gap": -0.7450600950254177,
+        "split_name": "validation",
+        "task_count": 32,
+        "worst_peak": 0.3090940966124879,
+        "worst_relative_gap": -0.6909059033875121
+      }
+    },
+    {
+      "checkpoint": "checkpoint_001250.pt",
+      "gradient_gap_summary": {
+        "completed_updates": 1250,
+        "invalid_count": 0,
+        "median_peak": 0.1882114287967252,
+        "median_relative_gap": 0.22996632527902774,
+        "p90_peak": 0.24287819577003833,
+        "p90_relative_gap": 0.437988963576192,
+        "split_name": "validation",
+        "task_count": 8,
+        "worst_peak": 0.3136854299466192,
+        "worst_relative_gap": 0.859377485211087
+      },
+      "peak_summary": {
+        "completed_updates": 1250,
+        "invalid_count": 0,
+        "median_peak": 0.20661578274650916,
+        "median_relative_gap": -0.7933842172534908,
+        "p90_peak": 0.24883071774837673,
+        "p90_relative_gap": -0.7511692822516233,
+        "split_name": "validation",
+        "task_count": 32,
+        "worst_peak": 0.3136854299466192,
+        "worst_relative_gap": -0.6863145700533808
+      }
+    },
+    {
+      "checkpoint": "checkpoint_001500.pt",
+      "gradient_gap_summary": {
+        "completed_updates": 1500,
+        "invalid_count": 0,
+        "median_peak": 0.18860380235714788,
+        "median_relative_gap": 0.22094352626409075,
+        "p90_peak": 0.23093415408481835,
+        "p90_relative_gap": 0.40516149573346505,
+        "split_name": "validation",
+        "task_count": 8,
+        "worst_peak": 0.3019056241693447,
+        "worst_relative_gap": 0.7895524198704653
+      },
+      "peak_summary": {
+        "completed_updates": 1500,
+        "invalid_count": 0,
+        "median_peak": 0.2035900680052531,
+        "median_relative_gap": -0.7964099319947469,
+        "p90_peak": 0.25320547223322565,
+        "p90_relative_gap": -0.7467945277667744,
+        "split_name": "validation",
+        "task_count": 32,
+        "worst_peak": 0.3067332043839751,
+        "worst_relative_gap": -0.6932667956160249
+      }
+    }
+  ],
+  "schema_version": 1,
+  "selected_checkpoint": "checkpoint_001500.pt"
+}

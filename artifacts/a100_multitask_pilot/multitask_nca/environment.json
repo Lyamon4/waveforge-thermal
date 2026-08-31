@@ -1,0 +1,22 @@
+{
+  "compute_capability": [
+    8,
+    0
+  ],
+  "cuda_available": true,
+  "determinism": {
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": true,
+    "deterministic_algorithms": true,
+    "mode": "strict",
+    "seed": 2026083101,
+    "warn_only": false
+  },
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+  "python": "3.11.16",
+  "schema_version": 1,
+  "status": "PASS",
+  "torch": "2.13.0+cu130",
+  "torch_cuda_build": "13.0"
+}

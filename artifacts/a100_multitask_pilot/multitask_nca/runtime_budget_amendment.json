@@ -1,0 +1,15 @@
+{
+  "hourly_cost_usd": 0.633,
+  "maximum_campaign_cost_usd": 7.0,
+  "maximum_production_cost_usd": 5.064,
+  "original_training_hours": 6.0,
+  "production_runtime_authorized": true,
+  "production_training_hours": 8.0,
+  "production_updates_per_seed": 5930,
+  "prospective_before_pilot": true,
+  "reason": "Measured A100 throughput made the original six-hour allocation insufficient for the preregistered 5000-update minimum.",
+  "schema_version": 1,
+  "scientific_parameters_changed": false,
+  "selected_median_seconds_per_update": 1.618647975003114,
+  "status": "LOCKED_BEFORE_PILOT"
+}

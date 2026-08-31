@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "campaign_start_commit": "67d99f99d85924eaef1a4bd841711fe3aafdaf07",
+  "final_code_commit": "6e1e38d0f277c4cd58f8d81341edc6cd796b851c",
+  "incidents": [
+    {
+      "stage": "resume_after_250_updates",
+      "failure": "CPU RNG state was mapped to CUDA during checkpoint loading",
+      "effect_on_scientific_state": "none",
+      "preserved_checkpoint_sha256": "0346d4a27fbf44dfebf7a2804ffd0f35b08b72707094e548d16ec81ca489b901",
+      "fix_commit": "dd5599798873c77285a5c22d9cd23f8ab6370259",
+      "resolution": "load checkpoint payload on CPU; PyTorch moves model and optimizer state to their parameter devices",
+      "verification": "CUDA resumed and uninterrupted runs produced identical model hashes and objective records"
+    },
+    {
+      "stage": "frozen_checkpoint_validation",
+      "failure": "a two-dimensional projected design was indexed again and reduced to a scalar",
+      "effect_on_training": "none",
+      "preserved_final_checkpoint_sha256": "6e5d4539aace0ae35c10260bf458bfdfb4c818e194d074c561c9855a8dbe12fb",
+      "fix_commit": "6e1e38d0f277c4cd58f8d81341edc6cd796b851c",
+      "resolution": "pass the existing 64x64 projected design directly to exact-cardinality binary readout",
+      "verification": "frozen-checkpoint integration test produced a 64x64 binary design, exact 0.25 fraction, and finite thermal result"
+    }
+  ],
+  "artifact_sync": {
+    "remote_file_count": 29,
+    "local_file_count": 29,
+    "sha256_mismatch_count": 0
+  },
+  "final_training_metrics_sha256": "c4121dbfe453a23b07f8fde7ef66e8027dc27d93683caad03eae59bfb01bdbd0",
+  "pilot_verdict_sha256": "b4f328f012aec710953b076354ed28cf1eb9228e651e246e5546c0d89f2829f8"
+}

@@ -1,0 +1,39 @@
+{
+  "candidates": [
+    {
+      "median_seconds_per_update": 1.618647975003114,
+      "microbatch_size": 1,
+      "p90_seconds_per_update": 1.6495650398777797,
+      "peak_cuda_memory_bytes": 208720896,
+      "scientifically_valid": true,
+      "tasks_per_second": 0.6177995558287318
+    },
+    {
+      "median_seconds_per_update": 3.2523213624954224,
+      "microbatch_size": 2,
+      "p90_seconds_per_update": 3.2920925332990008,
+      "peak_cuda_memory_bytes": 208767488,
+      "scientifically_valid": true,
+      "tasks_per_second": 0.6149453811862711
+    },
+    {
+      "median_seconds_per_update": 6.488082187497639,
+      "microbatch_size": 4,
+      "p90_seconds_per_update": 6.561759594295291,
+      "peak_cuda_memory_bytes": 208767488,
+      "scientifically_valid": true,
+      "tasks_per_second": 0.6165150015682436
+    }
+  ],
+  "measured_updates": 200,
+  "production_runtime_authorized": true,
+  "production_updates_per_seed": 5930,
+  "remaining_training_hours": 8.0,
+  "runtime_budget_amended": true,
+  "runtime_budget_amendment_artifact": "runtime_budget_amendment.json",
+  "schema_version": 2,
+  "selected_median_seconds_per_update": 1.618647975003114,
+  "selected_microbatch_size": 1,
+  "status": "PASS",
+  "warmup_updates": 20
+}

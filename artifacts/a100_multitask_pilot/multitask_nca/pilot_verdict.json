@@ -1,0 +1,24 @@
+{
+  "binary_budget_valid": true,
+  "binary_diversity": {
+    "mean_hamming_fraction": 0.2642615533644153,
+    "mean_jaccard_similarity": 0.32003525514580816,
+    "pair_count": 496
+  },
+  "completed_updates": 1500,
+  "condition_causality": {
+    "matched_win_count": 31,
+    "matched_win_fraction": 0.96875,
+    "median_relative_matched_advantage": 0.34383314223854733,
+    "pass_gate": true,
+    "task_count": 32
+  },
+  "development_seed": 2026083101,
+  "initial_validation_median_tmax": 0.7354277963332028,
+  "median_gap_to_direct_gradient": 0.22094352626409075,
+  "microbatch_size": 1,
+  "schema_version": 1,
+  "selected_checkpoint": "pilot/checkpoint_001500.pt",
+  "selected_validation_median_tmax": 0.2035900680052531,
+  "status": "PILOT_KILL"
+}

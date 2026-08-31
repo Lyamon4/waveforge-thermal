@@ -1,0 +1,13 @@
+{
+  "completed_updates": 1500,
+  "final_model_sha256": "ff0e72c32943701f15b9bd833bf533ac48f59fb528df2508c3a732c51aebb237",
+  "initial_model_sha256": "ed74310c8fccf6c04920c1863a89908f7054bd9913ed2621fe3665074e001b15",
+  "last_checkpoint": "checkpoint_001500.pt",
+  "microbatch_size": 1,
+  "model_seed": 2026083101,
+  "reason_codes": [],
+  "requested_updates": 1500,
+  "schema_version": 1,
+  "status": "PASS",
+  "task_seed": 2026083101
+}
