@@ -1,0 +1,14 @@
+schema_version: 1
+label: EPYC_9754_SCALE_SYNTHETIC
+benchmark_role: secondary_extreme_ood
+package_width_mm: 75.4
+package_height_mm: 72.0
+compute_region_count: 8
+io_region_count: 1
+package_power_envelope_watts: 360.0
+workload_count: 3
+primary_verdict_authority: false
+may_select_checkpoint: false
+may_update_weights: false
+physics_claim: normalized_2d_edge_cooled_conduction
+temperature_units_claimed: false
