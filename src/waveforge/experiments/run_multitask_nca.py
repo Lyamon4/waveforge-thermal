@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import platform
+import shutil
 import sys
+import time
 from dataclasses import asdict, dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -24,12 +27,23 @@ from waveforge.ml.multitask_evaluation import (
     select_validation_checkpoint,
     summarize_against_reference,
 )
-from waveforge.ml.multitask_protocol import DEVELOPMENT_SEED, PILOT_UPDATES
+from waveforge.ml.multitask_protocol import (
+    DEVELOPMENT_SEED,
+    PILOT_UPDATES,
+    PRODUCTION_SEEDS,
+)
+from waveforge.ml.multitask_provenance import (
+    build_hash_manifest,
+    create_production_registry,
+    validate_backup_readiness,
+    validate_production_registry,
+)
 from waveforge.ml.multitask_tasks import (
     FrozenTaskSplits,
     SourceLayoutTask,
     build_frozen_splits,
     sample_primary_task,
+    sample_training_task,
     write_split_manifest,
 )
 from waveforge.ml.multitask_training import (
@@ -38,7 +52,7 @@ from waveforge.ml.multitask_training import (
     run_multitask_training,
 )
 from waveforge.physics.grid import Grid2D
-from waveforge.reproducibility import configure_cuda_reproducibility
+from waveforge.reproducibility import artifact_sha256, configure_cuda_reproducibility
 from waveforge.verification.compare import Gate2Status
 
 
@@ -429,6 +443,9 @@ def _evaluate_pilot_checkpoints(
 
 def run_pilot(output_dir: Path) -> dict[str, object]:
     """Run the locked 1,500-update pilot and its prospective causal gate."""
+    verdict_path = output_dir / "pilot_verdict.json"
+    if verdict_path.is_file():
+        return _read_json(verdict_path)
     benchmark = _read_json(output_dir / "benchmark_verdict.json")
     if benchmark.get("status") != "PASS":
         raise MultitaskGateError("pilot requires a PASS benchmark")
@@ -438,7 +455,8 @@ def run_pilot(output_dir: Path) -> dict[str, object]:
     comparison_tasks = splits.validation[:8]
     references = _pilot_gradient_references(output_dir, comparison_tasks)
     pilot_dir = output_dir / "pilot"
-    resume: Path | None = None
+    existing_checkpoints = sorted(pilot_dir.glob("checkpoint_*.pt"))
+    resume: Path | None = existing_checkpoints[-1] if existing_checkpoints else None
     while True:
         result = run_multitask_training(
             config=MultitaskRunConfig(
@@ -461,7 +479,7 @@ def run_pilot(output_dir: Path) -> dict[str, object]:
                 "status": PilotStatus.INVALID_RUN.value,
                 "reason_codes": list(result.reason_codes),
             }
-            _write_json(output_dir / "pilot_verdict.json", payload)
+            _write_json(verdict_path, payload)
             return payload
         resume = result.last_checkpoint
         if result.completed_updates == PILOT_UPDATES:
@@ -528,8 +546,217 @@ def run_pilot(output_dir: Path) -> dict[str, object]:
         "binary_diversity": asdict(diversity),
         "binary_budget_valid": binary_budget_valid,
     }
-    _write_json(output_dir / "pilot_verdict.json", payload)
+    _write_json(verdict_path, payload)
     return payload
+
+
+def _aggregate_source_hash(repository_root: Path) -> str:
+    digest = hashlib.sha256()
+    source_paths = sorted((repository_root / "src").rglob("*.py"))
+    if not source_paths:
+        raise MultitaskGateError("source tree is empty")
+    for path in source_paths:
+        digest.update(path.relative_to(repository_root).as_posix().encode("utf-8"))
+        digest.update(artifact_sha256(path).encode("ascii"))
+    return digest.hexdigest()
+
+
+def _production_registry(output_dir: Path) -> dict[str, object]:
+    benchmark = _read_json(output_dir / "benchmark_verdict.json")
+    repository_root = Path(__file__).resolve().parents[3]
+    registry = create_production_registry(
+        updates_per_seed=int(benchmark["production_updates_per_seed"]),
+        microbatch_size=int(benchmark["selected_microbatch_size"]),
+        source_sha256=_aggregate_source_hash(repository_root),
+        spec_sha256=artifact_sha256(
+            repository_root
+            / "docs"
+            / "superpowers"
+            / "specs"
+            / "2026-08-31-multitask-generative-nca-design.md"
+        ),
+        config_sha256=artifact_sha256(
+            repository_root / "configs" / "multitask_nca.yaml"
+        ),
+    )
+    registry_path = output_dir / "production_registry.json"
+    if registry_path.is_file():
+        existing = _read_json(registry_path)
+        validate_production_registry(existing)
+        if existing != registry:
+            raise MultitaskGateError("production registry changed after lock")
+    else:
+        _write_json(registry_path, registry)
+    return registry
+
+
+def _leak_safe_provider(
+    splits: FrozenTaskSplits,
+):
+    blocked = frozenset(task.task_id for task in splits.all_tasks)
+
+    def provider(seed: int, update: int, microbatch_index: int) -> SourceLayoutTask:
+        return sample_training_task(
+            seed,
+            update,
+            microbatch_index,
+            blocked_task_ids=blocked,
+        )
+
+    return provider
+
+
+def _select_production_checkpoint(
+    seed_dir: Path,
+    splits: FrozenTaskSplits,
+) -> tuple[Path, list[dict[str, object]]]:
+    summaries = []
+    rows: list[dict[str, object]] = []
+    for checkpoint in sorted(seed_dir.glob("checkpoint_*.pt")):
+        completed = int(checkpoint.stem.split("_")[-1])
+        if completed == 0 or completed % 250 != 0:
+            continue
+        evaluation = evaluate_frozen_checkpoint(
+            checkpoint,
+            splits.validation,
+            split_name="validation",
+            device=torch.device("cuda"),
+        )
+        task_ids = tuple(item.task_id for item in evaluation.tasks)
+        peaks = tuple(item.peak_temperature for item in evaluation.tasks)
+        summary = summarize_against_reference(
+            completed_updates=completed,
+            split_name="validation",
+            task_ids=task_ids,
+            candidate_peaks=peaks,
+            reference_peaks={task_id: 1.0 for task_id in task_ids},
+        )
+        summaries.append(summary)
+        rows.append({"checkpoint": checkpoint.name, "summary": asdict(summary)})
+    selected_summary = select_validation_checkpoint(summaries)
+    selected = seed_dir / f"checkpoint_{selected_summary.completed_updates:06d}.pt"
+    _write_json(
+        seed_dir / "validation_selection.json",
+        {"schema_version": 1, "selected_checkpoint": selected.name, "rows": rows},
+    )
+    return selected, rows
+
+
+def run_production(output_dir: Path) -> dict[str, object]:
+    """Train exactly three registered models, then freeze by validation only."""
+    validate_production_gate(output_dir)
+    registry = _production_registry(output_dir)
+    total_updates = int(registry["updates_per_seed"])
+    microbatch_size = int(registry["microbatch_size"])
+    splits = build_frozen_splits()
+    write_split_manifest(output_dir / "split_manifest.json", splits)
+    provider = _leak_safe_provider(splits)
+    frozen_dir = output_dir / "frozen"
+    frozen_dir.mkdir(parents=True, exist_ok=True)
+    campaign_started = time.perf_counter()
+    frozen_rows: list[dict[str, object]] = []
+    for seed in PRODUCTION_SEEDS:
+        frozen_path = frozen_dir / f"frozen_seed_{seed}.pt"
+        selection_path = (
+            output_dir / "production" / f"seed_{seed}" / "validation_selection.json"
+        )
+        if frozen_path.is_file() and selection_path.is_file():
+            selection = _read_json(selection_path)
+            frozen_rows.append(
+                {
+                    "seed": seed,
+                    "selected_checkpoint": selection["selected_checkpoint"],
+                    "frozen_checkpoint": str(frozen_path.relative_to(output_dir)),
+                    "frozen_sha256": artifact_sha256(frozen_path),
+                }
+            )
+            continue
+        seed_dir = output_dir / "production" / f"seed_{seed}"
+        resume: Path | None = None
+        existing = sorted(seed_dir.glob("checkpoint_*.pt"))
+        if existing:
+            resume = existing[-1]
+        while True:
+            result = run_multitask_training(
+                config=MultitaskRunConfig(
+                    model_seed=seed,
+                    task_seed=seed,
+                    total_updates=total_updates,
+                    microbatch_size=microbatch_size,
+                    checkpoint_interval=250,
+                    mode="production",
+                    device="cuda",
+                ),
+                output_dir=seed_dir,
+                task_provider=provider,
+                resume_checkpoint=resume,
+                maximum_updates_this_call=250,
+                synchronize=torch.cuda.synchronize,
+            )
+            if result.status is MultitaskRunStatus.INVALID_RUN:
+                payload = {
+                    "schema_version": 1,
+                    "status": "INVALID_RUN",
+                    "failed_seed": seed,
+                    "reason_codes": list(result.reason_codes),
+                }
+                _write_json(output_dir / "production_verdict.json", payload)
+                return payload
+            if time.perf_counter() - campaign_started > 6.0 * 3600.0:
+                payload = {
+                    "schema_version": 1,
+                    "status": "INVALID_RUN",
+                    "failed_seed": seed,
+                    "reason_codes": ["SIX_HOUR_TRAINING_CAP_EXCEEDED"],
+                }
+                _write_json(output_dir / "production_verdict.json", payload)
+                return payload
+            resume = result.last_checkpoint
+            if result.completed_updates == total_updates:
+                break
+        selected, _ = _select_production_checkpoint(seed_dir, splits)
+        shutil.copy2(selected, frozen_path)
+        frozen_rows.append(
+            {
+                "seed": seed,
+                "selected_checkpoint": selected.name,
+                "frozen_checkpoint": str(frozen_path.relative_to(output_dir)),
+                "frozen_sha256": artifact_sha256(frozen_path),
+            }
+        )
+    payload = {
+        "schema_version": 1,
+        "status": "PASS",
+        "production_seeds": list(PRODUCTION_SEEDS),
+        "updates_per_seed": total_updates,
+        "microbatch_size": microbatch_size,
+        "training_wall_seconds": time.perf_counter() - campaign_started,
+        "frozen_models": frozen_rows,
+        "test_sets_accessed": False,
+    }
+    _write_json(output_dir / "production_verdict.json", payload)
+    return payload
+
+
+def write_campaign_hashes(output_dir: Path) -> dict[str, object]:
+    """Hash all completed compact and frozen artifacts before download."""
+    required = [
+        output_dir / "benchmark_verdict.json",
+        output_dir / "pilot_verdict.json",
+        output_dir / "production_registry.json",
+        output_dir / "production_verdict.json",
+        output_dir / "split_manifest.json",
+    ] + [output_dir / "frozen" / f"frozen_seed_{seed}.pt" for seed in PRODUCTION_SEEDS]
+    readiness = validate_backup_readiness(required)
+    paths = [path for path in output_dir.rglob("*") if path.is_file()]
+    manifest = build_hash_manifest(paths, root=output_dir)
+    _write_json(
+        output_dir / "hash_manifest.json",
+        {"schema_version": 1, "artifacts": manifest},
+    )
+    readiness["hash_manifest"] = "hash_manifest.json"
+    _write_json(output_dir / "backup_ready.json", readiness)
+    return readiness
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -555,8 +782,9 @@ def main() -> None:
     elif args.phase == "pilot":
         run_pilot(args.output)
     elif args.phase == "production":
-        validate_production_gate(args.output)
-        raise MultitaskGateError("production orchestration is not implemented yet")
+        run_production(args.output)
+    elif args.phase == "hashes":
+        write_campaign_hashes(args.output)
     else:
         raise MultitaskGateError(f"phase {args.phase} is not implemented yet")
 

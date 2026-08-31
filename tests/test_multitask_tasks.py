@@ -10,6 +10,7 @@ from waveforge.ml.multitask_tasks import (
     build_frozen_splits,
     rectangles_overlap,
     sample_primary_task,
+    sample_training_task,
     write_split_manifest,
 )
 
@@ -69,3 +70,23 @@ def test_split_manifest_is_canonical_and_excludes_source_arrays(tmp_path) -> Non
     assert len(payload["validation"]) == 32
     assert "sources" not in payload["validation"][0]
     assert path.read_bytes().endswith(b"\n")
+
+
+def test_training_sampler_deterministically_rejects_frozen_layout_hash() -> None:
+    original = sample_training_task(101, 7, 2, blocked_task_ids=frozenset())
+
+    replacement = sample_training_task(
+        101,
+        7,
+        2,
+        blocked_task_ids=frozenset({original.task_id}),
+    )
+    replay = sample_training_task(
+        101,
+        7,
+        2,
+        blocked_task_ids=frozenset({original.task_id}),
+    )
+
+    assert replacement.task_id != original.task_id
+    assert replay.task_id == replacement.task_id

@@ -22,6 +22,8 @@ VALIDATION_SEED = 2026083141
 TEST_ID_SEED = 2026083142
 TEST_OOD_SEED = 2026083143
 MAXIMUM_PROPOSALS = 10_000
+TRAINING_INDEX_STRIDE = 1_000_000
+COLLISION_RETRY_STRIDE = 1_000_000_000_000
 
 Center = tuple[float, float]
 Bounds = tuple[float, float, float, float]
@@ -133,6 +135,27 @@ def _sample_task(seed: int, index: int, *, ood: bool) -> SourceLayoutTask:
 def sample_primary_task(seed: int, index: int) -> SourceLayoutTask:
     """Sample one reproducible in-distribution training task."""
     return _sample_task(seed, index, ood=False)
+
+
+def sample_training_task(
+    seed: int,
+    update: int,
+    microbatch_index: int,
+    *,
+    blocked_task_ids: frozenset[str],
+) -> SourceLayoutTask:
+    """Derive one task from its tuple and deterministically reject split leakage."""
+    if update < 0 or microbatch_index < 0:
+        raise ValueError("training task indices must be non-negative")
+    base_index = update * TRAINING_INDEX_STRIDE + microbatch_index
+    for retry in range(MAXIMUM_PROPOSALS):
+        task = sample_primary_task(
+            seed,
+            base_index + retry * COLLISION_RETRY_STRIDE,
+        )
+        if task.task_id not in blocked_task_ids:
+            return task
+    raise RuntimeError("training sampler could not avoid frozen task leakage")
 
 
 def build_frozen_splits() -> FrozenTaskSplits:
