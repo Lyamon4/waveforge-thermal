@@ -246,6 +246,7 @@ def run_benchmark(
     """Benchmark fixed-task complete updates for M=1,2,4 on the A100."""
     if not (output_dir / "environment.json").is_file():
         run_preflight(output_dir)
+    configure_cuda_reproducibility(DEVELOPMENT_SEED)
     candidates: list[BenchmarkCandidate] = []
     for microbatch_size in (1, 2, 4):
         candidate_dir = output_dir / "benchmark" / f"microbatch_{microbatch_size}"
@@ -449,6 +450,7 @@ def run_pilot(output_dir: Path) -> dict[str, object]:
     benchmark = _read_json(output_dir / "benchmark_verdict.json")
     if benchmark.get("status") != "PASS":
         raise MultitaskGateError("pilot requires a PASS benchmark")
+    configure_cuda_reproducibility(DEVELOPMENT_SEED)
     microbatch_size = int(benchmark["selected_microbatch_size"])
     splits = build_frozen_splits()
     write_split_manifest(output_dir / "split_manifest.json", splits)
@@ -645,6 +647,7 @@ def _select_production_checkpoint(
 def run_production(output_dir: Path) -> dict[str, object]:
     """Train exactly three registered models, then freeze by validation only."""
     validate_production_gate(output_dir)
+    configure_cuda_reproducibility(PRODUCTION_SEEDS[0])
     registry = _production_registry(output_dir)
     total_updates = int(registry["updates_per_seed"])
     microbatch_size = int(registry["microbatch_size"])
