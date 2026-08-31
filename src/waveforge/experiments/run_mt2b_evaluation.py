@@ -6,6 +6,7 @@ import argparse
 import csv
 import json
 import shutil
+import time
 from dataclasses import asdict
 from pathlib import Path
 from typing import Literal
@@ -429,10 +430,108 @@ def run_secondary_verification(
     return payload
 
 
+def run_inference_benchmark(
+    *,
+    reference_root: Path,
+    output_root: Path,
+    device: torch.device,
+) -> dict[str, object]:
+    """Measure conservative frozen end-to-end latency against references."""
+    if device.type != "cuda":
+        raise ValueError("MT2B inference benchmark requires CUDA")
+    verdict = _read_json(output_root / "mt2b_verdict.json")
+    tasks = validation_tasks()
+    variants: dict[str, dict[str, object]] = {}
+    for variant in _VARIANTS:
+        checkpoint = output_root / "frozen_models" / f"{variant.lower()}_selected.pt"
+        single_seconds: list[float] = []
+        for task in tasks[:8]:
+            torch.cuda.synchronize(device)
+            started = time.perf_counter()
+            generated = generate_mt2b_designs(
+                checkpoint,
+                (task,),
+                variant=variant,
+                device=device,
+                batch_size=1,
+            )
+            torch.cuda.synchronize(device)
+            elapsed = time.perf_counter() - started
+            if len(generated.designs) != 1:
+                raise MT2BEvaluationError(
+                    "single-task inference benchmark is incomplete"
+                )
+            single_seconds.append(elapsed)
+        batch_seconds: list[float] = []
+        for _ in range(3):
+            torch.cuda.synchronize(device)
+            started = time.perf_counter()
+            generated = generate_mt2b_designs(
+                checkpoint,
+                tasks,
+                variant=variant,
+                device=device,
+                batch_size=32,
+            )
+            torch.cuda.synchronize(device)
+            elapsed = time.perf_counter() - started
+            if len(generated.designs) != 32:
+                raise MT2BEvaluationError("batched inference benchmark is incomplete")
+            batch_seconds.append(elapsed)
+        variants[variant] = {
+            "single_task_samples": 8,
+            "single_task_median_seconds": float(np.median(single_seconds)),
+            "single_task_range_seconds": [
+                float(np.min(single_seconds)),
+                float(np.max(single_seconds)),
+            ],
+            "batch32_repeats": 3,
+            "batch32_median_seconds": float(np.median(batch_seconds)),
+            "batch32_amortized_seconds_per_task": float(np.median(batch_seconds) / 32),
+            "timing_scope": (
+                "checkpoint_load_plus_conditioning_plus_64_step_rollout_plus_projection"
+            ),
+        }
+    reference_seconds = [
+        float(
+            _read_json(
+                reference_root
+                / "references"
+                / f"task_{index:02d}"
+                / "reference_result.json"
+            )["wall_seconds"]
+        )
+        for index in range(32)
+    ]
+    physics_per_task = float(variants["PHYSICS"]["batch32_amortized_seconds_per_task"])
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "status": "PASS",
+        "variants": variants,
+        "gradient_reference_steps": 600,
+        "gradient_reference_median_seconds": float(np.median(reference_seconds)),
+        "gradient_reference_range_seconds": [
+            float(np.min(reference_seconds)),
+            float(np.max(reference_seconds)),
+        ],
+        "physics_batch32_amortized_speedup_vs_gradient_median": float(
+            np.median(reference_seconds) / physics_per_task
+        ),
+        "benchmark_is_secondary_diagnostic": True,
+        "frozen_verdict_status": verdict["status"],
+        "test_id_accessed": False,
+        "test_ood_accessed": False,
+    }
+    _atomic_json(output_root / "inference_benchmark.json", payload)
+    return payload
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--phase", choices=("validation", "verification"), required=True
+        "--phase",
+        choices=("validation", "verification", "benchmark"),
+        required=True,
     )
     parser.add_argument("--training-root", type=Path, required=True)
     parser.add_argument("--reference-root", type=Path, required=True)
@@ -450,10 +549,16 @@ def main() -> None:
             output_root=arguments.output.resolve(),
             device=torch.device(arguments.device),
         )
-    else:
+    elif arguments.phase == "verification":
         run_secondary_verification(
             reference_root=arguments.reference_root.resolve(),
             output_root=arguments.output.resolve(),
+        )
+    else:
+        run_inference_benchmark(
+            reference_root=arguments.reference_root.resolve(),
+            output_root=arguments.output.resolve(),
+            device=torch.device(arguments.device),
         )
 
 

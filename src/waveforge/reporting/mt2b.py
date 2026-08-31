@@ -878,6 +878,54 @@ def _summary_figure(paths: MT2BReportPaths) -> Figure:
     return figure
 
 
+def _runtime_figure(paths: MT2BReportPaths) -> Figure:
+    benchmark = _read_json(paths.evaluation_root / "inference_benchmark.json")
+    variants = dict(benchmark["variants"])
+    physics = dict(variants["PHYSICS"])
+    values = (
+        float(benchmark["gradient_reference_median_seconds"]),
+        float(physics["single_task_median_seconds"]),
+        float(physics["batch32_amortized_seconds_per_task"]),
+    )
+    labels = (
+        "Gradient\n600 steps",
+        "Frozen NCA\nsingle task",
+        "Frozen NCA\nbatch-32 amortized",
+    )
+    colors = (REFERENCE_COLOR, PHYSICS_COLOR, GOOD_COLOR)
+    figure, axis = plt.subplots(figsize=(8.5, 4.8))
+    bars = axis.bar(labels, values, color=colors, width=0.62)
+    axis.set_yscale("log")
+    axis.set_ylabel("Seconds per generated topology (log scale)")
+    axis.set_title(
+        "Conservative end-to-end generation latency on the same A100", weight="bold"
+    )
+    axis.grid(axis="y", alpha=0.2, which="both")
+    for bar, value in zip(bars, values, strict=True):
+        axis.text(
+            bar.get_x() + bar.get_width() / 2,
+            value * 1.18,
+            f"{value:.4g} s",
+            ha="center",
+            fontsize=9,
+            weight="bold",
+        )
+    speedup = float(benchmark["physics_batch32_amortized_speedup_vs_gradient_median"])
+    axis.text(
+        0.98,
+        0.95,
+        f"Batch-amortized speedup: {speedup:,.0f}×",
+        transform=axis.transAxes,
+        ha="right",
+        va="top",
+        fontsize=11,
+        color=GOOD_COLOR,
+        weight="bold",
+    )
+    figure.tight_layout()
+    return figure
+
+
 def _report_text(paths: MT2BReportPaths) -> str:
     verdict = _read_json(paths.evaluation_root / "mt2b_verdict.json")
     raw = _selected_metrics(paths, "RAW")
@@ -889,6 +937,9 @@ def _report_text(paths: MT2BReportPaths) -> str:
     physics_diag = dict(diagnostics["PHYSICS"])
     raw_cause = dict(raw_diag["condition_causality"])
     physics_cause = dict(physics_diag["condition_causality"])
+    runtime = _read_json(paths.evaluation_root / "inference_benchmark.json")
+    runtime_variants = dict(runtime["variants"])
+    physics_runtime = dict(runtime_variants["PHYSICS"])
     lines = [
         "# WaveForge Thermal — NCA-MT2B report",
         "",
@@ -941,6 +992,16 @@ def _report_text(paths: MT2BReportPaths) -> str:
             "- All selected RAW, PHYSICS and reference designs were "
             "secondarily verified at SciPy256.",
             "",
+            "## Runtime diagnostic",
+            "",
+            "- median 600-step gradient time: "
+            f"`{float(runtime['gradient_reference_median_seconds']):.6f} s`",
+            "- PHYSICS batch-32 amortized generation time: "
+            f"`{float(physics_runtime['batch32_amortized_seconds_per_task']):.6f} "
+            "s/task`",
+            "- measured amortized speedup: "
+            f"`{float(runtime['physics_batch32_amortized_speedup_vs_gradient_median']):.3f}x`",
+            "",
             "## Scientific interpretation",
             "",
             "The physical channels are deterministic transforms of the original "
@@ -966,6 +1027,10 @@ def generate_mt2b_paper_package(paths: MT2BReportPaths) -> dict[str, object]:
     if not (paths.evaluation_root / "selected_verified_256.csv").is_file():
         raise FileNotFoundError(
             "secondary SciPy256 verification must precede reporting"
+        )
+    if not (paths.evaluation_root / "inference_benchmark.json").is_file():
+        raise FileNotFoundError(
+            "frozen A100 inference benchmark must precede reporting"
         )
     renderers = [
         (
@@ -1011,11 +1076,12 @@ def generate_mt2b_paper_package(paths: MT2BReportPaths) -> dict[str, object]:
         ),
         ("10_result_summary", "Result summary", partial(_summary_figure, paths)),
         ("11_architecture", "MT2B architecture", _architecture_figure),
+        ("12_runtime", "Frozen inference runtime", partial(_runtime_figure, paths)),
     ]
     for page in range(4):
         renderers.append(
             (
-                f"12_topology_atlas_page_{page + 1}",
+                f"13_topology_atlas_page_{page + 1}",
                 f"Complete topology atlas page {page + 1}",
                 partial(_atlas_figure, paths, page),
             )
