@@ -15,6 +15,7 @@ from waveforge.experiments.run_multitask_nca import (
     calculate_runtime_gate,
     classify_pilot,
     lock_runtime_budget_amendment,
+    registered_test_baseline_jobs,
     select_microbatch,
     validate_production_gate,
 )
@@ -91,6 +92,18 @@ def test_budget_amendment_preserves_original_benchmark_and_fails_after_pilot(
             maximum_campaign_cost_usd=7.0,
             hourly_cost_usd=0.633,
         )
+
+
+def test_test_baseline_registry_uses_locked_tasks_and_multistarts() -> None:
+    jobs = registered_test_baseline_jobs()
+    single = [job for job in jobs if job["family"] == "single_start"]
+    multi = [job for job in jobs if job["family"] == "multistart_challenge"]
+
+    assert len(single) == 32
+    assert {job["start_index"] for job in single} == {0}
+    assert len(multi) == 16 * 4
+    assert {job["split"] for job in multi} == {"test_id", "test_ood"}
+    assert {job["start_index"] for job in multi} == {0, 1, 2, 3}
 
 
 def test_microbatch_selection_uses_throughput_and_two_percent_tie_break() -> None:

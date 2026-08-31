@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import math
@@ -54,6 +55,11 @@ from waveforge.ml.multitask_training import (
 from waveforge.physics.grid import Grid2D
 from waveforge.reproducibility import artifact_sha256, configure_cuda_reproducibility
 from waveforge.verification.compare import Gate2Status
+from waveforge.verification.multitask_verification import (
+    classify_campaign,
+    summarize_seed,
+    verify_binary_task,
+)
 
 
 class MultitaskGateError(RuntimeError):
@@ -158,6 +164,36 @@ def classify_pilot(
     if median_gradient_gap <= 0.15:
         return PilotStatus.PILOT_GO
     return PilotStatus.PILOT_CONDITIONAL
+
+
+def registered_test_baseline_jobs() -> tuple[dict[str, object], ...]:
+    """Return the immutable single- and four-start comparator registry."""
+    splits = build_frozen_splits()
+    jobs: list[dict[str, object]] = []
+    for task in splits.test_id:
+        jobs.append(
+            {
+                "family": "single_start",
+                "split": "test_id",
+                "task_id": task.task_id,
+                "start_index": 0,
+            }
+        )
+    for split_name, tasks in (
+        ("test_id", splits.test_id[:8]),
+        ("test_ood", splits.test_ood[:8]),
+    ):
+        for task in tasks:
+            for start_index in range(4):
+                jobs.append(
+                    {
+                        "family": "multistart_challenge",
+                        "split": split_name,
+                        "task_id": task.task_id,
+                        "start_index": start_index,
+                    }
+                )
+    return tuple(jobs)
 
 
 def _read_json(path: Path) -> dict[str, object]:
@@ -821,6 +857,320 @@ def run_production(output_dir: Path) -> dict[str, object]:
     return payload
 
 
+def _write_csv(path: Path, rows: list[dict[str, object]]) -> None:
+    if not rows:
+        raise MultitaskGateError(f"cannot write empty metrics table: {path.name}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    temporary.replace(path)
+
+
+def _baseline_seed(split_name: str, task_index: int, start_index: int) -> int:
+    split_offset = 0 if split_name == "test_id" else 1000
+    return 2026083400 + split_offset + task_index * 4 + start_index
+
+
+def _run_gradient_candidate(
+    output_dir: Path,
+    *,
+    split_name: str,
+    task_index: int,
+    task: SourceLayoutTask,
+    start_index: int,
+) -> dict[str, object]:
+    candidate_dir = (
+        output_dir
+        / "test_baselines"
+        / split_name
+        / task.task_id
+        / f"start_{start_index}"
+    )
+    result_path = candidate_dir / "result.json"
+    design_path = candidate_dir / "binary_design_64.npy"
+    if result_path.is_file() and design_path.is_file():
+        return _read_json(result_path)
+    candidate_dir.mkdir(parents=True, exist_ok=True)
+    seed = _baseline_seed(split_name, task_index, start_index)
+    configure_cuda_reproducibility(seed)
+    sources = torch.as_tensor(task.sources, dtype=torch.float64, device="cuda")
+    started = time.perf_counter()
+    result = optimize_design(
+        sources,
+        seed=seed,
+        config=OptimizationConfig(enforce_final_binary_budget=False),
+        output_dir=None,
+    )
+    if result.status is Gate2Status.INVALID_RUN or result.continuous_design is None:
+        raise MultitaskGateError(
+            f"direct-gradient candidate failed for {task.task_id} start {start_index}"
+        )
+    binary, budget = exact_cardinality_binary(result.continuous_design)
+    peak_64 = _score_binary_design(binary, task, device=torch.device("cuda"))
+    design = binary.detach().cpu().numpy().astype(np.float64, copy=False)
+    np.save(design_path, design, allow_pickle=False)
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "status": "PASS",
+        "optimizer": "WaveForge_direct_gradient_600_steps",
+        "split": split_name,
+        "task_id": task.task_id,
+        "task_index": task_index,
+        "start_index": start_index,
+        "optimizer_seed": seed,
+        "completed_iterations": result.completed_iterations,
+        "final_logits_hash": result.final_logits_hash,
+        "config_sha256": result.config_sha256,
+        "binary_material_fraction": budget.material_fraction,
+        "peak_64": peak_64,
+        "wall_seconds": time.perf_counter() - started,
+        "binary_design": str(design_path.relative_to(output_dir)),
+        "binary_design_sha256": artifact_sha256(design_path),
+    }
+    _write_json(result_path, payload)
+    return payload
+
+
+def _run_registered_test_baselines(
+    output_dir: Path,
+    splits: FrozenTaskSplits,
+) -> tuple[dict[str, dict[str, object]], list[dict[str, object]]]:
+    registry = registered_test_baseline_jobs()
+    _write_json(
+        output_dir / "test_baseline_registry.json",
+        {"schema_version": 1, "jobs": list(registry)},
+    )
+    task_lookup = {
+        (split_name, task.task_id): (index, task)
+        for split_name, tasks in (
+            ("test_id", splits.test_id),
+            ("test_ood", splits.test_ood),
+        )
+        for index, task in enumerate(tasks)
+    }
+    candidates: dict[tuple[str, str, int], dict[str, object]] = {}
+    for job in registry:
+        split_name = str(job["split"])
+        task_id = str(job["task_id"])
+        start_index = int(job["start_index"])
+        task_index, task = task_lookup[(split_name, task_id)]
+        key = (split_name, task_id, start_index)
+        if key not in candidates:
+            candidates[key] = _run_gradient_candidate(
+                output_dir,
+                split_name=split_name,
+                task_index=task_index,
+                task=task,
+                start_index=start_index,
+            )
+
+    single: dict[str, dict[str, object]] = {}
+    for task in splits.test_id:
+        single[task.task_id] = candidates[("test_id", task.task_id, 0)]
+
+    multistart_rows: list[dict[str, object]] = []
+    for split_name, tasks in (
+        ("test_id", splits.test_id[:8]),
+        ("test_ood", splits.test_ood[:8]),
+    ):
+        for task in tasks:
+            group = [
+                candidates[(split_name, task.task_id, start_index)]
+                for start_index in range(4)
+            ]
+            winner = min(group, key=lambda item: float(item["peak_64"]))
+            multistart_rows.append(
+                {
+                    "split": split_name,
+                    "task_id": task.task_id,
+                    "selected_start_index": winner["start_index"],
+                    "selected_peak_64": winner["peak_64"],
+                    "candidate_peaks_64": json.dumps(
+                        [float(item["peak_64"]) for item in group]
+                    ),
+                    "selection_rule": "minimum_unrounded_64x64_peak",
+                }
+            )
+    _write_csv(output_dir / "multistart_selection.csv", multistart_rows)
+    return single, multistart_rows
+
+
+def _independent_reference_peaks(
+    output_dir: Path,
+    tasks: tuple[SourceLayoutTask, ...],
+    candidates: dict[str, dict[str, object]],
+) -> dict[str, float]:
+    path = output_dir / "test_gradient_verified_256.json"
+    if path.is_file():
+        payload = _read_json(path)
+        return {
+            str(task_id): float(value)
+            for task_id, value in dict(payload["worst_peaks"]).items()
+        }
+    peaks: dict[str, float] = {}
+    records: list[dict[str, object]] = []
+    for task in tasks:
+        design_path = output_dir / str(candidates[task.task_id]["binary_design"])
+        design = np.load(design_path, allow_pickle=False)
+        verified = verify_binary_task(design, task, resolution=256)
+        if verified.material_fraction != 0.25:
+            raise MultitaskGateError("gradient comparator material budget changed")
+        peaks[task.task_id] = verified.worst_peak
+        records.append(asdict(verified))
+    _write_json(
+        path,
+        {
+            "schema_version": 1,
+            "solver": "independent_CPU_SciPy_256",
+            "worst_peaks": peaks,
+            "records": records,
+        },
+    )
+    return peaks
+
+
+def run_unseen_test(output_dir: Path) -> dict[str, object]:
+    """Evaluate frozen production NCA models on untouched ID/OOD layouts."""
+    verdict_path = output_dir / "campaign_verdict.json"
+    if verdict_path.is_file():
+        return _read_json(verdict_path)
+    production = _read_json(output_dir / "production_verdict.json")
+    if (
+        production.get("status") != "PASS"
+        or production.get("test_sets_accessed") is not False
+    ):
+        raise MultitaskGateError("test phase requires untouched PASS production")
+    splits = build_frozen_splits()
+    write_split_manifest(output_dir / "split_manifest.json", splits)
+    single_references, multistart_rows = _run_registered_test_baselines(
+        output_dir,
+        splits,
+    )
+    gradient_peaks = _independent_reference_peaks(
+        output_dir,
+        splits.test_id,
+        single_references,
+    )
+
+    seed_summaries = []
+    id_rows: list[dict[str, object]] = []
+    ood_rows: list[dict[str, object]] = []
+    for seed_index, seed in enumerate(PRODUCTION_SEEDS):
+        checkpoint = output_dir / "frozen" / f"frozen_seed_{seed}.pt"
+        if not checkpoint.is_file():
+            raise MultitaskGateError(f"frozen production seed is missing: {seed}")
+        configure_cuda_reproducibility(seed)
+        id_evaluation = evaluate_frozen_checkpoint(
+            checkpoint,
+            splits.test_id,
+            split_name="test_id",
+            device=torch.device("cuda"),
+        )
+        ood_evaluation = evaluate_frozen_checkpoint(
+            checkpoint,
+            splits.test_ood,
+            split_name="test_ood",
+            device=torch.device("cuda"),
+        )
+        shuffled = evaluate_frozen_checkpoint(
+            checkpoint,
+            splits.test_id,
+            split_name="test_id",
+            conditioning_tasks=splits.test_id[1:] + splits.test_id[:1],
+            device=torch.device("cuda"),
+        )
+        causality = condition_causality_summary(
+            matched=[item.peak_temperature for item in id_evaluation.tasks],
+            shuffled=[item.peak_temperature for item in shuffled.tasks],
+        )
+        np.savez_compressed(
+            output_dir / f"frozen_seed_{seed}_test_designs.npz",
+            test_id=np.stack([item.binary_design for item in id_evaluation.tasks]),
+            test_ood=np.stack([item.binary_design for item in ood_evaluation.tasks]),
+        )
+        nca_verified_peaks: list[float] = []
+        valid = True
+        for task, item in zip(splits.test_id, id_evaluation.tasks, strict=True):
+            verified = verify_binary_task(item.binary_design, task, resolution=256)
+            valid = bool(
+                valid
+                and item.binary_material_fraction == 0.25
+                and verified.material_fraction == 0.25
+                and verified.maximum_normalized_residual <= 1.0e-8
+            )
+            nca_verified_peaks.append(verified.worst_peak)
+            reference = gradient_peaks[task.task_id]
+            id_rows.append(
+                {
+                    "seed": seed,
+                    "task_id": task.task_id,
+                    "nca_tmax_256": verified.worst_peak,
+                    "gradient_tmax_256": reference,
+                    "relative_gap": (verified.worst_peak - reference) / reference,
+                    "nca_material_fraction": verified.material_fraction,
+                    "nca_design_hash_64": verified.design_hash_64,
+                    "maximum_normalized_residual": verified.maximum_normalized_residual,
+                }
+            )
+        for task, item in zip(splits.test_ood, ood_evaluation.tasks, strict=True):
+            verified = verify_binary_task(item.binary_design, task, resolution=256)
+            valid = bool(
+                valid
+                and item.binary_material_fraction == 0.25
+                and verified.material_fraction == 0.25
+                and verified.maximum_normalized_residual <= 1.0e-8
+            )
+            ood_rows.append(
+                {
+                    "seed": seed,
+                    "task_id": task.task_id,
+                    "nca_tmax_256": verified.worst_peak,
+                    "nca_material_fraction": verified.material_fraction,
+                    "nca_design_hash_64": verified.design_hash_64,
+                    "maximum_normalized_residual": verified.maximum_normalized_residual,
+                }
+            )
+        seed_summaries.append(
+            summarize_seed(
+                seed=seed,
+                nca_peaks=tuple(nca_verified_peaks),
+                gradient_peaks=tuple(
+                    gradient_peaks[task.task_id] for task in splits.test_id
+                ),
+                bootstrap_seed=2026083500 + seed_index,
+                bootstrap_resamples=10_000,
+                condition_matched_wins=causality.matched_win_count,
+                valid=valid,
+            )
+        )
+    _write_csv(output_dir / "test_id_verified_metrics.csv", id_rows)
+    _write_csv(output_dir / "test_ood_verified_metrics.csv", ood_rows)
+    campaign = classify_campaign(seed_summaries)
+    payload = {
+        "schema_version": 1,
+        "status": campaign.status.value,
+        "passing_seed_count": campaign.passing_seed_count,
+        "better_tested_gradient_seed_count": (
+            campaign.better_tested_gradient_seed_count
+        ),
+        "seeds": [asdict(item) for item in campaign.seeds],
+        "primary_split": "test_id",
+        "primary_task_count": len(splits.test_id),
+        "secondary_ood_task_count": len(splits.test_ood),
+        "direct_gradient_comparator": "WaveForge_direct_gradient_600_steps",
+        "multistart_challenge_task_count": len(multistart_rows),
+        "final_authority": "independent_CPU_SciPy_256",
+    }
+    _write_json(verdict_path, payload)
+    production["test_sets_accessed"] = True
+    production["test_verdict_artifact"] = "campaign_verdict.json"
+    _write_json(output_dir / "production_verdict.json", production)
+    return payload
+
+
 def write_campaign_hashes(output_dir: Path) -> dict[str, object]:
     """Hash all completed compact and frozen artifacts before download."""
     required = [
@@ -883,6 +1233,8 @@ def main() -> None:
         run_pilot(args.output)
     elif args.phase == "production":
         run_production(args.output)
+    elif args.phase == "test":
+        run_unseen_test(args.output)
     elif args.phase == "hashes":
         write_campaign_hashes(args.output)
     else:
