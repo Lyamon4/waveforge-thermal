@@ -1,0 +1,237 @@
+schema_version: 1
+scope: nca_mt2b_physics_informed_multitask_ablation
+status: prospective_locked_before_result_production
+
+scientific_role:
+  raw_control_status: CONTROL_RAW
+  physics_variant_status: PHYSICS_TRANSFORMED
+  old_pilot_status: PILOT_KILL
+  old_recovery_status: RECOVERY_NO_GO
+  teacher_topologies: false
+  optimized_design_conditioning: false
+  gradient_reference_conditioning: false
+  adjoint_sensitivity_conditioning: false
+  validation_statistics_conditioning: false
+  test_statistics_conditioning: false
+
+task_distribution:
+  grid_size: 64
+  source_count: 3
+  source_size: 0.20
+  source_power: 1.0
+  primary_x_range: [0.20, 0.80]
+  primary_y_range: [0.55, 0.82]
+  sink: bottom_cell_row
+  task_stream_seed: 2026092201
+  batch_size: 4
+  strata:
+    horizontal_span_threshold: 0.46
+    vertical_span_threshold: 0.21
+    definitions:
+      compact: horizontal_span < 0.46 and vertical_span < 0.21
+      wide_horizontal: horizontal_span >= 0.46 and vertical_span < 0.21
+      vertically_spread: horizontal_span < 0.46 and vertical_span >= 0.21
+      mixed: horizontal_span >= 0.46 and vertical_span >= 0.21
+    batch_composition:
+      compact: 1
+      wide_horizontal: 1
+      vertically_spread: 1
+      mixed: 1
+
+architecture:
+  grid: [64, 64]
+  mutable_channels: 16
+  material_channel: 0
+  hidden_channels: 15
+  condition_channels: 4
+  perception_width: 64
+  rollout_steps: 64
+  update_scale: 0.1
+  padding_mode: reflect
+  activation: SiLU
+  parameter_count: 12624
+  initial_state: zeros
+  final_layer_initialization: zeros
+  shared_across_space_and_time: true
+
+conditioning:
+  source_channel_scale: 25.0
+  fixed_temperature_scale: 0.900613256638055
+  temperature_scale_definition:
+    solver: independent_scipy_finite_volume
+    grid_size: 64
+    conductivity: 1.0
+    source_center: [0.50, 0.75]
+    source_bounds: [0.40, 0.60, 0.65, 0.85]
+    source_power: 1.0
+    boundary_conditions: bottom_dirichlet_zero_other_neumann_zero
+  temperature_solver:
+    grid_size: 64
+    conductivity: 1.0
+    autograd: false
+    scenarios: [A, B, C]
+    aggregate_mean: elementwise_mean
+    aggregate_max: elementwise_max
+    normalization: divide_by_fixed_temperature_scale
+    clamp: false
+  raw_channels:
+    - source_sum_divided_by_25
+    - zeros
+    - zeros
+    - sink_mask
+  physics_channels:
+    - source_sum_divided_by_25
+    - temperature_mean_divided_by_fixed_scale
+    - temperature_max_divided_by_fixed_scale
+    - sink_mask
+
+precision:
+  neural_dtype: float32
+  projection_dtype: float32
+  training_physics_dtype: float64
+  conditioning_physics_dtype: float64
+  device: cuda
+
+physics:
+  k_low: 1.0
+  k_high: 20.0
+  interpolation_power: 3.0
+  harmonic_epsilon: 1.0e-12
+  cg_relative_residual_tolerance: 1.0e-6
+  cg_maximum_iterations: 2000
+
+parameterization:
+  gaussian_sigma: 1.0
+  gaussian_radius: 3
+  gaussian_padding: reflect
+  gaussian_normalization: unit_sum
+  projection_bracket: [-40.0, 40.0]
+  projection_maximum_iterations: 80
+  projection_mean_tolerance: 1.0e-6
+  target_material_fraction: 0.25
+  binary_readout: exact_top_k
+  binary_cell_count: 1024
+
+training:
+  variants: [RAW, PHYSICS]
+  model_seed: 2026092202
+  optimizer: Adam
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  updates: 2000
+  task_exposures_per_variant: 8000
+  checkpoint_interval: 250
+  validation_interval: 250
+  early_stopping: false
+  stages:
+    - start_inclusive: 0
+      stop_exclusive: 400
+      projection_beta: 2.0
+      smooth_max_alpha: 100.0
+      binarization_weight: 0.0
+      tv_weight: 0.001
+      learning_rate: 0.001
+    - start_inclusive: 400
+      stop_exclusive: 800
+      projection_beta: 4.0
+      smooth_max_alpha: 250.0
+      binarization_weight: 0.01
+      tv_weight: 0.001
+      learning_rate: 0.0003
+    - start_inclusive: 800
+      stop_exclusive: 2000
+      projection_beta: 8.0
+      smooth_max_alpha: 500.0
+      binarization_weight: 0.02
+      tv_weight: 0.001
+      learning_rate: 0.0001
+
+validation:
+  task_count: 32
+  task_seed: 2026083141
+  reference_optimizer_steps: 600
+  reference_seed_formula: 2026083200 + task_index
+  candidate_binary_evaluator: independent_scipy_64
+  reference_binary_evaluator: independent_scipy_64
+  selected_design_secondary_evaluator: independent_scipy_256
+  invalid_count_allowed: 0
+  checkpoint_selection:
+    - lowest_median_relative_gap
+    - lowest_p90_relative_gap
+    - lowest_median_absolute_tmax
+    - earliest_checkpoint
+
+bootstrap:
+  paired_delta_definition: gap_RAW_i - gap_PHYSICS_i
+  statistic: median
+  resampling_unit: paired_validation_layout
+  resamples: 10000
+  seed: 2026092203
+  interval: percentile
+  confidence_level: 0.95
+  percentile_bounds: [0.025, 0.975]
+  conditioning_ci_pass: lower_bound > 0.0
+
+success:
+  paired_win_count_minimum: 24
+  median_paired_gap_reduction_minimum: 0.03
+  physics_very_strong_go:
+    median_gap_maximum: 0.05
+    p90_gap_maximum: 0.10
+  physics_go:
+    median_gap_maximum: 0.10
+    p90_gap_maximum: 0.20
+  physics_conditional_go:
+    median_gap_maximum: 0.15
+    p90_gap_maximum: 0.30
+  statuses:
+    - PHYSICS_VERY_STRONG_GO
+    - PHYSICS_GO
+    - PHYSICS_CONDITIONAL_GO
+    - PHYSICS_NO_GO
+    - MT2B_INVALID_RUN
+
+batching_benchmark:
+  candidate_batch_sizes: [1, 2, 4, 8]
+  warmup_updates: 2
+  measured_updates: 5
+  primary_batch_size: 4
+  selection_metric: tasks_per_second
+  temperature_max_absolute_tolerance: 1.0e-9
+  temperature_max_relative_tolerance: 1.0e-8
+  loss_relative_tolerance: 1.0e-8
+  gradient_relative_l2_tolerance: 1.0e-6
+  gradient_cosine_minimum: 0.9999999
+  cg_relative_residual_tolerance: 1.0e-6
+  material_mean_absolute_tolerance: 1.0e-6
+
+fixed_operator_benchmark:
+  ordinary_method: batched_conjugate_gradient
+  reusable_method: reusable_sparse_lu_factorization
+  ordinary_cg_relative_residual_tolerance: 1.0e-12
+  warmup_batches: 2
+  measured_batches: 10
+  rhs_per_batch: 12
+  temperature_max_absolute_tolerance: 1.0e-9
+  temperature_max_relative_tolerance: 1.0e-8
+  relative_error_definition: max_abs_difference / max_abs_reusable_field
+  use_reusable_method_only_if_agreement_passes: true
+
+runtime:
+  benchmark_maximum_a100_hours: 0.50
+  paired_pilot_maximum_projected_a100_hours: 10.0
+  long_training_authorized: false
+
+split_access:
+  validation: development_only
+  test_id: sealed
+  test_ood: sealed
+
+hashing:
+  mode: canonical_lf_text_raw_binary
+  protocol_bundle_components:
+    - configs/nca_mt2b.yaml
+    - docs/superpowers/specs/2026-08-31-nca-mt2b-physics-conditioning-design.md
+  bundle_formula: sha256(config_sha256 + newline + spec_sha256 + newline)

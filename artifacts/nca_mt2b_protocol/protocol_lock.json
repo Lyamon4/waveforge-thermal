@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "status": "PROSPECTIVE_LOCKED_BEFORE_BENCHMARK",
+  "config_path": "configs/nca_mt2b.yaml",
+  "config_sha256": "bcee0d51147e1cddedf1d379f476fad7409e780872274dfd1900fc9a91b04661",
+  "spec_path": "docs/superpowers/specs/2026-08-31-nca-mt2b-physics-conditioning-design.md",
+  "spec_sha256": "88e5d2f5ec433a6d6598266fb78050fd30a5a7b48ce8685bcc8820adf68e3d0a",
+  "protocol_bundle_formula": "sha256(config_sha256 + newline + spec_sha256 + newline)",
+  "protocol_bundle_sha256": "567606c870720ca48001868efa9db1c6918e42345a1892932826c1ab0691d103",
+  "hash_mode": "canonical_lf_text_raw_binary",
+  "long_training_authorized": false,
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}
