@@ -18,6 +18,10 @@ from waveforge.ml.multitask_training import (
     MultitaskRunStatus,
     run_multitask_training,
 )
+from waveforge.physics.batched_cg import (
+    BatchedCGConvergenceError,
+    BatchedCGDiagnostics,
+)
 from waveforge.physics.cg import CGConvergenceError, CGDiagnostics
 
 
@@ -407,6 +411,37 @@ def test_any_cg_failure_marks_run_invalid_without_optimizer_step() -> None:
     result = run_multitask_training(
         config=unit_config(updates=1),
         task_provider=task_provider,
+        evaluator=failing_evaluator,
+        output_dir=None,
+        model_factory=model_factory,
+    )
+
+    assert result.status is MultitaskRunStatus.INVALID_RUN
+    assert result.reason_codes == ("CG_NONCONVERGENCE",)
+    assert result.completed_updates == 0
+    assert result.initial_model_hash == result.final_model_hash
+
+
+def test_any_batched_cg_failure_marks_run_invalid_without_optimizer_step() -> None:
+    def failing_evaluator(
+        model: nn.Module,
+        sources: Tensor,
+        stage: MultitaskStage,
+        *,
+        allow_cpu_unit_test: bool,
+    ) -> MultitaskForward:
+        del model, sources, stage, allow_cpu_unit_test
+        raise BatchedCGConvergenceError(
+            BatchedCGDiagnostics(
+                iterations=torch.tensor([[2000, 2000, 2000]]),
+                relative_residuals=torch.tensor([[2.0e-5, 3.0e-5, 4.0e-5]]),
+                converged=torch.tensor([[False, False, False]]),
+            )
+        )
+
+    result = run_multitask_training(
+        config=unit_config(updates=1, microbatch_size=1),
+        task_provider=lambda seed, update, microbatch: fake_task(1.0, update),
         evaluator=failing_evaluator,
         output_dir=None,
         model_factory=model_factory,

@@ -28,6 +28,7 @@ from waveforge.ml.multitask_protocol import (
 )
 from waveforge.ml.multitask_tasks import SourceLayoutTask, sample_primary_task
 from waveforge.ml.nca_training import evaluate_nca, initialize_nca, model_state_sha256
+from waveforge.physics.batched_cg import BatchedCGConvergenceError
 from waveforge.physics.cg import CGConvergenceError
 
 MultitaskMode = Literal["unit", "benchmark", "pilot", "production", "recovery"]
@@ -549,7 +550,7 @@ def run_multitask_training(
                 )
     except torch.OutOfMemoryError:
         failure_reason = "CUDA_OOM"
-    except CGConvergenceError:
+    except (CGConvergenceError, BatchedCGConvergenceError):
         failure_reason = "CG_NONCONVERGENCE"
     except VolumeProjectionError:
         failure_reason = "INVALID_VOLUME_PROJECTION"

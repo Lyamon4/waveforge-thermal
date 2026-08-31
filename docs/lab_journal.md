@@ -899,3 +899,22 @@ validation/final verification полный MT2B projection равен
 подключения, root-cause diagnostics и проверки safe fallback. Это прозрачно
 зафиксировано как cost/schedule deviation; scientific model, objective,
 task stream, thresholds и sealed splits не менялись.
+
+## 2026-08-31 — MT2B paired-training authorization and budget split
+
+Пользователь явно дал команду запустить MT2B. На момент authorization Vast
+credit равен `$3.027119497860002`; этого достаточно для measured paired
+RAW+PHYSICS training projection `3.3386124877466097 h` (`$2.2356`), но
+недостаточно для 32 новых solver-consistent 600-step reference designs.
+Старый pilot сохранил только восемь scalar peaks, а не binary topologies,
+поэтому они не могут использоваться в новом same-SciPy64 comparison.
+
+До result-producing run фиксируется budget split: выполнить оба locked
+2000-update variants и сохранить checkpoints каждые 250 updates, не вычисляя
+и не просматривая validation quality. После пополнения сначала создать все 32
+reference designs, затем одним frozen evaluation pass оценить все сохранённые
+RAW/PHYSICS checkpoints и применить preregistered selector/bootstrap. Никакой
+early stopping или checkpoint fishing невозможны. Эта разбивка меняет только
+момент evaluation, но не model initialization, procedural task stream,
+architecture, objective, schedules, thresholds или solver authority. ID/OOD
+test registries остаются закрыты.
