@@ -3,18 +3,24 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import subprocess
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import torch
 
 from waveforge.ml.mt3_training import (
+    MT3QualificationRun,
+    MT3QualificationVerdict,
     MT3RunConfig,
     MT3RunStatus,
     MT3Variant,
     run_mt3_training,
+    select_mt3_learning_rate,
 )
 
 MODEL_SEED = 2026092311
@@ -23,10 +29,114 @@ UPDATES = 4000
 BATCH_SIZE = 4
 CHECKPOINT_INTERVAL = 500
 _VARIANTS: tuple[MT3Variant, ...] = ("FIELD_UNET", "SENS_UNET")
+_QUALIFICATION_LEARNING_RATES = (1.0e-4, 3.0e-4)
+_QUALIFICATION_MODEL_SEEDS = (2026092303, 2026092304)
+_QUALIFICATION_TASK_SEED_BASE = 2026092305
 
 
 class MT3ExecutionError(RuntimeError):
     """Fail-closed provenance, ordering, or campaign error."""
+
+
+@dataclass(frozen=True)
+class MT3QualificationSpec:
+    """One of the four prospectively registered LR/seed runs."""
+
+    learning_rate: float
+    model_seed: int
+    task_stream_seed: int
+
+
+@dataclass(frozen=True)
+class MT3QualificationEvaluation:
+    """Solver-consistent validation result for one 500-update run."""
+
+    valid: bool
+    median_best4_r25_gap: float
+    p90_best4_r25_gap: float
+
+
+QualificationTrainer = Callable[[MT3QualificationSpec, Path], Path]
+QualificationEvaluator = Callable[
+    [Path, MT3QualificationSpec], MT3QualificationEvaluation
+]
+
+
+def qualification_specs() -> tuple[MT3QualificationSpec, ...]:
+    """Return the exact ordered two-rate/two-seed qualification matrix."""
+    return tuple(
+        MT3QualificationSpec(
+            learning_rate=learning_rate,
+            model_seed=model_seed,
+            task_stream_seed=_QUALIFICATION_TASK_SEED_BASE + seed_index,
+        )
+        for learning_rate in _QUALIFICATION_LEARNING_RATES
+        for seed_index, model_seed in enumerate(_QUALIFICATION_MODEL_SEEDS)
+    )
+
+
+def _atomic_csv(path: Path, rows: list[dict[str, object]]) -> None:
+    if not rows:
+        raise ValueError("qualification metrics cannot be empty")
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    temporary.replace(path)
+
+
+def run_qualification_campaign(
+    *,
+    output_root: Path,
+    trainer: QualificationTrainer,
+    evaluator: QualificationEvaluator,
+    source_sha: str,
+    protocol_bundle_sha: str,
+) -> MT3QualificationVerdict:
+    """Run exactly four registered qualification jobs and freeze their verdict."""
+    if not _is_sha(source_sha):
+        raise ValueError("source_sha must be a lowercase 40-character Git SHA")
+    if len(protocol_bundle_sha) != 64 or any(
+        character not in "0123456789abcdef" for character in protocol_bundle_sha
+    ):
+        raise ValueError("protocol bundle hash must be lowercase SHA-256")
+    output_root.mkdir(parents=True, exist_ok=True)
+    rows: list[MT3QualificationRun] = []
+    for spec in qualification_specs():
+        label = f"lr_{spec.learning_rate:.0e}_seed_{spec.model_seed}"
+        checkpoint = trainer(spec, output_root / label)
+        if not checkpoint.is_file():
+            raise MT3ExecutionError("qualification trainer returned no checkpoint")
+        evaluation = evaluator(checkpoint, spec)
+        rows.append(
+            MT3QualificationRun(
+                learning_rate=spec.learning_rate,
+                model_seed=spec.model_seed,
+                valid=evaluation.valid,
+                median_best4_r25_gap=evaluation.median_best4_r25_gap,
+                p90_best4_r25_gap=evaluation.p90_best4_r25_gap,
+            )
+        )
+    verdict = select_mt3_learning_rate(tuple(rows))
+    metric_rows = [asdict(row) for row in rows]
+    _atomic_csv(output_root / "qualification_metrics.csv", metric_rows)
+    _atomic_json(
+        output_root / "qualification_verdict.json",
+        {
+            "schema_version": 1,
+            "production_authorized": verdict.production_authorized,
+            "selected_learning_rate": verdict.selected_learning_rate,
+            "exact_reason": verdict.reason,
+            "rows": metric_rows,
+            "execution_source_sha": source_sha,
+            "protocol_bundle_sha256": protocol_bundle_sha,
+            "validation_accessed": True,
+            "test_id_accessed": False,
+            "test_ood_accessed": False,
+        },
+    )
+    return verdict
 
 
 def _is_sha(value: str) -> bool:

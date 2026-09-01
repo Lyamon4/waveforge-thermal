@@ -1073,3 +1073,21 @@ benchmark workers заняли `144 s` против оценочных `145.9971
 Machine authorization остаётся `false`; long training не запускалась,
 ID/OOD не открывались. После копирования всех raw benchmark artifacts instance
 `49528871` подтверждена в состоянии `exited/stopped`.
+
+## 2026-09-01 — MT3 bounded qualification execution boundary
+
+До первого MT3 qualification run добавлена отдельная fail-closed команда для
+prospective two-LR/two-seed qualification. Она запускает ровно четыре
+зарегистрированных `SENS_UNET` run по 500 updates, сохраняет resumable
+checkpoints каждые 100 updates и оценивает каждый final checkpoint на всех 32
+development layouts. Candidate и frozen Adam-600 reference сравниваются одним
+independent SciPy64 solver; после четырёх forward-only candidate scores ровно
+один selected candidate получает 25 refinement updates. ID/OOD registries не
+открываются.
+
+Добавлены atomic `qualification_metrics.csv` и
+`qualification_verdict.json`, exact run/protocol identity и budget guard.
+Qualification не авторизует полный 15.8-hour campaign автоматически: она лишь
+выбирает registered LR; дальнейший paid stage требует отдельной prospective
+authorization. До commit и полного regression-suite оплачиваемая A100 не
+запускалась. Локальная проверка: `599 passed`; Ruff lint/format: PASS.
