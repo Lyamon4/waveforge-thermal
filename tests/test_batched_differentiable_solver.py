@@ -3,11 +3,17 @@ from __future__ import annotations
 import pytest
 import torch
 
+import waveforge.design.batched_differentiable_solver as batched_solver_module
 from waveforge.design.batched_differentiable_solver import (
     BatchedSolveTrace,
+    _apply_assembled_batched_operator,
+    _apply_batched_operator,
+    _assemble_batched_operator,
+    _diagnostics_to_host,
     solve_steady_implicit_batched,
 )
 from waveforge.design.differentiable_solver import SolveTrace, solve_steady_implicit
+from waveforge.physics.batched_cg import BatchedCGDiagnostics
 from waveforge.physics.cg import CGConfig
 from waveforge.physics.grid import Grid2D
 
@@ -21,6 +27,94 @@ def _problem(batch: int, grid_size: int = 12) -> tuple[torch.Tensor, torch.Tenso
         (batch, 3, grid_size, grid_size), generator=generator, dtype=torch.float64
     )
     return conductivity, sources
+
+
+def test_assembled_batched_operator_matches_recomputed_operator_and_gradient() -> None:
+    grid = Grid2D(nx=12, ny=12)
+    generator = torch.Generator().manual_seed(2026092401)
+    temperature = torch.rand((3, 2, 12, 12), generator=generator, dtype=torch.float64)
+    conductivity = 1.0 + 19.0 * torch.rand(
+        (3, 12, 12), generator=generator, dtype=torch.float64
+    )
+    original_temperature = temperature.clone().requires_grad_(True)
+    original_conductivity = conductivity.clone().requires_grad_(True)
+    assembled_temperature = temperature.clone().requires_grad_(True)
+    assembled_conductivity = conductivity.clone().requires_grad_(True)
+
+    original = _apply_batched_operator(
+        original_temperature,
+        original_conductivity,
+        grid,
+    )
+    coefficients = _assemble_batched_operator(assembled_conductivity, grid)
+    assembled = _apply_assembled_batched_operator(
+        assembled_temperature,
+        coefficients,
+    )
+    original_gradients = torch.autograd.grad(
+        original.square().sum(),
+        (original_temperature, original_conductivity),
+    )
+    assembled_gradients = torch.autograd.grad(
+        assembled.square().sum(),
+        (assembled_temperature, assembled_conductivity),
+    )
+
+    torch.testing.assert_close(assembled, original, rtol=0.0, atol=0.0)
+    for actual, expected in zip(assembled_gradients, original_gradients, strict=True):
+        torch.testing.assert_close(actual, expected, rtol=0.0, atol=0.0)
+
+
+def test_batched_forward_assembles_operator_only_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    conductivity, sources = _problem(2, grid_size=8)
+    grid = Grid2D(nx=8, ny=8)
+    original = batched_solver_module._assemble_batched_operator
+    calls = 0
+
+    def counted_assembly(
+        value: torch.Tensor,
+        target_grid: Grid2D,
+    ) -> object:
+        nonlocal calls
+        calls += 1
+        return original(value, target_grid)
+
+    monkeypatch.setattr(
+        batched_solver_module,
+        "_assemble_batched_operator",
+        counted_assembly,
+    )
+
+    solve_steady_implicit_batched(
+        conductivity,
+        sources,
+        grid,
+        config=CGConfig(relative_residual_tolerance=1.0e-8),
+    )
+
+    assert calls == 1
+
+
+def test_batched_diagnostics_transfer_preserves_complete_row_major_values() -> None:
+    diagnostics = BatchedCGDiagnostics(
+        iterations=torch.tensor([[11, 12, 13], [21, 22, 23]], dtype=torch.int64),
+        relative_residuals=torch.tensor(
+            [[1.0e-7, 2.0e-7, 3.0e-7], [4.0e-7, 5.0e-7, 6.0e-7]],
+            dtype=torch.float64,
+        ),
+        converged=torch.tensor([[True, False, True], [False, True, False]]),
+    )
+
+    iterations, residuals, converged = _diagnostics_to_host(diagnostics)
+
+    assert iterations == [[11, 12, 13], [21, 22, 23]]
+    assert residuals == [
+        [1.0e-7, 2.0e-7, 3.0e-7],
+        [4.0e-7, 5.0e-7, 6.0e-7],
+    ]
+    assert converged == [[True, False, True], [False, True, False]]
 
 
 @pytest.mark.parametrize("batch", [1, 2, 4, 8])

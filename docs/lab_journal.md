@@ -1013,3 +1013,32 @@ Machine authorization therefore equals `false` with reason codes
 `PROJECTED_RUNTIME_EXCEEDS_LOCK` and `PROJECTED_COST_EXCEEDS_CREDIT_GUARD`.
 No qualification or production training was launched. Benchmark JSON files
 were copied locally, and the paid A100 was confirmed stopped immediately.
+
+## 2026-09-01 — MT3 solver execution acceleration before re-benchmark
+
+После первого MT3 A100 runtime rejection выполнен отдельный pre-result
+performance pass. Qualification, production, validation, ID и OOD не
+запускались. Architecture, inputs, objective, task stream, seeds, candidate
+count, one-candidate refinement rule, FP64 physics tolerance и scientific
+thresholds не изменялись.
+
+Root-cause inspection показал два безопасно устранимых источника host/device
+overhead. Fixed-within-solve face conductances заново вычислялись на каждой
+CG-итерации, хотя conductivity внутри линейного solve неизменна. Кроме того,
+solver diagnostics переносились с CUDA на host по одному scalar `.item()`.
+Теперь face/bottom conductances собираются один раз на forward или adjoint
+solve и переиспользуются operator application и Jacobi diagonal; diagnostic
+tensors переносятся на host тремя bulk transfers.
+
+Новый exact-equivalence test сравнивает old recomputed и new assembled
+operator outputs и gradients с `rtol=0`, `atol=0`. Отдельный test доказал, что
+малый batched forward теперь выполняет одну assembly вместо наблюдавшихся 43.
+CPU-only 16-design/three-scenario operator microbenchmark дал
+`3.331225301873948x` для изменённого stencil участка; эта цифра не считается
+A100 campaign speedup. Связанный suite: `59 passed`; полный regression suite:
+`594 passed`; full Ruff lint/format: PASS.
+
+Следующее платное действие ограничивается повторным A100 benchmark полного
+training update и qualification one-vs-two independent workers. Long training
+остаётся запрещённым до нового machine-readable runtime/cost authorization.
+Test ID/OOD остаются unopened.

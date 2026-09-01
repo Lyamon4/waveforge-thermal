@@ -28,6 +28,15 @@ class BatchedSolveRecord:
     device: str
 
 
+def _diagnostics_to_host(
+    diagnostics: BatchedCGDiagnostics,
+) -> tuple[list[list[int]], list[list[float]], list[list[bool]]]:
+    iterations = diagnostics.iterations.detach().cpu().tolist()
+    residuals = diagnostics.relative_residuals.detach().cpu().tolist()
+    converged = diagnostics.converged.detach().cpu().tolist()
+    return iterations, residuals, converged
+
+
 @dataclass
 class BatchedSolveTrace:
     records: list[BatchedSolveRecord] = field(default_factory=list)
@@ -38,32 +47,67 @@ class BatchedSolveTrace:
         diagnostics: BatchedCGDiagnostics,
         tensor: Tensor,
     ) -> None:
-        for batch_index in range(diagnostics.iterations.shape[0]):
-            for scenario_index in range(diagnostics.iterations.shape[1]):
+        iterations, residuals, converged = _diagnostics_to_host(diagnostics)
+        for batch_index in range(len(iterations)):
+            for scenario_index in range(len(iterations[batch_index])):
                 self.records.append(
                     BatchedSolveRecord(
                         role=role,
                         batch_index=batch_index,
                         scenario_index=scenario_index,
-                        iterations=int(
-                            diagnostics.iterations[batch_index, scenario_index].item()
-                        ),
-                        relative_residual=float(
-                            diagnostics.relative_residuals[
-                                batch_index, scenario_index
-                            ].item()
-                        ),
-                        converged=bool(
-                            diagnostics.converged[batch_index, scenario_index].item()
-                        ),
+                        iterations=int(iterations[batch_index][scenario_index]),
+                        relative_residual=float(residuals[batch_index][scenario_index]),
+                        converged=bool(converged[batch_index][scenario_index]),
                         dtype=str(tensor.dtype).removeprefix("torch."),
                         device=str(tensor.device),
                     )
                 )
 
 
+@dataclass(frozen=True)
+class _BatchedOperatorCoefficients:
+    x_conductance: Tensor
+    y_conductance: Tensor
+    bottom_conductance: Tensor
+
+
 def _harmonic(first: Tensor, second: Tensor) -> Tensor:
     return 2.0 * first * second / (first + second + _HARMONIC_EPSILON)
+
+
+def _assemble_batched_operator(
+    conductivity: Tensor,
+    grid: Grid2D,
+) -> _BatchedOperatorCoefficients:
+    return _BatchedOperatorCoefficients(
+        x_conductance=(
+            _harmonic(conductivity[:, :, :-1], conductivity[:, :, 1:]) / grid.dx**2
+        ),
+        y_conductance=(
+            _harmonic(conductivity[:, :-1, :], conductivity[:, 1:, :]) / grid.dy**2
+        ),
+        bottom_conductance=2.0 * conductivity[:, 0, :] / grid.dy**2,
+    )
+
+
+def _apply_assembled_batched_operator(
+    temperature: Tensor,
+    coefficients: _BatchedOperatorCoefficients,
+) -> Tensor:
+    result = torch.zeros_like(temperature)
+    x_conductance = coefficients.x_conductance[:, None, :, :]
+    x_jump = temperature[:, :, :, :-1] - temperature[:, :, :, 1:]
+    result[:, :, :, :-1] += x_conductance * x_jump
+    result[:, :, :, 1:] -= x_conductance * x_jump
+
+    y_conductance = coefficients.y_conductance[:, None, :, :]
+    y_jump = temperature[:, :, :-1, :] - temperature[:, :, 1:, :]
+    result[:, :, :-1, :] += y_conductance * y_jump
+    result[:, :, 1:, :] -= y_conductance * y_jump
+
+    bottom = coefficients.bottom_conductance[:, None, :]
+    result[:, :, 0, :] += bottom * temperature[:, :, 0, :]
+    return result
 
 
 def _apply_batched_operator(
@@ -71,40 +115,36 @@ def _apply_batched_operator(
     conductivity: Tensor,
     grid: Grid2D,
 ) -> Tensor:
-    result = torch.zeros_like(temperature)
-    x_conductance = (
-        _harmonic(conductivity[:, :, :-1], conductivity[:, :, 1:]) / grid.dx**2
-    )[:, None, :, :]
-    x_jump = temperature[:, :, :, :-1] - temperature[:, :, :, 1:]
-    result[:, :, :, :-1] += x_conductance * x_jump
-    result[:, :, :, 1:] -= x_conductance * x_jump
-
-    y_conductance = (
-        _harmonic(conductivity[:, :-1, :], conductivity[:, 1:, :]) / grid.dy**2
-    )[:, None, :, :]
-    y_jump = temperature[:, :, :-1, :] - temperature[:, :, 1:, :]
-    result[:, :, :-1, :] += y_conductance * y_jump
-    result[:, :, 1:, :] -= y_conductance * y_jump
-
-    bottom = (2.0 * conductivity[:, 0, :] / grid.dy**2)[:, None, :]
-    result[:, :, 0, :] += bottom * temperature[:, :, 0, :]
-    return result
+    return _apply_assembled_batched_operator(
+        temperature,
+        _assemble_batched_operator(conductivity, grid),
+    )
 
 
-def _batched_diagonal(conductivity: Tensor, grid: Grid2D) -> Tensor:
-    diagonal = torch.zeros_like(conductivity)
-    x_conductance = (
-        _harmonic(conductivity[:, :, :-1], conductivity[:, :, 1:]) / grid.dx**2
+def _diagonal_from_coefficients(
+    coefficients: _BatchedOperatorCoefficients,
+) -> Tensor:
+    x_conductance = coefficients.x_conductance
+    y_conductance = coefficients.y_conductance
+    diagonal = torch.zeros(
+        (
+            x_conductance.shape[0],
+            y_conductance.shape[1] + 1,
+            x_conductance.shape[2] + 1,
+        ),
+        dtype=x_conductance.dtype,
+        device=x_conductance.device,
     )
     diagonal[:, :, :-1] += x_conductance
     diagonal[:, :, 1:] += x_conductance
-    y_conductance = (
-        _harmonic(conductivity[:, :-1, :], conductivity[:, 1:, :]) / grid.dy**2
-    )
     diagonal[:, :-1, :] += y_conductance
     diagonal[:, 1:, :] += y_conductance
-    diagonal[:, 0, :] += 2.0 * conductivity[:, 0, :] / grid.dy**2
+    diagonal[:, 0, :] += coefficients.bottom_conductance
     return diagonal
+
+
+def _batched_diagonal(conductivity: Tensor, grid: Grid2D) -> Tensor:
+    return _diagonal_from_coefficients(_assemble_batched_operator(conductivity, grid))
 
 
 def _validate_inputs(conductivity: Tensor, sources: Tensor, grid: Grid2D) -> None:
@@ -136,10 +176,11 @@ class _ImplicitBatchedSteadySolve(torch.autograd.Function):
         config: CGConfig,
         trace: BatchedSolveTrace,
     ) -> Tensor:
-        diagonal = _batched_diagonal(conductivity, grid)[:, None].expand_as(sources)
+        coefficients = _assemble_batched_operator(conductivity, grid)
+        diagonal = _diagonal_from_coefficients(coefficients)[:, None].expand_as(sources)
 
         def apply(temperature: Tensor) -> Tensor:
-            return _apply_batched_operator(temperature, conductivity, grid)
+            return _apply_assembled_batched_operator(temperature, coefficients)
 
         result = solve_batched_cg(apply, diagonal, sources, config)
         trace.append("forward", result.diagnostics, result.solution)
@@ -159,20 +200,26 @@ class _ImplicitBatchedSteadySolve(torch.autograd.Function):
         conductivity, temperature = ctx.saved_tensors
         if not torch.isfinite(upstream).all():
             raise FloatingPointError("batched adjoint RHS contains NaN or Inf")
-        diagonal = _batched_diagonal(conductivity, ctx.grid)[:, None].expand_as(
+        coefficients = _assemble_batched_operator(conductivity, ctx.grid)
+        diagonal = _diagonal_from_coefficients(coefficients)[:, None].expand_as(
             upstream
         )
 
         def apply(value: Tensor) -> Tensor:
-            return _apply_batched_operator(value, conductivity, ctx.grid)
+            return _apply_assembled_batched_operator(value, coefficients)
 
         adjoint = solve_batched_cg(apply, diagonal, upstream, ctx.config)
         ctx.trace.append("adjoint", adjoint.diagnostics, adjoint.solution)
 
         with torch.enable_grad():
             differentiable_conductivity = conductivity.detach().requires_grad_(True)
-            action = _apply_batched_operator(
-                temperature.detach(), differentiable_conductivity, ctx.grid
+            differentiable_coefficients = _assemble_batched_operator(
+                differentiable_conductivity,
+                ctx.grid,
+            )
+            action = _apply_assembled_batched_operator(
+                temperature.detach(),
+                differentiable_coefficients,
             )
             functional = -torch.sum(adjoint.solution.detach() * action)
             (conductivity_gradient,) = torch.autograd.grad(
