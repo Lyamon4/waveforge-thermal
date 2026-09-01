@@ -22,6 +22,7 @@ architecture:
   grid: [64, 64]
   condition_channels: 5
   candidate_count: 4
+  parameter_count: 2918724
   widths: [32, 64, 128, 256]
   normalization: group_norm_8
   activation: SiLU
@@ -133,4 +134,3 @@ split_access:
   validation: development_only
   test_id: sealed
   test_ood: sealed
-

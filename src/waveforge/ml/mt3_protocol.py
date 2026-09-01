@@ -18,6 +18,7 @@ class _Section(BaseModel):
 class ArchitectureProtocol(_Section):
     condition_channels: Literal[5]
     candidate_count: Literal[4]
+    parameter_count: Literal[2918724]
 
 
 class RefinementProtocol(_Section):

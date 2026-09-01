@@ -21,6 +21,7 @@ def test_mt3_protocol_locks_single_candidate_refinement() -> None:
     assert protocol.scope == "mt3_sensitivity_conditioned_learned_warmstart"
     assert protocol.architecture.condition_channels == 5
     assert protocol.architecture.candidate_count == 4
+    assert protocol.architecture.parameter_count == 2_918_724
     assert protocol.refinement.candidate_scores == 4
     assert protocol.refinement.selected_candidates == 1
     assert protocol.refinement.primary_steps == 25
