@@ -1,0 +1,136 @@
+schema_version: 1
+scope: mt3_sensitivity_conditioned_learned_warmstart
+status: design_approved_implementation_only
+
+task_distribution:
+  grid_size: 64
+  source_count: 3
+  source_size: 0.20
+  source_power: 1.0
+  primary_x_range: [0.20, 0.80]
+  primary_y_range: [0.55, 0.82]
+  sink: bottom_cell_row
+  task_stream_seed: 2026092312
+  batch_size: 4
+  strata:
+    horizontal_span_threshold: 0.46
+    vertical_span_threshold: 0.21
+    batch_composition: [compact, wide_horizontal, vertically_spread, mixed]
+
+architecture:
+  name: compact_four_head_unet
+  grid: [64, 64]
+  condition_channels: 5
+  candidate_count: 4
+  widths: [32, 64, 128, 256]
+  normalization: group_norm_8
+  activation: SiLU
+  padding_mode: reflect
+  output: unfiltered_material_logits
+
+conditioning:
+  variants: [FIELD_UNET, SENS_UNET]
+  fixed_temperature_scale: 0.900613256638055
+  initial_logits: zeros
+  initial_projection_beta: 8.0
+  initial_material_fraction: 0.25
+  initial_smooth_max_alpha: 500.0
+  benefit_formula: negative_thermal_objective_gradient_wrt_unfiltered_logits
+  benefit_normalization: divide_by_mean_absolute_then_clamp
+  benefit_clamp: [-8.0, 8.0]
+
+candidate_training:
+  softmin_temperature: 0.01
+  diversity_weight: 0.002
+  diversity_distance_scale: 0.10
+  candidate_pair_count: 6
+
+refinement:
+  candidate_scores: 4
+  selected_candidates: 1
+  selection_evaluator: independent_scipy_64_binary_worst_tmax
+  tie_break: lower_numeric_head
+  primary_steps: 25
+  secondary_steps: 50
+  optimizer: Adam
+  learning_rate: 0.01
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  projection_beta: 8.0
+  smooth_max_alpha: 500.0
+  tv_weight: 0.001
+  binarization_weight: 0.02
+
+training:
+  model_seed: 2026092311
+  task_stream_seed: 2026092312
+  batch_size: 4
+  updates: 4000
+  checkpoint_interval: 500
+  optimizer: Adam
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  weight_decay: 0.0
+  gradient_clip_norm: 1.0
+  base_learning_rate_candidates: [1.0e-4, 3.0e-4]
+  stages:
+    - start_inclusive: 0
+      stop_exclusive: 800
+      projection_beta: 2.0
+      smooth_max_alpha: 100.0
+      binarization_weight: 0.0
+      tv_weight: 0.001
+      learning_rate_multiplier: 1.0
+    - start_inclusive: 800
+      stop_exclusive: 1600
+      projection_beta: 4.0
+      smooth_max_alpha: 250.0
+      binarization_weight: 0.01
+      tv_weight: 0.001
+      learning_rate_multiplier: 0.3
+    - start_inclusive: 1600
+      stop_exclusive: 4000
+      projection_beta: 8.0
+      smooth_max_alpha: 500.0
+      binarization_weight: 0.02
+      tv_weight: 0.001
+      learning_rate_multiplier: 0.1
+
+qualification:
+  model_seeds: [2026092303, 2026092304]
+  task_stream_seed_base: 2026092305
+  updates: 500
+  selection_order:
+    - more_valid_runs
+    - lower_median_best4_r25_gap
+    - lower_p90_best4_r25_gap
+    - smaller_learning_rate
+
+validation:
+  task_count: 32
+  task_seed: 2026083141
+  candidate_selection_evaluator: independent_scipy_64
+  checkpoint_evaluator: independent_scipy_64
+  final_evaluator: independent_scipy_256
+  primary_method: SENS_UNET_BEST4_R25
+  development_gate:
+    median_gap_maximum: 0.02
+    p90_gap_maximum: 0.07
+    worst_gap_maximum: 0.20
+    wins_minimum: 8
+
+runtime:
+  current_credit_usd: 2.0
+  benchmark_cost_maximum_usd: 0.20
+  campaign_cost_maximum_usd: 1.70
+  campaign_hours_maximum: 2.5
+  safety_buffer_usd: 0.10
+  long_training_authorized: false
+
+split_access:
+  validation: development_only
+  test_id: sealed
+  test_ood: sealed
+
