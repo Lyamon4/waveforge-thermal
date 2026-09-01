@@ -1,0 +1,15 @@
+{
+  "accepted": true,
+  "binary_design_exact_match": true,
+  "candidate_backend": "scenario_vectorized_b1_implicit",
+  "execution_source_sha": "40f6e3cffab5994ed728016931dc887e1699f19c",
+  "protocol_bundle_sha256": "567606c870720ca48001868efa9db1c6918e42345a1892932826c1ab0691d103",
+  "qualification_task_index": 0,
+  "schema_version": 1,
+  "scipy64_tmax_absolute_error": 0.0,
+  "scipy64_tmax_tolerance": 1e-12,
+  "selected_backend": "scenario_vectorized_b1_implicit",
+  "sequential_backend": "legacy_sequential_implicit",
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}

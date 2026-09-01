@@ -4,9 +4,11 @@ import numpy as np
 
 from waveforge.ml.multitask_tasks import SourceLayoutTask
 from waveforge.reporting.mt2b import (
+    MT2BReportPaths,
     _architecture_figure,
     _conditioning_figure,
     _save_figure,
+    _training_figure,
     geometry_stratum,
     illustrative_task_indices,
 )
@@ -50,3 +52,26 @@ def test_static_paper_figures_render_in_all_locked_formats(tmp_path) -> None:
         paths = _save_figure(figure, tmp_path, stem, title=stem)
         assert {path.suffix for path in paths} == {".png", ".svg", ".pdf"}
         assert all(path.stat().st_size > 1000 for path in paths)
+
+
+def test_training_figure_accepts_multitask_metrics_schema(tmp_path) -> None:
+    training_root = tmp_path / "training"
+    header = "update,mean_total_objective,mean_exact_tmax\n"
+    records = "0,0.7,0.8\n1,0.6,0.7\n"
+    for variant in ("raw", "physics"):
+        directory = training_root / variant
+        directory.mkdir(parents=True)
+        (directory / "training_metrics.csv").write_text(
+            header + records,
+            encoding="utf-8",
+        )
+    paths = MT2BReportPaths(
+        training_root=training_root,
+        reference_root=tmp_path / "references",
+        evaluation_root=tmp_path / "evaluation",
+        output_root=tmp_path / "output",
+    )
+
+    figure = _training_figure(paths)
+
+    assert len(figure.axes) == 2

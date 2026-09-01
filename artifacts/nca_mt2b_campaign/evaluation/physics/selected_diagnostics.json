@@ -1,0 +1,17 @@
+{
+  "binary_diversity": {
+    "mean_hamming_fraction": 0.16916090442288306,
+    "mean_jaccard_similarity": 0.5024383354534508,
+    "pair_count": 496
+  },
+  "condition_causality": {
+    "matched_win_count": 30,
+    "matched_win_fraction": 0.9375,
+    "median_relative_matched_advantage": 0.32307640236794455,
+    "pass_gate": true,
+    "task_count": 32
+  },
+  "shuffle_rule": "cyclic_next_validation_layout",
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}

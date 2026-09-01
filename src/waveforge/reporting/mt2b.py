@@ -232,9 +232,13 @@ def _training_figure(paths: MT2BReportPaths) -> Figure:
         )
         x = frame["update"]
         objective = (
-            frame["total_objective"].rolling(101, center=True, min_periods=1).median()
+            frame["mean_total_objective"]
+            .rolling(101, center=True, min_periods=1)
+            .median()
         )
-        tmax = frame["exact_tmax"].rolling(101, center=True, min_periods=1).median()
+        tmax = (
+            frame["mean_exact_tmax"].rolling(101, center=True, min_periods=1).median()
+        )
         axes[0].plot(x, objective, color=color, linewidth=1.8, label=variant)
         axes[1].plot(x, tmax, color=color, linewidth=1.8, label=variant)
     for axis in axes:

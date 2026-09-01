@@ -918,3 +918,60 @@ early stopping или checkpoint fishing невозможны. Эта разби
 момент evaluation, но не model initialization, procedural task stream,
 architecture, objective, schedules, thresholds или solver authority. ID/OOD
 test registries остаются закрыты.
+
+## 2026-09-01 — NCA-MT2B final development-ablation result
+
+Оба заранее зарегистрированных variants завершили все `2000/2000` updates со
+статусом `PASS`. RAW и PHYSICS стартовали из одного model state SHA-256
+`a5cf6d9dbf510b3bdc11890507fd23bcbbcdb3c2481b3ab7633dbe520b7d2ac8`,
+получали один deterministic procedural task stream и различались только
+conditioning representation. Numerical invalidity, material-budget failure и
+test-split access отсутствовали.
+
+До frozen evaluation построены все `32/32` 600-step direct-gradient references.
+Ускоренный `scenario_vectorized_b1_implicit` backend был разрешён только после
+prospective qualification: binary design совпал с legacy sequential backend
+точно, а SciPy64 `Tmax` absolute error был `0.0` при tolerance `1e-12`.
+Reference registry имеет status `PASS`; каждый design содержит ровно
+`1024/4096 = 25%` high-k cells. Candidate NCA и gradient-reference designs
+оценивались одним independent SciPy64 numerical path.
+
+Gap-first selector независимо выбрал checkpoint `001750` для обеих моделей.
+RAW median gap к 600-step gradient равен `0.229346524167596`, P90
+`0.36318579135887175`, worst `0.4719211746244037`. PHYSICS median gap равен
+`0.3285418348307405`, P90 `0.5071881784706772`, worst
+`1.5334244285892722`. PHYSICS уменьшила gap только на `7/32` paired layouts;
+median paired delta `gap_RAW - gap_PHYSICS` равен
+`-0.07729700741965416`. Locked 10,000-resample percentile bootstrap с seed
+`2026092203` дал 95% interval `[-0.19090700675461308,
+-0.03740863318943205]`. Поэтому machine verdict честно равен
+`PHYSICS_NO_GO`: каждый paired conditioning-effect gate провален, а абсолютное
+quality также выше conditional limit.
+
+Отрицательный quality result не объясняется игнорированием task conditioning.
+Matched conditioning победил cyclic shuffle в `32/32` layouts для RAW и
+`30/32` для PHYSICS. Mean pairwise binary Hamming fractions равны
+`0.2615622243573589` и `0.16916090442288306`, соответственно. Следовательно,
+обе frozen NCA генерируют task-dependent designs, но простые low-k
+`T_mean/T_max` channels создали менее качественное shared design rule, чем raw
+source/sink representation.
+
+Все выбранные REFERENCE, RAW и PHYSICS designs (`96` total) дополнительно
+пересчитаны independent SciPy на `256x256`; primary SciPy64 verdict при этом не
+изменялся. Sealed ID и OOD test splits не открывались, поэтому результат имеет
+scope development validation ablation, а не final generalization claim.
+
+Frozen inference benchmark на той же A100 измерил PHYSICS median single-task
+latency `0.04881370905786753 s` и batch-32 amortized latency
+`0.015570046845823526 s/task`. Median 600-step gradient runtime равен
+`482.40455345623195 s`, то есть secondary measured batch-amortized speedup
+`30982.858191311803x`. Эта скорость не компенсирует failed quality gate и не
+представляется как превосходство над gradient optimization.
+
+Remote training, references, verdict и benchmark artifacts синхронизированы
+локально; critical frozen-checkpoint hashes совпали. Vast instance остановлена
+после копирования. Paper package содержит 16 figures в PNG/SVG/PDF, полный
+32-layout atlas, independent 256x256 temperature maps, Russian guide и единый
+PDF-deck. Reporting-only regression исправил несовпадение real multi-task CSV
+schema (`mean_total_objective`, `mean_exact_tmax`) со старыми single-task
+column names; scientific artifacts и verdict не изменялись.

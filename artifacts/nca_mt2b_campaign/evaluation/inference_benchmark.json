@@ -1,0 +1,41 @@
+{
+  "benchmark_is_secondary_diagnostic": true,
+  "frozen_verdict_status": "PHYSICS_NO_GO",
+  "gradient_reference_median_seconds": 482.40455345623195,
+  "gradient_reference_range_seconds": [
+    450.554842883721,
+    972.3306936174631
+  ],
+  "gradient_reference_steps": 600,
+  "physics_batch32_amortized_speedup_vs_gradient_median": 30982.858191311803,
+  "schema_version": 1,
+  "status": "PASS",
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "variants": {
+    "PHYSICS": {
+      "batch32_amortized_seconds_per_task": 0.015570046845823526,
+      "batch32_median_seconds": 0.49824149906635284,
+      "batch32_repeats": 3,
+      "single_task_median_seconds": 0.04881370905786753,
+      "single_task_range_seconds": [
+        0.04575461521744728,
+        0.050734441727399826
+      ],
+      "single_task_samples": 8,
+      "timing_scope": "checkpoint_load_plus_conditioning_plus_64_step_rollout_plus_projection"
+    },
+    "RAW": {
+      "batch32_amortized_seconds_per_task": 0.009301984042394906,
+      "batch32_median_seconds": 0.297663489356637,
+      "batch32_repeats": 3,
+      "single_task_median_seconds": 0.030420638620853424,
+      "single_task_range_seconds": [
+        0.02687786892056465,
+        0.5087110120803118
+      ],
+      "single_task_samples": 8,
+      "timing_scope": "checkpoint_load_plus_conditioning_plus_64_step_rollout_plus_projection"
+    }
+  }
+}

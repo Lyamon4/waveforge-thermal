@@ -1,0 +1,12 @@
+{
+  "completed_updates": 2000,
+  "last_checkpoint": "checkpoint_002000.pt",
+  "model_state_sha256": "708754bb4acdcf372276a620954250b3f1b030928715eeacc187fab0e6b5fa45",
+  "requested_updates": 2000,
+  "schema_version": 1,
+  "status": "PASS",
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "validation_accessed": false,
+  "variant": "PHYSICS"
+}

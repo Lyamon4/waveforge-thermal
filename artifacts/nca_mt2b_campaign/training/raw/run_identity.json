@@ -1,0 +1,16 @@
+{
+  "batch_size": 4,
+  "checkpoint_interval": 250,
+  "execution_source_sha": "faeaae2c9974313d6dd8d95e6b775b6e3dd3da9a",
+  "experiment": "NCA-MT2B",
+  "model_seed": 2026092202,
+  "protocol_bundle_sha256": "567606c870720ca48001868efa9db1c6918e42345a1892932826c1ab0691d103",
+  "schema_version": 1,
+  "task_stream_seed": 2026092201,
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "training_mode": "scenario_vectorized_sequential",
+  "updates": 2000,
+  "validation_accessed": false,
+  "variant": "RAW"
+}

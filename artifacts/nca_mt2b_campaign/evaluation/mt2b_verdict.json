@@ -1,0 +1,100 @@
+{
+  "bootstrap": {
+    "conditioning_ci_pass": false,
+    "lower_bound": -0.19090700675461308,
+    "median_paired_delta": -0.07729700741965416,
+    "resamples": 10000,
+    "seed": 2026092203,
+    "statistic": "median",
+    "upper_bound": -0.03740863318943205
+  },
+  "diagnostics": {
+    "PHYSICS": {
+      "binary_diversity": {
+        "mean_hamming_fraction": 0.16916090442288306,
+        "mean_jaccard_similarity": 0.5024383354534508,
+        "pair_count": 496
+      },
+      "condition_causality": {
+        "matched_win_count": 30,
+        "matched_win_fraction": 0.9375,
+        "median_relative_matched_advantage": 0.32307640236794455,
+        "pass_gate": true,
+        "task_count": 32
+      },
+      "shuffle_rule": "cyclic_next_validation_layout",
+      "test_id_accessed": false,
+      "test_ood_accessed": false
+    },
+    "RAW": {
+      "binary_diversity": {
+        "mean_hamming_fraction": 0.2615622243573589,
+        "mean_jaccard_similarity": 0.32767703816373506,
+        "pair_count": 496
+      },
+      "condition_causality": {
+        "matched_win_count": 32,
+        "matched_win_fraction": 1.0,
+        "median_relative_matched_advantage": 0.37623679315705777,
+        "pass_gate": true,
+        "task_count": 32
+      },
+      "shuffle_rule": "cyclic_next_validation_layout",
+      "test_id_accessed": false,
+      "test_ood_accessed": false
+    }
+  },
+  "exact_reason": "paired conditioning-effect evidence did not pass every locked gate",
+  "frozen_models": {
+    "PHYSICS": {
+      "checkpoint_sha256": "af416eb1d3eda8fffbd80481ecc234d258f2159fbc185b2514201949f608ed0a",
+      "completed_updates": 1750,
+      "path": "frozen_models/physics_selected.pt"
+    },
+    "RAW": {
+      "checkpoint_sha256": "bab675b96e3894d4300221dd179550a75e5cb7d906771471c7f711b246a92ceb",
+      "completed_updates": 1750,
+      "path": "frozen_models/raw_selected.pt"
+    }
+  },
+  "paired_effect": {
+    "bootstrap_gate": false,
+    "exact_reason": "paired conditioning-effect evidence did not pass every locked gate",
+    "median_paired_gap_reduction": -0.07729700741965416,
+    "median_reduction_gate": false,
+    "paired_win_count": 7,
+    "paired_win_gate": false,
+    "physics_median_gap": 0.3285418348307405,
+    "physics_p90_gap": 0.5071881784706772,
+    "status": "PHYSICS_NO_GO"
+  },
+  "primary_solver": "independent_scipy_64_for_both_candidate_and_reference",
+  "protocol_bundle_sha256": "567606c870720ca48001868efa9db1c6918e42345a1892932826c1ab0691d103",
+  "schema_version": 1,
+  "selected": {
+    "PHYSICS": {
+      "completed_updates": 1750,
+      "invalid_count": 0,
+      "median_absolute_tmax": 0.2136620302146536,
+      "median_relative_gap": 0.3285418348307405,
+      "p90_relative_gap": 0.5071881784706772,
+      "split_name": "validation",
+      "task_count": 32,
+      "worst_relative_gap": 1.5334244285892722
+    },
+    "RAW": {
+      "completed_updates": 1750,
+      "invalid_count": 0,
+      "median_absolute_tmax": 0.20295746411123708,
+      "median_relative_gap": 0.229346524167596,
+      "p90_relative_gap": 0.36318579135887175,
+      "split_name": "validation",
+      "task_count": 32,
+      "worst_relative_gap": 0.4719211746244037
+    }
+  },
+  "status": "PHYSICS_NO_GO",
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "validation_accessed": true
+}

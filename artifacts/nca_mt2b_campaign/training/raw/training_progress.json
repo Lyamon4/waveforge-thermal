@@ -1,0 +1,12 @@
+{
+  "completed_updates": 2000,
+  "last_checkpoint": "checkpoint_002000.pt",
+  "model_state_sha256": "d2060f6cab64d4d5b2b3d7af55d08bb32bb3352b083b0e576a0ce88b17b2f1e7",
+  "requested_updates": 2000,
+  "schema_version": 1,
+  "status": "PASS",
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "validation_accessed": false,
+  "variant": "RAW"
+}

@@ -1,0 +1,14 @@
+{
+  "families": [
+    "REFERENCE",
+    "RAW",
+    "PHYSICS"
+  ],
+  "metrics_sha256": "0e06d180b3b9d6b18e68d84e4d4ab5c9c5b1c21bf366bea572627374b8d114f4",
+  "primary_verdict_unchanged": true,
+  "schema_version": 1,
+  "status": "PASS",
+  "task_count_per_family": 32,
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}
