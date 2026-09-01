@@ -1042,3 +1042,34 @@ A100 campaign speedup. Связанный suite: `59 passed`; полный regre
 training update и qualification one-vs-two independent workers. Long training
 остаётся запрещённым до нового machine-readable runtime/cost authorization.
 Test ID/OOD остаются unopened.
+
+### Same-host A100 re-benchmark
+
+Performance commit `5e05aff7d10d2f67b8c61003d434e6514e059a0b` был
+проверен на A100 SXM4 40 GB instance `49528871`. Remote focused suite:
+`42 passed`. Для устранения host-to-host confounding на той же instance и в
+том же software environment повторён benchmark старого commit `19eb757`.
+
+Paired old -> optimized timings:
+
+- complete training update: `2.3705158210359514 -> 2.0409730710089207 s`
+  (`13.901731728709388%` reduction);
+- initial probe: `1.0278839929960668 -> 0.8753248848952353 s`
+  (`14.842055050993997%`);
+- R25 chain: `25.73269455693662 -> 21.79911075811833 s`
+  (`15.286326855956622%`);
+- R50 chain: `50.443563006818295 -> 42.91802501725033 s`
+  (`14.918728061597797%`).
+
+MMA single-evaluation timing был шумно хуже (`0.9465319407172501 ->
+0.9933333559893072 s`), поэтому full campaign projection сократилась только с
+`17.364893555465258 h / $12.599194990798683` до
+`15.83339407114519 h / $11.488007031619789` на этой instance. Два concurrent
+benchmark workers заняли `144 s` против оценочных `145.9971830090508 s`
+последовательно: лишь `1.0138693264517415x` throughput. Следовательно,
+панельные 30--50% utilization отражали short kernels/host synchronization, а
+не доступную почти двукратную пропускную способность.
+
+Machine authorization остаётся `false`; long training не запускалась,
+ID/OOD не открывались. После копирования всех raw benchmark artifacts instance
+`49528871` подтверждена в состоянии `exited/stopped`.
