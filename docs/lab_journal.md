@@ -1091,3 +1091,37 @@ Qualification не авторизует полный 15.8-hour campaign авто
 выбирает registered LR; дальнейший paid stage требует отдельной prospective
 authorization. До commit и полного regression-suite оплачиваемая A100 не
 запускалась. Локальная проверка: `599 passed`; Ruff lint/format: PASS.
+
+## 2026-09-01 — MT3 V100 qualification verdict and runtime review
+
+На V100 SXM2 32 GB по `$0.2722222222222222/h` завершены ровно четыре
+зарегистрированных qualification runs. Все runs valid, binary cardinality
+составила `1024/4096` для каждой development evaluation, candidate и Adam-600
+reference оценивались одним independent SciPy64 path. Получены median/p90 gaps:
+
+- `lr=1e-4`, seed `2026092303`: `0.009742493913100218 /
+  0.04109979184628067`;
+- `lr=1e-4`, seed `2026092304`: `0.0010674435791191933 /
+  0.02938289015191631`;
+- `lr=3e-4`, seed `2026092303`: `0.019784999411422782 /
+  0.062087944318391604`;
+- `lr=3e-4`, seed `2026092304`: `0.012046072510556546 /
+  0.05343850796857005`.
+
+Machine verdict выбрал `1e-4` по причине
+`lower_median_best4_r25_gap` и установил `production_authorized=true`.
+Qualification verdict SHA-256:
+`dc73105f1bd7b736f832004616f93385c71a10cc78895db0d3a7a8b834c5ac62`.
+Protocol bundle SHA-256 остался
+`be7472bf051add429cb33ccb60a6b45427a6a54260516765901593c4b41a66c8`.
+Remote/local audit проверил `46/46` artifact hashes без расхождений; ID/OOD
+остались unopened.
+
+Measured full-campaign projection на этой V100 составляет
+`11.70130813986063 h / $3.185356104739838`, из которых qualification уже
+выполнена (`1.5492660849458642 h / $0.4217446564574852`). Оставшаяся работа
+оценена в `10.152042054914766 h / $2.763611448282353`. После явного user
+review и пополнения credit до `$6.182984916380013` добавлен отдельный
+prospective runtime-budget amendment. Scientific protocol, selected LR,
+architecture, seeds, 4,000-update budgets, validation, baselines, gates и
+test sealing не изменялись.
