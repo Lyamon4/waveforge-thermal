@@ -975,3 +975,41 @@ Remote training, references, verdict и benchmark artifacts синхронизи
 PDF-deck. Reporting-only regression исправил несовпадение real multi-task CSV
 schema (`mean_total_objective`, `mean_exact_tmax`) со старыми single-task
 column names; scientific artifacts и verdict не изменялись.
+
+## 2026-09-01 — MT3 sensitivity warm-start implementation and A100 cost gate
+
+После MT2B `PHYSICS_NO_GO` prospectively зафиксирован MT3: matched
+`FIELD_UNET`/`SENS_UNET`, compact four-head U-Net, one feasible-state initial
+adjoint probe, teacher-free differentiable-physics loss и обязательный порядок
+inference `4 forward-only SciPy64 scores -> select one -> refine one only`.
+Любой artifact с refinement более чем одного head объявляется
+`MT3_INVALID_RUN`. ID/OOD registries до development gate остаются sealed.
+
+Implementation commit перед платным benchmark:
+`efb332fc7ca1b761cae7247fff8b3008a5abf3c9`. Полный локальный regression-suite
+прошёл: `591 passed`; `ruff check src tests` и `ruff format --check src tests`
+также прошли. NLopt `2.10.0` `LD_MMA` доступен на Windows/Python 3.11 и
+Linux/Python 3.12. Directional finite-difference callback test прошёл, а
+25-evaluation CPU smoke вернул `PASS` и exact `1024/4096` binary budget.
+
+Сохранённые Vast instances оказались недоступны для restart, поэтому для
+bounded benchmark арендован один новый A100 SXM4 40 GB по полной ставке
+`$0.7122222222222222/h`. Remote focused suite прошёл `41/41`. Measured timings:
+
+- complete batch-4 MT3 training update: `1.860705761006102 s`;
+- initial feasible-state forward/adjoint probe: `0.8242803979665041 s`;
+- four-head U-Net forward: `0.004199731047265232 s`;
+- four independent SciPy64 candidate scores: `0.2142981580691412 s`;
+- selected-candidate R25 chain: `20.05764619889669 s`;
+- selected-candidate R50 chain: `39.15585225902032 s`;
+- one MMA objective/gradient evaluation: `0.7294982930179685 s`;
+- peak allocated VRAM: `154721792` bytes.
+
+Full locked campaign projection, including two 500-update/two-LR qualification
+seeds, matched 4000-update FIELD and SENS runs, checkpoint R25/R50 validation
+and 32-layout MMA-600, equals `13.525113572773213 h` or
+`$9.632886444608477`. Current credit guard permits at most `$1.70` and `2.5 h`.
+Machine authorization therefore equals `false` with reason codes
+`PROJECTED_RUNTIME_EXCEEDS_LOCK` and `PROJECTED_COST_EXCEEDS_CREDIT_GUARD`.
+No qualification or production training was launched. Benchmark JSON files
+were copied locally, and the paid A100 was confirmed stopped immediately.

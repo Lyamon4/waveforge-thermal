@@ -1,0 +1,44 @@
+{
+  "authorized": false,
+  "available_credit_usd": 2.0,
+  "components": {
+    "field": {
+      "cost_usd": 1.4724844355616191,
+      "hours": 2.0674508455623357,
+      "seconds": 7442.823044024408
+    },
+    "mma": {
+      "cost_usd": 2.771012775256402,
+      "hours": 3.890657562762499,
+      "seconds": 14006.367225944996
+    },
+    "qualification": {
+      "cost_usd": 1.270577905504777,
+      "hours": 1.7839627378382203,
+      "seconds": 6422.265856217593
+    },
+    "sens": {
+      "cost_usd": 1.4724844355616191,
+      "hours": 2.0674508455623357,
+      "seconds": 7442.823044024408
+    },
+    "validation": {
+      "cost_usd": 2.6463268927240606,
+      "hours": 3.715591581047823,
+      "seconds": 13376.129691772163
+    }
+  },
+  "cost_limit_usd": 1.7,
+  "hourly_usd": 0.7122222222222222,
+  "projected_cost_usd": 9.632886444608477,
+  "projected_hours": 13.525113572773213,
+  "projected_seconds": 48690.40886198357,
+  "reason_codes": [
+    "PROJECTED_RUNTIME_EXCEEDS_LOCK",
+    "PROJECTED_COST_EXCEEDS_CREDIT_GUARD"
+  ],
+  "safety_buffer_usd": 0.1,
+  "schema_version": 1,
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}
