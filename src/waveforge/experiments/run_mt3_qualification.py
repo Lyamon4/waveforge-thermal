@@ -80,6 +80,20 @@ def qualification_gap_summary(
     )
 
 
+def assert_qualification_budget(
+    *,
+    projected_hours: float,
+    hourly_usd: float,
+    credit_usd: float,
+) -> None:
+    """Apply the locked paid-runtime guard with its keyword-only credit input."""
+    assert_paid_runtime_authorized(
+        projected_hours,
+        hourly_usd,
+        credit_usd=credit_usd,
+    )
+
+
 def _atomic_json(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -357,7 +371,11 @@ def run_locked_qualification(
     """Enforce provenance/budget gates and execute only MT3 qualification."""
     if _current_source_sha(root) != source_sha:
         raise MT3ExecutionError("working tree HEAD differs from execution source SHA")
-    assert_paid_runtime_authorized(projected_hours, hourly_usd, credit_usd)
+    assert_qualification_budget(
+        projected_hours=projected_hours,
+        hourly_usd=hourly_usd,
+        credit_usd=credit_usd,
+    )
     protocol_sha = protocol_bundle_sha256(root)
     tasks = validation_tasks()
     _, reference_peaks = _load_references(reference_root, tasks)

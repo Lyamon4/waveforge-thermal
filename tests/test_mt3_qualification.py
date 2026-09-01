@@ -5,6 +5,7 @@ import math
 import pytest
 
 from waveforge.experiments.run_mt3_qualification import (
+    assert_qualification_budget,
     build_qualification_config,
     qualification_gap_summary,
 )
@@ -46,3 +47,11 @@ def test_qualification_gap_summary_fails_closed_on_invalid_value() -> None:
     assert result.valid is False
     assert math.isinf(result.median_best4_r25_gap)
     assert math.isinf(result.p90_best4_r25_gap)
+
+
+def test_qualification_budget_passes_credit_as_keyword_only_argument() -> None:
+    assert_qualification_budget(
+        projected_hours=1.55,
+        hourly_usd=0.2722222222222222,
+        credit_usd=1.73,
+    )
