@@ -4,10 +4,12 @@ import numpy as np
 import pytest
 
 from waveforge.experiments.run_mt3_final_evaluation import (
+    _write_task_manifest,
     exact_binary64,
     neural_equivalent_evaluations,
     strong_single_reference,
 )
+from waveforge.ml.multitask_tasks import build_frozen_splits
 
 
 def test_strong_single_reference_is_prospectively_lower_verified_baseline() -> None:
@@ -45,3 +47,10 @@ def test_primary_neural_accounting_counts_only_one_refinement_chain() -> None:
     assert neural_equivalent_evaluations(refinement_updates=50) == 55
     with pytest.raises(ValueError, match="25 or 50"):
         neural_equivalent_evaluations(refinement_updates=100)
+
+
+def test_opened_task_manifest_is_stable_after_json_round_trip(tmp_path) -> None:
+    splits = build_frozen_splits()
+
+    _write_task_manifest(tmp_path, splits)
+    _write_task_manifest(tmp_path, splits)

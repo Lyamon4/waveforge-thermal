@@ -144,11 +144,19 @@ def _write_task_manifest(output: Path, splits: FrozenTaskSplits) -> None:
         "schema_version": 1,
         "opened_once_for_frozen_final_evaluation": True,
         "test_id": [
-            {"index": index, "task_id": task.task_id, "centers": task.centers}
+            {
+                "index": index,
+                "task_id": task.task_id,
+                "centers": [list(center) for center in task.centers],
+            }
             for index, task in enumerate(splits.test_id)
         ],
         "test_ood": [
-            {"index": index, "task_id": task.task_id, "centers": task.centers}
+            {
+                "index": index,
+                "task_id": task.task_id,
+                "centers": [list(center) for center in task.centers],
+            }
             for index, task in enumerate(splits.test_ood)
         ],
     }
