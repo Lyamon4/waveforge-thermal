@@ -730,6 +730,88 @@ def _grid_transfer_figure(
     return figure, summary
 
 
+def _speed_and_best_result_figure(
+    paths: MT3ReportPaths,
+    selected_update: int,
+    verified: pd.DataFrame,
+) -> Figure:
+    """Compare locked optimization effort and the best verified FIELD result."""
+    pivot = verified.pivot(index="task_index", columns="family", values="worst_peak")
+    required = {"REFERENCE", "FIELD_UNET_BEST4_R25"}
+    if not required.issubset(pivot.columns) or tuple(pivot.index) != tuple(range(32)):
+        raise RuntimeError("speed/result figure requires complete 256 verification")
+    gaps = (pivot["FIELD_UNET_BEST4_R25"] - pivot["REFERENCE"]) / pivot["REFERENCE"]
+    task_index = int(gaps.idxmin())
+    reference_peak = float(pivot.loc[task_index, "REFERENCE"])
+    field_peak = float(pivot.loc[task_index, "FIELD_UNET_BEST4_R25"])
+    improvement = 100.0 * (reference_peak - field_peak) / reference_peak
+    task = validation_tasks()[task_index]
+    reference_design = _reference_design(paths, task_index)
+    field_design = _task_arrays(
+        paths,
+        "FIELD_UNET",
+        selected_update,
+        task_index,
+    )["refined_binary_design"]
+
+    figure, axes = plt.subplots(2, 2, figsize=(12.0, 9.2))
+    methods = ("600-step gradient", "U-Net + R25")
+    updates = (600, 25)
+    axes[0, 0].barh(methods, updates, color=(REFERENCE_COLOR, FIELD_COLOR))
+    axes[0, 0].invert_yaxis()
+    axes[0, 0].set_xlim(0, 650)
+    axes[0, 0].set_xlabel(
+        "Task-specific gradient updates (+4 forward-only U-Net candidate scores)"
+    )
+    axes[0, 0].set_title("Optimization effort: 24x fewer gradient updates")
+    axes[0, 0].grid(axis="x", alpha=0.25)
+    for row, value in enumerate(updates):
+        axes[0, 0].text(value + 10, row, f"{value}", va="center", color=INK)
+    peaks = (reference_peak, field_peak)
+    axes[0, 1].barh(methods, peaks, color=(REFERENCE_COLOR, FIELD_COLOR))
+    axes[0, 1].invert_yaxis()
+    axes[0, 1].set_xlim(0.0, max(peaks) * 1.16)
+    axes[0, 1].set_xlabel("Worst-case Tmax (independent SciPy 256x256)")
+    axes[0, 1].set_title(f"Best development result: {improvement:.2f}% lower Tmax")
+    axes[0, 1].grid(axis="x", alpha=0.25)
+    for row, value in enumerate(peaks):
+        axes[0, 1].text(
+            value + max(peaks) * 0.015,
+            row,
+            f"{value:.6f}",
+            va="center",
+            color=INK,
+        )
+
+    _design_panel(
+        axes[1, 0],
+        reference_design,
+        task,
+        f"600-step gradient topology - layout {task_index:02d}",
+    )
+    _design_panel(
+        axes[1, 1],
+        field_design,
+        task,
+        f"FIELD U-Net + R25 topology - layout {task_index:02d}",
+    )
+    figure.suptitle(
+        "WaveForge MT3: less task-specific optimization and lower verified temperature",
+        fontsize=14,
+        weight="bold",
+    )
+    figure.text(
+        0.5,
+        0.015,
+        "Development layout; exact 25% material; ID/OOD test layouts remain sealed.",
+        ha="center",
+        color=MUTED,
+        fontsize=8,
+    )
+    figure.tight_layout(rect=(0.0, 0.04, 1.0, 0.95))
+    return figure
+
+
 def _readme_ru(
     sens: MT3CheckpointSummary,
     field: MT3CheckpointSummary,
@@ -861,6 +943,16 @@ def build_mt3_development_package(
         )
         save_figure_triplet(grid_figure, figures_dir, "10_grid_transfer_64_to_256")
         figure_names.append("10_grid_transfer_64_to_256")
+        save_figure_triplet(
+            _speed_and_best_result_figure(
+                paths,
+                sens.completed_updates,
+                verified_frame,
+            ),
+            figures_dir,
+            "11_speed_and_best_result",
+        )
+        figure_names.append("11_speed_and_best_result")
         grid_summary.to_csv(data_dir / "grid_transfer_metrics.csv", index=False)
 
     report = build_mt3_report_markdown(

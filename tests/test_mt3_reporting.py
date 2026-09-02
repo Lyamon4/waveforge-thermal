@@ -251,13 +251,26 @@ def test_package_builds_report_tables_and_figure_triplets_from_frozen_rows(
     )
     plot_right = max(axis.get_position().x1 for axis in temperature_figure.axes[:-1])
     colorbar_left = temperature_figure.axes[-1].get_position().x0
+    speed_figure = mt3_reporting._speed_and_best_result_figure(
+        MT3ReportPaths(
+            training_root=training,
+            evaluation_root=evaluation,
+            reference_root=references,
+            output_root=output,
+        ),
+        2500,
+        pd.read_csv(evaluation / "selected_verified_256.csv"),
+    )
 
     assert package == output
     assert plot_right < colorbar_left
+    assert "24x fewer" in speed_figure.axes[0].get_title()
+    assert len(speed_figure.axes[0].texts) == 2
     assert (output / "MT3_REPORT.md").is_file()
     assert (output / "README_RU.md").is_file()
     assert (output / "performance_table.csv").is_file()
     assert (output / "manifest.json").is_file()
+    assert (output / "figures" / "11_speed_and_best_result.png").is_file()
     assert len(list((output / "figures").glob("*.png"))) >= 9
     assert len(list((output / "figures").glob("*.svg"))) >= 9
     assert len(list((output / "figures").glob("*.pdf"))) >= 9

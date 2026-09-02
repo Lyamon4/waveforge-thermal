@@ -43,3 +43,4 @@ FIELD_UNET is shown as the matched conditioning control.
 - `08_method_diagram`
 - `09_temperature_maps_256`
 - `10_grid_transfer_64_to_256`
+- `11_speed_and_best_result`
