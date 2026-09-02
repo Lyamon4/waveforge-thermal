@@ -107,8 +107,20 @@ def test_final_report_discloses_primary_control_and_secondary_epyc() -> None:
         }
     )
     verdicts = {
-        "test_id": {"verdict": {"status": "MT3_BEATS_SINGLE_START_ID"}},
-        "test_ood": {"verdict": {"status": "MT3_COMPETITIVE_OOD"}},
+        "test_id": {
+            "bootstrap": {"lower_bound": -0.05, "upper_bound": -0.01},
+            "verdict": {
+                "status": "MT3_BEATS_SINGLE_START_ID",
+                "equivalent_evaluation_speedup": 20.0,
+            },
+        },
+        "test_ood": {
+            "bootstrap": {"lower_bound": 0.0, "upper_bound": 0.04},
+            "verdict": {
+                "status": "MT3_COMPETITIVE_OOD",
+                "equivalent_evaluation_speedup": 20.0,
+            },
+        },
     }
     epyc = {
         "label": "EPYC_9754_SCALE_SYNTHETIC",
@@ -128,6 +140,10 @@ def test_final_report_discloses_primary_control_and_secondary_epyc() -> None:
     assert "preregistered primary" in report
     assert "FIELD_UNET" in report
     assert "independent SciPy 256x256" in report
+    assert "P90" in report
+    assert "95% bootstrap CI" in report
+    assert "20.0x" in report
+    assert "mean" in report.lower()
     assert "EPYC_9754_SCALE_SYNTHETIC" in report
     assert "not an exact proprietary AMD thermal model" in report
     assert "does not affect the primary ID/OOD verdict" in report

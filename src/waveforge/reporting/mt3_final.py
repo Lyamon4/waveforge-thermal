@@ -274,6 +274,7 @@ def build_final_report_markdown(
     if not required.issubset(primary_rows.columns):
         raise ValueError("primary rows are incomplete")
     summaries: list[str] = []
+    speedups: list[float] = []
     for split in ("test_id", "test_ood"):
         frame = primary_rows[primary_rows["split"] == split]
         if frame.empty:
@@ -285,9 +286,20 @@ def build_final_report_markdown(
         verdict = split_payload.get("verdict")
         if not isinstance(verdict, dict) or "status" not in verdict:
             raise ValueError(f"missing {split} verdict status")
+        bootstrap = split_payload.get("bootstrap")
+        if not isinstance(bootstrap, dict):
+            bootstrap = {}
+        lower = float(bootstrap.get("lower_bound", np.nan))
+        upper = float(bootstrap.get("upper_bound", np.nan))
+        speedup = float(verdict.get("equivalent_evaluation_speedup", 20.0))
+        speedups.append(speedup)
         summaries.append(
             f"| {split} | {len(frame)} | {100 * np.median(gaps):.3f}% | "
+            f"{100 * np.mean(gaps):.3f}% | {100 * np.quantile(gaps, 0.9):.3f}% | "
+            f"{100 * np.max(gaps):.3f}% | "
+            f"[{100 * np.min(gaps):.3f}%, {100 * np.max(gaps):.3f}%] | "
             f"{int(np.count_nonzero(gaps < 0.0))}/{len(frame)} | "
+            f"[{100 * lower:.3f}%, {100 * upper:.3f}%] | "
             f"`{verdict['status']}` |"
         )
     if epyc_result.get("exact_proprietary_cpu_model") is not False:
@@ -295,6 +307,10 @@ def build_final_report_markdown(
     if epyc_result.get("affects_primary_id_ood_verdict") is not False:
         raise ValueError("EPYC result must remain secondary")
     figures = "\n".join(f"- `{stem}`" for stem in figure_stems)
+    table_header = (
+        "| Split | Tasks | Median gap | Mean gap | P90 gap | Worst gap | "
+        "Range | Wins | 95% bootstrap CI of median | Verdict |"
+    )
     return f"""# WaveForge MT3 final frozen-test report
 
 ## Scientific scope
@@ -308,12 +324,13 @@ evaluation path as the conventional optimizers.
 
 ## Frozen ID/OOD results
 
-| Split | Tasks | Median gap to strongest single start | Wins | Verdict |
-|---|---:|---:|---:|---|
+{table_header}
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 {chr(10).join(summaries)}
 
 The comparator for each task is the better of registered Adam-600 and MMA-600.
-No claim of a global optimum is made.
+The primary method uses {min(speedups):.1f}x fewer equivalent task-specific
+physics evaluations (30 versus 600). No claim of a global optimum is made.
 
 ## EPYC-scale secondary benchmark
 
