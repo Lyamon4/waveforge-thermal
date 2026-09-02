@@ -16,6 +16,7 @@ from waveforge.reporting.mt3_final import (
     build_statistical_figures,
     collect_baseline_budget_rows,
     connectivity_diagnostics,
+    epyc_strong_design_key,
     load_mt3_final_evidence,
     ranked_layout_indices,
     validate_final_artifact_counts,
@@ -102,7 +103,7 @@ def test_final_report_discloses_primary_control_and_secondary_epyc() -> None:
             "primary_relative_gap": [-0.04, -0.02, 0.01, 0.03],
             "candidate_tmax_scipy256": [0.16, 0.17, 0.18, 0.19],
             "strong_single_tmax_scipy256": [0.17, 0.18, 0.178, 0.184],
-            "strong_single_family": ["ADAM", "MMA", "MMA", "ADAM"],
+            "strong_single_family": ["ADAM_600", "MMA_600", "MMA_600", "ADAM_600"],
         }
     )
     verdicts = {
@@ -180,6 +181,13 @@ def test_baseline_budget_rows_use_registered_start_zero_trajectories(tmp_path) -
     assert set(frame["start_index"]) == {0}
 
 
+def test_epyc_strong_design_key_accepts_registered_family_names() -> None:
+    assert epyc_strong_design_key("ADAM_600") == "adam600_binary"
+    assert epyc_strong_design_key("MMA_600") == "mma600_binary"
+    with pytest.raises(ValueError, match="registered"):
+        epyc_strong_design_key("ADAM")
+
+
 def test_final_artifact_count_gate_is_fail_closed() -> None:
     counts = {
         "neural_results": 96,
@@ -217,7 +225,7 @@ def test_statistical_figure_builders_cover_frozen_quality_and_compute_views() ->
                     "adam600_tmax_scipy256": adam,
                     "mma600_tmax_scipy256": mma,
                     "strong_single_tmax_scipy256": reference,
-                    "strong_single_family": "MMA",
+                    "strong_single_family": "MMA_600",
                     "primary_relative_gap": sens / reference - 1.0,
                     "field_r25_tmax_scipy256": field,
                     "sens_best4_tmax_scipy256": sens * 1.02,
@@ -291,6 +299,10 @@ def test_statistical_figure_builders_cover_frozen_quality_and_compute_views() ->
     figures = build_statistical_figures(evidence)
 
     assert set(figures) == {spec.stem for spec in FINAL_FIGURE_SPECS[:9]}
+    assert (
+        sum(patch.get_height() for patch in figures["07_adam_vs_mma"].axes[1].patches)
+        == 48
+    )
     assert all(figure.axes for figure in figures.values())
     for figure in figures.values():
         plt.close(figure)
@@ -321,7 +333,7 @@ def test_spatial_figure_builders_cover_topologies_connectivity_and_epyc(
                     "adam600_tmax_scipy256": reference * 1.002,
                     "mma600_tmax_scipy256": reference,
                     "strong_single_tmax_scipy256": reference,
-                    "strong_single_family": "MMA",
+                    "strong_single_family": "MMA_600",
                     "primary_relative_gap": sens / reference - 1.0,
                     "field_r25_tmax_scipy256": field,
                     "sens_best4_tmax_scipy256": sens * 1.02,
@@ -452,7 +464,7 @@ def test_spatial_figure_builders_cover_topologies_connectivity_and_epyc(
         "label": "EPYC_9754_SCALE_SYNTHETIC",
         "exact_proprietary_cpu_model": False,
         "affects_primary_id_ood_verdict": False,
-        "strong_single_family": "ADAM",
+        "strong_single_family": "ADAM_600",
         "verified_scipy256": verified_epyc,
     }
     (epyc_destination / "result.json").write_text(

@@ -575,7 +575,10 @@ def _adam_mma_figure(evidence: MT3FinalEvidence) -> Figure:
     winner_counts = frame["strong_single_family"].value_counts()
     axes[1].bar(
         ("ADAM", "MMA"),
-        (int(winner_counts.get("ADAM", 0)), int(winner_counts.get("MMA", 0))),
+        (
+            int(winner_counts.get("ADAM_600", 0)),
+            int(winner_counts.get("MMA_600", 0)),
+        ),
         color=(ADAM_COLOR, MMA_COLOR),
     )
     axes[1].set_ylabel("Tasks won")
@@ -1097,7 +1100,7 @@ def _epyc_temperature_figure(
     benchmark = build_epyc9754_scale_benchmark(resolution=256)
     arrays_path = result_root / "epyc9754_scale_synthetic" / "designs.npz"
     strong = str(evidence.epyc_result["strong_single_family"])
-    baseline_key = "adam600_binary" if strong == "ADAM" else "mma600_binary"
+    baseline_key = epyc_strong_design_key(strong)
     methods = (
         ("SENS + R25", _load_npz(arrays_path, "sens_r25_binary")),
         (f"Strong single: {strong}-600", _load_npz(arrays_path, baseline_key)),
@@ -1150,6 +1153,18 @@ def _epyc_temperature_figure(
     )
     figure.subplots_adjust(top=0.89, bottom=0.07, right=0.89, wspace=0.08, hspace=0.28)
     return figure
+
+
+def epyc_strong_design_key(family: str) -> str:
+    """Map the registered EPYC baseline family to its stored binary array."""
+    mapping = {
+        "ADAM_600": "adam600_binary",
+        "MMA_600": "mma600_binary",
+    }
+    try:
+        return mapping[family]
+    except KeyError as error:
+        raise ValueError("EPYC strong family is not registered") from error
 
 
 def build_spatial_figures(
