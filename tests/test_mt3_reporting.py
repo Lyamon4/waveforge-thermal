@@ -8,6 +8,7 @@ import pandas as pd
 
 from waveforge.experiments.run_mt2b_evaluation import validation_tasks
 from waveforge.ml.mt3_evaluation import MT3CheckpointSummary, MT3DevelopmentVerdict
+from waveforge.reporting import mt3 as mt3_reporting
 from waveforge.reporting.mt3 import (
     MT3ReportPaths,
     build_mt3_development_package,
@@ -234,7 +235,25 @@ def test_package_builds_report_tables_and_figure_triplets_from_frozen_rows(
         temperature_field_provider=temperature_provider,
     )
 
+    temperature_figure = mt3_reporting._temperature_figure(
+        MT3ReportPaths(
+            training_root=training,
+            evaluation_root=evaluation,
+            reference_root=references,
+            output_root=output,
+        ),
+        2500,
+        pd.read_csv(
+            evaluation / "sens_unet" / "checkpoint_002500" / "validation_metrics.csv"
+        ),
+        pd.read_csv(evaluation / "selected_verified_256.csv"),
+        temperature_provider,
+    )
+    plot_right = max(axis.get_position().x1 for axis in temperature_figure.axes[:-1])
+    colorbar_left = temperature_figure.axes[-1].get_position().x0
+
     assert package == output
+    assert plot_right < colorbar_left
     assert (output / "MT3_REPORT.md").is_file()
     assert (output / "README_RU.md").is_file()
     assert (output / "performance_table.csv").is_file()

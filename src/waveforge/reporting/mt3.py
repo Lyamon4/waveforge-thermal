@@ -672,12 +672,13 @@ def _temperature_figure(
                 f"{label} - scenario {scenario}\nTmax={field.max():.6f}",
                 fontsize=8,
             )
-    if image is not None:
-        figure.colorbar(image, ax=axes.ravel().tolist(), label="Temperature")
     figure.suptitle(
         f"Independent SciPy 256x256 temperature fields - layout {index:02d}"
     )
-    figure.subplots_adjust(top=0.91, right=0.90, wspace=0.16, hspace=0.28)
+    figure.subplots_adjust(top=0.91, right=0.86, wspace=0.16, hspace=0.28)
+    if image is not None:
+        colorbar_axis = figure.add_axes((0.89, 0.12, 0.025, 0.74))
+        figure.colorbar(image, cax=colorbar_axis, label="Temperature")
     return figure
 
 
