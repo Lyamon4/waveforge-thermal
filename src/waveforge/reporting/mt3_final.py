@@ -125,6 +125,11 @@ FINAL_FIGURE_SPECS: tuple[FinalFigureSpec, ...] = (
         "18_epyc_temperature_maps",
         "EPYC 9754-scale synthetic benchmark; secondary only",
     ),
+    FinalFigureSpec(
+        "fig19_measured_runtime",
+        "19_measured_runtime",
+        "measured wall time separated from equivalent-evaluation accounting",
+    ),
 )
 
 EXPECTED_FINAL_ARTIFACT_COUNTS: dict[str, int] = {
@@ -376,6 +381,74 @@ def collect_baseline_budget_rows(result_root: Path) -> pd.DataFrame:
     return pd.DataFrame(rows).sort_values(
         ["split", "task_index", "method", "evaluation"], ignore_index=True
     )
+
+
+def build_runtime_figure(result_root: Path) -> Figure:
+    """Compare measured wall time without pretending R25 was timed separately."""
+    forward: list[float] = []
+    probe_and_forward: list[float] = []
+    complete_r50: list[float] = []
+    for path in sorted(result_root.glob("neural/sens_unet/*/task_*/result.json")):
+        payload = _read_json(path)
+        probe = float(payload["probe_seconds"])
+        inference = float(payload["unet_forward_seconds"])
+        chain = float(payload["single_r50_chain_seconds"])
+        forward.append(inference)
+        probe_and_forward.append(probe + inference)
+        complete_r50.append(probe + inference + chain)
+    adam = [
+        float(_read_json(path)["allocated_task_wall_seconds"])
+        for path in sorted(
+            result_root.glob("baselines/adam/*/task_*/start_0/result.json")
+        )
+    ]
+    mma = [
+        float(_read_json(path)["wall_seconds"])
+        for path in sorted(
+            result_root.glob("baselines/mma/*/task_*/start_0/result.json")
+        )
+    ]
+    if not all((forward, probe_and_forward, complete_r50, adam, mma)):
+        raise RuntimeError("measured runtime artifacts are incomplete")
+    labels = (
+        "Frozen U-Net\nforward",
+        "Probe + U-Net",
+        "Measured SENS\n+ R50 pipeline",
+        "Adam-600",
+        "MMA-600",
+    )
+    medians = tuple(
+        float(np.median(values))
+        for values in (forward, probe_and_forward, complete_r50, adam, mma)
+    )
+    figure, axes = plt.subplots(1, 2, figsize=(12.4, 5.1))
+    axes[0].barh(
+        labels,
+        medians,
+        color=(SENS_COLOR, "#A78BFA", "#FB7185", ADAM_COLOR, MMA_COLOR),
+    )
+    axes[0].set_xscale("log")
+    axes[0].set_xlabel("Median measured seconds per task (log scale)")
+    axes[0].set_title("Measured V100 wall time")
+    axes[0].grid(axis="x", alpha=0.25)
+    for row, value in enumerate(medians):
+        axes[0].text(value * 1.08, row, f"{value:.3g} s", va="center", fontsize=8)
+    axes[1].barh(
+        ("SENS + R25", "Adam-600", "MMA-600"),
+        (30, 600, 600),
+        color=(SENS_COLOR, ADAM_COLOR, MMA_COLOR),
+    )
+    axes[1].set_xlabel("Equivalent task-specific physics evaluations")
+    axes[1].set_title("Preregistered equivalent-evaluation accounting")
+    axes[1].grid(axis="x", alpha=0.25)
+    for row, value in enumerate((30, 600, 600)):
+        axes[1].text(value + 10, row, str(value), va="center")
+    figure.suptitle(
+        "Generation speed and optimization effort are reported separately",
+        weight="bold",
+    )
+    figure.tight_layout()
+    return figure
 
 
 def _method_gap_frame(primary: pd.DataFrame) -> pd.DataFrame:
@@ -1413,7 +1486,7 @@ def _readme_ru(evidence: MT3FinalEvidence) -> str:
     lines.extend(
         (
             "",
-            "`figures/` содержит 18 paper-grade фигур в PNG 300 dpi, SVG и PDF.",
+            "`figures/` содержит 19 paper-grade фигур в PNG 300 dpi, SVG и PDF.",
             "`models/` содержит обе выбранные полностью готовые модели и их SHA256.",
             "EPYC-фигуры являются отдельным synthetic scale benchmark и не имитируют",
             "закрытый внутренний thermal stack настоящего процессора.",
@@ -1452,6 +1525,7 @@ def build_mt3_final_package(
         temperature_provider=temperature_provider,
     )
     figures.update(spatial)
+    figures[FINAL_FIGURE_SPECS[18].stem] = build_runtime_figure(paths.result_root)
     expected_stems = {spec.stem for spec in FINAL_FIGURE_SPECS}
     if set(figures) != expected_stems:
         raise RuntimeError("final figure registry is incomplete")

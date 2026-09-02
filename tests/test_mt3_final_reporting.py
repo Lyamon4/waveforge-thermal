@@ -12,6 +12,7 @@ from waveforge.reporting.mt3_final import (
     MT3FinalReportPaths,
     build_final_report_markdown,
     build_mt3_final_package,
+    build_runtime_figure,
     build_spatial_figures,
     build_statistical_figures,
     collect_baseline_budget_rows,
@@ -24,9 +25,9 @@ from waveforge.reporting.mt3_final import (
 
 
 def test_final_figure_registry_is_complete_unique_and_disclosure_first() -> None:
-    assert len(FINAL_FIGURE_SPECS) == 18
-    assert len({spec.figure_id for spec in FINAL_FIGURE_SPECS}) == 18
-    assert len({spec.stem for spec in FINAL_FIGURE_SPECS}) == 18
+    assert len(FINAL_FIGURE_SPECS) == 19
+    assert len({spec.figure_id for spec in FINAL_FIGURE_SPECS}) == 19
+    assert len({spec.stem for spec in FINAL_FIGURE_SPECS}) == 19
     assert {spec.figure_id for spec in FINAL_FIGURE_SPECS} == {
         "fig01_final_summary",
         "fig02_id_gap_distribution",
@@ -46,6 +47,7 @@ def test_final_figure_registry_is_complete_unique_and_disclosure_first() -> None
         "fig16_epyc_package_and_workloads",
         "fig17_epyc_topology_comparison",
         "fig18_epyc_temperature_maps",
+        "fig19_measured_runtime",
     }
     epyc_specs = [spec for spec in FINAL_FIGURE_SPECS if "epyc" in spec.figure_id]
     assert len(epyc_specs) == 3
@@ -202,6 +204,43 @@ def test_epyc_strong_design_key_accepts_registered_family_names() -> None:
     assert epyc_strong_design_key("MMA_600") == "mma600_binary"
     with pytest.raises(ValueError, match="registered"):
         epyc_strong_design_key("ADAM")
+
+
+def test_measured_runtime_figure_separates_forward_hybrid_and_optimizers(
+    tmp_path,
+) -> None:
+    import json
+
+    neural = tmp_path / "neural" / "sens_unet" / "test_id" / "task_00"
+    neural.mkdir(parents=True)
+    (neural / "result.json").write_text(
+        json.dumps(
+            {
+                "probe_seconds": 1.0,
+                "unet_forward_seconds": 0.02,
+                "single_r50_chain_seconds": 12.0,
+            }
+        ),
+        encoding="utf-8",
+    )
+    for method, field, value in (
+        ("adam", "allocated_task_wall_seconds", 100.0),
+        ("mma", "wall_seconds", 120.0),
+    ):
+        destination = (
+            tmp_path / "baselines" / method / "test_id" / "task_00" / "start_0"
+        )
+        destination.mkdir(parents=True)
+        (destination / "result.json").write_text(
+            json.dumps({field: value}), encoding="utf-8"
+        )
+
+    figure = build_runtime_figure(tmp_path)
+
+    assert len(figure.axes) == 2
+    assert "measured" in figure.axes[0].get_title().lower()
+    assert "equivalent" in figure.axes[1].get_title().lower()
+    plt.close(figure)
 
 
 def test_final_artifact_count_gate_is_fail_closed() -> None:
@@ -386,7 +425,13 @@ def test_spatial_figure_builders_cover_topologies_connectivity_and_epyc(
                 )
                 (destination / "result.json").write_text(
                     __import__("json").dumps(
-                        {"selected_head": 0, "task_id": task.task_id}
+                        {
+                            "selected_head": 0,
+                            "task_id": task.task_id,
+                            "probe_seconds": 1.0,
+                            "unet_forward_seconds": 0.02,
+                            "single_r50_chain_seconds": 12.0,
+                        }
                     ),
                     encoding="utf-8",
                 )
@@ -420,6 +465,8 @@ def test_spatial_figure_builders_cover_topologies_connectivity_and_epyc(
                             "task_index": index,
                             "start_index": 0,
                             "snapshot_tmax_scipy64": snapshots,
+                            "allocated_task_wall_seconds": 100.0,
+                            "wall_seconds": 120.0,
                         }
                     ),
                     encoding="utf-8",
@@ -553,7 +600,7 @@ def test_spatial_figure_builders_cover_topologies_connectivity_and_epyc(
         temperature_provider=fake_temperature_provider,
     )
 
-    assert set(figures) == {spec.stem for spec in FINAL_FIGURE_SPECS[9:]}
+    assert set(figures) == {spec.stem for spec in FINAL_FIGURE_SPECS[9:18]}
     assert len(diagnostics) == 48 * 4
     assert set(diagnostics["method"]) == {
         "SENS + R25",
@@ -584,9 +631,9 @@ def test_spatial_figure_builders_cover_topologies_connectivity_and_epyc(
         temperature_provider=fake_temperature_provider,
     )
 
-    assert len(list((package / "figures").glob("*.png"))) == 18
-    assert len(list((package / "figures").glob("*.svg"))) == 18
-    assert len(list((package / "figures").glob("*.pdf"))) == 18
+    assert len(list((package / "figures").glob("*.png"))) == 19
+    assert len(list((package / "figures").glob("*.svg"))) == 19
+    assert len(list((package / "figures").glob("*.pdf"))) == 19
     assert (package / "MT3_FINAL_REPORT.md").is_file()
     assert (package / "README_RU.md").is_file()
     assert (package / "models" / "sens_unet_selected.pt").is_file()
