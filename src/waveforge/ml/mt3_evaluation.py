@@ -66,6 +66,82 @@ def solver_consistent_gap(
     return (candidate - reference) / reference
 
 
+def summarize_mt3_checkpoint_rows(
+    rows: list[dict[str, object]],
+    *,
+    completed_updates: int,
+    variant: Literal["FIELD_UNET", "SENS_UNET"],
+) -> MT3CheckpointSummary:
+    """Summarize one frozen checkpoint from 32 solver-matched layouts."""
+    if len(rows) != 32:
+        raise ValueError("MT3 checkpoint summary requires exactly 32 rows")
+    if completed_updates <= 0 or completed_updates % 500 != 0:
+        raise ValueError("MT3 checkpoint updates must be a positive multiple of 500")
+    indices = [int(row["task_index"]) for row in rows]
+    if indices != list(range(32)):
+        raise ValueError("MT3 checkpoint rows must follow task indices 0..31")
+
+    r25_gaps: list[float] = []
+    best4_gaps: list[float] = []
+    exact_budget_count = 0
+    invalid_count = 0
+    for row in rows:
+        candidate_solver = str(row["candidate_solver"])
+        reference_solver = str(row["reference_solver"])
+        if candidate_solver != reference_solver:
+            raise ValueError("candidate and reference must use the same solver")
+        if candidate_solver != "independent_scipy_64":
+            raise ValueError("MT3 development rows require independent_scipy_64")
+        reference = float(row["reference_tmax_scipy64"])
+        r25 = float(row["r25_tmax_scipy64"])
+        best4 = float(row["best4_tmax_scipy64"])
+        valid = (
+            math.isfinite(reference)
+            and math.isfinite(r25)
+            and math.isfinite(best4)
+            and reference > 0.0
+            and r25 > 0.0
+            and best4 > 0.0
+            and int(row["refinement_updates"]) == 25
+        )
+        if int(row["binary_cell_count"]) == 1024:
+            exact_budget_count += 1
+        if not valid:
+            invalid_count += 1
+            continue
+        r25_gaps.append((r25 - reference) / reference)
+        best4_gaps.append((best4 - reference) / reference)
+
+    if len(r25_gaps) != 32 or len(best4_gaps) != 32:
+        median_r25 = math.inf
+        p90_r25 = math.inf
+        worst_r25 = math.inf
+        wins = 0
+        median_best4 = math.inf
+    else:
+        r25_array = np.asarray(r25_gaps, dtype=np.float64)
+        best4_array = np.asarray(best4_gaps, dtype=np.float64)
+        median_r25 = float(np.median(r25_array))
+        p90_r25 = float(np.quantile(r25_array, 0.9))
+        worst_r25 = float(np.max(r25_array))
+        wins = int(np.count_nonzero(r25_array < 0.0))
+        median_best4 = float(np.median(best4_array))
+
+    return MT3CheckpointSummary(
+        completed_updates=completed_updates,
+        variant=variant,
+        split_name="validation",
+        task_count=32,
+        invalid_count=invalid_count,
+        exact_budget_count=exact_budget_count,
+        median_r25_relative_gap=median_r25,
+        p90_r25_relative_gap=p90_r25,
+        worst_r25_relative_gap=worst_r25,
+        r25_win_count=wins,
+        median_best4_relative_gap=median_best4,
+    )
+
+
 def select_mt3_checkpoint(
     summaries: list[MT3CheckpointSummary],
 ) -> MT3CheckpointSummary:
