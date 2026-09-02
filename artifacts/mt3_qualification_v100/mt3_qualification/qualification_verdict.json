@@ -1,0 +1,41 @@
+{
+  "exact_reason": "lower_median_best4_r25_gap",
+  "execution_source_sha": "2a48cf0a6b90477377b2af2fcf144e978a30f091",
+  "production_authorized": true,
+  "protocol_bundle_sha256": "be7472bf051add429cb33ccb60a6b45427a6a54260516765901593c4b41a66c8",
+  "rows": [
+    {
+      "learning_rate": 0.0001,
+      "median_best4_r25_gap": 0.009742493913100218,
+      "model_seed": 2026092303,
+      "p90_best4_r25_gap": 0.04109979184628067,
+      "valid": true
+    },
+    {
+      "learning_rate": 0.0001,
+      "median_best4_r25_gap": 0.0010674435791191933,
+      "model_seed": 2026092304,
+      "p90_best4_r25_gap": 0.02938289015191631,
+      "valid": true
+    },
+    {
+      "learning_rate": 0.0003,
+      "median_best4_r25_gap": 0.019784999411422782,
+      "model_seed": 2026092303,
+      "p90_best4_r25_gap": 0.062087944318391604,
+      "valid": true
+    },
+    {
+      "learning_rate": 0.0003,
+      "median_best4_r25_gap": 0.012046072510556546,
+      "model_seed": 2026092304,
+      "p90_best4_r25_gap": 0.05343850796857005,
+      "valid": true
+    }
+  ],
+  "schema_version": 1,
+  "selected_learning_rate": 0.0001,
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "validation_accessed": true
+}

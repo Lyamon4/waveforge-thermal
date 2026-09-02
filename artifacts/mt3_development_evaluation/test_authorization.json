@@ -1,0 +1,31 @@
+{
+  "artifacts": {
+    "2026-09-01-mt3-sensitivity-learned-warmstart-design.md": {
+      "path": "C:\\Users\\gazan\\Desktop\\WaveForge\\waveforge-thermal\\.worktrees\\multitask-generative-nca\\docs\\superpowers\\specs\\2026-09-01-mt3-sensitivity-learned-warmstart-design.md",
+      "sha256": "84a38208eccaea5f8ac4fe8950302c690e88e3ec656ebad5d7d74dd29bd6c23c"
+    },
+    "checkpoint_004000.pt": {
+      "path": "C:\\Users\\gazan\\Desktop\\WaveForge\\waveforge-thermal\\.worktrees\\multitask-generative-nca\\artifacts\\mt3_production_v100\\mt3_production\\sens_unet\\checkpoint_004000.pt",
+      "sha256": "75e2020cbfbcf30b04f95275bcaa6873827c8966b667ef2480f2b9445557c167"
+    },
+    "checkpoint_summaries.json": {
+      "path": "C:\\Users\\gazan\\Desktop\\WaveForge\\waveforge-thermal\\.worktrees\\multitask-generative-nca\\artifacts\\mt3_development_evaluation\\checkpoint_summaries.json",
+      "sha256": "5f3de2a567e1b15d80884207b5195c5322559fbc4a72845f3eda50b9d741cee8"
+    },
+    "mt3_sensitivity_warmstart.yaml": {
+      "path": "C:\\Users\\gazan\\Desktop\\WaveForge\\waveforge-thermal\\.worktrees\\multitask-generative-nca\\configs\\mt3_sensitivity_warmstart.yaml",
+      "sha256": "743b236ab17ffa6f91a274f98b23c21589d96ddddecff1744e423c7bf951b0d8"
+    },
+    "reference_registry.json": {
+      "path": "C:\\Users\\gazan\\Desktop\\WaveForge\\waveforge-thermal\\.worktrees\\multitask-generative-nca\\artifacts\\nca_mt2b_campaign\\references\\reference_registry.json",
+      "sha256": "36e66b426ad43dfecec59f5c03eed45c4f4225db400b059be264236051203393"
+    }
+  },
+  "bundle_sha256": "9a8b374e4988011ac7537c7e358969a42c5b97b8bce2bc4267c07166ea081b9f",
+  "development_status": "MT3_DEVELOPMENT_GO",
+  "implementation_commit": "7036d0e875845850f492f0b5e35a7adba8c49f5f",
+  "schema_version": 1,
+  "test_authorized": true,
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}

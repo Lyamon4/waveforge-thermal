@@ -1,0 +1,13 @@
+{
+  "completed_updates": 3000,
+  "exact_budget_count": 32,
+  "invalid_count": 0,
+  "median_best4_relative_gap": -0.04066835916650469,
+  "median_r25_relative_gap": -0.04351344605319417,
+  "p90_r25_relative_gap": -0.02136305175814655,
+  "r25_win_count": 32,
+  "split_name": "validation",
+  "task_count": 32,
+  "variant": "SENS_UNET",
+  "worst_r25_relative_gap": -0.007057362665265392
+}

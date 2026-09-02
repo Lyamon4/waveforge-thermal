@@ -1,0 +1,18 @@
+{
+  "batch_size": 4,
+  "candidate_count": 4,
+  "checkpoint_interval": 500,
+  "execution_source_sha": "6d08375fe9f680bce030aed905789cc3e5fbd774",
+  "experiment": "MT3_SENSITIVITY_LEARNED_WARMSTART",
+  "model_seed": 2026092311,
+  "protocol_bundle_sha256": "be7472bf051add429cb33ccb60a6b45427a6a54260516765901593c4b41a66c8",
+  "schema_version": 1,
+  "selected_candidates_for_refinement": 1,
+  "selected_learning_rate": 0.0001,
+  "task_stream_seed": 2026092312,
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "updates": 4000,
+  "validation_accessed": false,
+  "variant": "SENS_UNET"
+}

@@ -1,0 +1,3 @@
+method,completed_updates,variant,split_name,task_count,invalid_count,exact_budget_count,median_r25_relative_gap,p90_r25_relative_gap,worst_r25_relative_gap,r25_win_count,median_best4_relative_gap
+SENS_UNET_BEST4_R25,4000,SENS_UNET,validation,32,0,32,-0.045836853249199644,-0.011593456391117871,-0.0064302703832493265,32,-0.036431012317900746
+FIELD_UNET_BEST4_R25,4000,FIELD_UNET,validation,32,0,32,-0.0569288886162641,-0.023113738732626093,-0.001931095237489918,32,-0.05297518951459479

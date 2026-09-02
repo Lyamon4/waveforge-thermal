@@ -1125,3 +1125,48 @@ review и пополнения credit до `$6.182984916380013` добавлен
 prospective runtime-budget amendment. Scientific protocol, selected LR,
 architecture, seeds, 4,000-update budgets, validation, baselines, gates и
 test sealing не изменялись.
+
+## 2026-09-02 — MT3 production, development verdict and grid transfer
+
+Обе зарегистрированные production-модели завершили ровно 4,000 updates с
+effective batch 4, то есть по 16,000 procedural task exposures. FIELD_UNET и
+SENS_UNET стартовали из одних initial weights, использовали один task stream и
+selected qualification LR `1e-4`. Оба machine run result имеют status `PASS`;
+final model SHA-256: FIELD
+`ccb1f371d04d92796d9e1e69aa7469d586cdd954726eb827523935f43fd0a5fb`,
+SENS `5a22fdfe3c14422bacb9bf7cb30216d3b1b73b4443648019e4e6b3e87356344f`.
+
+Все восемь checkpoints каждой модели (500--4,000 с шагом 500) были оценены на
+всех 32 frozen development layouts. Для каждой пары checkpoint/layout сеть
+сгенерировала четыре candidates, independent SciPy64 forward scores выбрали
+один candidate, и только он получил ровно 25 refinement updates. Candidate,
+R25 design и 600-step direct-gradient reference сравнивались одним SciPy64
+path. Всего завершено 512 checkpoint/layout evaluations; invalid count равен
+нулю, exact binary budget `1024/4096` выполнен во всех случаях.
+
+Prospective primary selection выбрал SENS checkpoint 4,000. Его SciPy64
+результат: median gap `-0.045836853249199644`, p90
+`-0.011593456391117871`, worst `-0.0064302703832493265`, wins `32/32`.
+Machine verdict: `MT3_DEVELOPMENT_GO`; test authorization bundle SHA-256
+`9a8b374e4988011ac7537c7e358969a42c5b97b8bce2bc4267c07166ea081b9f`.
+Matched FIELD control на том же checkpoint 4,000 оказался сильнее по median:
+`-0.0569288886162641`, p90 `-0.023113738732626093`, worst
+`-0.001931095237489918`, wins `32/32`. Это означает, что initial temperature
+fields уже являются сильным conditioning representation; дополнительная
+initial sensitivity не дала преимущества на development distribution.
+
+Secondary independent SciPy256 verification повторно сравнила reference,
+FIELD и SENS для всех 32 layouts (`96` solves). FIELD: median gap
+`-0.05485824050169842`, p90 `-0.023006703813208563`, worst
+`0.004845025160271584`, wins `31/32`. SENS: median
+`-0.044885298387590505`, p90 `-0.013990482264209179`, worst
+`-0.0004524675740083507`, wins `32/32`. Все material fractions равны `0.25`;
+maximum normalized residual `9.02597484065777e-12`.
+
+Создан development-only package с 10 figures в PNG 300 dpi, SVG и PDF,
+таблицами, report, selected weights и canonical manifest. Проверено 40/40
+manifest hashes. Визуальный QA обнаружил и исправил перекрытие colorbar в
+temperature-map figure; добавлен layout regression test. Финальная проверка:
+`610 passed`; Ruff lint/format: PASS. Закрытые ID/OOD test layouts до этого
+момента не открывались, поэтому эти числа являются development evidence, а не
+финальным generalization claim.

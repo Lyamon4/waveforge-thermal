@@ -1,0 +1,15 @@
+{
+  "batch_size": 4,
+  "execution_source_sha": "2a48cf0a6b90477377b2af2fcf144e978a30f091",
+  "experiment": "MT3_SENSITIVITY_LEARNED_WARMSTART_QUALIFICATION",
+  "learning_rate": 0.0003,
+  "model_seed": 2026092304,
+  "protocol_bundle_sha256": "be7472bf051add429cb33ccb60a6b45427a6a54260516765901593c4b41a66c8",
+  "schema_version": 1,
+  "task_stream_seed": 2026092306,
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "updates": 500,
+  "validation_accessed": true,
+  "variant": "SENS_UNET"
+}

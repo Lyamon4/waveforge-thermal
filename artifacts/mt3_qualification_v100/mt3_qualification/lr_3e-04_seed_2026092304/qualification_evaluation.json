@@ -1,0 +1,12 @@
+{
+  "candidate_solver": "independent_scipy_64",
+  "median_best4_r25_gap": 0.012046072510556546,
+  "metrics_sha256": "988cf26ae25136e913dcd98b6a3c07e98b09f90ff2f98022701f8b739672747e",
+  "p90_best4_r25_gap": 0.05343850796857005,
+  "reference_solver": "independent_scipy_64",
+  "schema_version": 1,
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "valid": true,
+  "validation_accessed": true
+}

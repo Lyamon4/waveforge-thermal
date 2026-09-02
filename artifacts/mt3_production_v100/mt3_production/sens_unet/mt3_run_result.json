@@ -1,0 +1,23 @@
+{
+  "completed_updates": 4000,
+  "config": {
+    "base_learning_rate": 0.0001,
+    "batch_size": 4,
+    "checkpoint_interval": 500,
+    "device": "cuda",
+    "gradient_clip_norm": 1.0,
+    "mode": "production",
+    "model_seed": 2026092311,
+    "task_seed": 2026092312,
+    "total_updates": 4000,
+    "variant": "SENS_UNET"
+  },
+  "final_model_sha256": "5a22fdfe3c14422bacb9bf7cb30216d3b1b73b4443648019e4e6b3e87356344f",
+  "initial_model_sha256": "9d566812ceebe8bc61a6af5b244bc27f0339c13ba7cd702ed1c4848bf367b1b1",
+  "last_checkpoint": "checkpoint_004000.pt",
+  "reason_codes": [],
+  "schema_version": 1,
+  "status": "PASS",
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}
