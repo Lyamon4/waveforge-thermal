@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-03T00:14:07.2100075+05:00",
+  "parent_authorization_bundle_sha256": "0ab5f1f781d6ded44714c6bcafb93f6e4f14ef99d5139b96f66a4c5cf393756a",
+  "amendments": [
+    {
+      "commit": "67a1689976ea1e7c59f475e62bc4f8b0257f5ce9",
+      "phase_when_detected": "after_neural_before_any_adam_or_mma_update",
+      "observed_failure": "JSON round-trip converted source-center tuples to lists, so an unchanged opened-task manifest failed its resume identity comparison",
+      "change": "serialize source centers as lists before both first write and later comparison",
+      "scientific_protocol_changed": false,
+      "task_registry_changed": false,
+      "model_or_design_changed": false,
+      "neural_result_changed": false,
+      "baseline_result_seen_before_fix": false,
+      "regression_test": "test_opened_task_manifest_is_stable_after_json_round_trip"
+    }
+  ]
+}
