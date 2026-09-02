@@ -34,6 +34,10 @@ from waveforge.ml.mt3_training import (
 )
 from waveforge.ml.mt3_unet import project_mt3_candidates
 from waveforge.ml.multitask_tasks import SourceLayoutTask
+from waveforge.verification.multitask_verification import (
+    IndependentTaskVerification,
+    verify_binary_task,
+)
 
 MT3Variant = Literal["FIELD_UNET", "SENS_UNET"]
 
@@ -361,6 +365,116 @@ def run_production_development_evaluation(
     return summaries
 
 
+MT3Verifier256 = Callable[
+    [np.ndarray, SourceLayoutTask],
+    IndependentTaskVerification,
+]
+
+
+def _default_verifier_256(
+    design: np.ndarray,
+    task: SourceLayoutTask,
+) -> IndependentTaskVerification:
+    return verify_binary_task(design, task, resolution=256)
+
+
+def verify_selected_development_256(
+    *,
+    evaluation_root: Path,
+    reference_root: Path,
+    selected_updates: int,
+    output_path: Path,
+    verifier: MT3Verifier256 = _default_verifier_256,
+) -> list[dict[str, object]]:
+    """Verify selected FIELD, SENS, and gradient designs on independent 256 grids."""
+    if selected_updates <= 0 or selected_updates % 500 != 0:
+        raise ValueError("selected MT3 updates must be a positive multiple of 500")
+    tasks = validation_tasks()
+    rows: list[dict[str, object]] = []
+    for index, task in enumerate(tasks):
+        designs: tuple[tuple[str, np.ndarray], ...] = (
+            (
+                "REFERENCE",
+                np.load(
+                    reference_root
+                    / "references"
+                    / f"task_{index:02d}"
+                    / "binary_design_64.npy",
+                    allow_pickle=False,
+                ),
+            ),
+            (
+                "FIELD_UNET_BEST4_R25",
+                _load_selected_binary(
+                    evaluation_root,
+                    "field_unet",
+                    selected_updates,
+                    index,
+                ),
+            ),
+            (
+                "SENS_UNET_BEST4_R25",
+                _load_selected_binary(
+                    evaluation_root,
+                    "sens_unet",
+                    selected_updates,
+                    index,
+                ),
+            ),
+        )
+        for family, design in designs:
+            result = verifier(np.asarray(design, dtype=np.float64), task)
+            if (
+                result.task_id != task.task_id
+                or result.resolution != 256
+                or abs(result.material_fraction - 0.25) > 1.0e-12
+                or result.maximum_normalized_residual > 1.0e-10
+            ):
+                raise MT3ProductionEvaluationError(
+                    "selected independent verification became invalid"
+                )
+            row: dict[str, object] = {
+                "task_index": index,
+                "task_id": task.task_id,
+                "family": family,
+                **asdict(result),
+                "validation_accessed": True,
+                "test_id_accessed": False,
+                "test_ood_accessed": False,
+            }
+            rows.append(row)
+        print(
+            f"MT3_VERIFY_256_PROGRESS tasks={index + 1}/32",
+            flush=True,
+        )
+    _atomic_csv(output_path, rows)
+    return rows
+
+
+def _load_selected_binary(
+    evaluation_root: Path,
+    variant: str,
+    selected_updates: int,
+    task_index: int,
+) -> np.ndarray:
+    path = (
+        evaluation_root
+        / variant
+        / f"checkpoint_{selected_updates:06d}"
+        / "tasks"
+        / f"task_{task_index:02d}.npz"
+    )
+    with np.load(path, allow_pickle=False) as payload:
+        design = np.asarray(payload["refined_binary_design"], dtype=np.float64)
+    if (
+        design.shape != (64, 64)
+        or not np.isin(design, (0.0, 1.0)).all()
+        or int(np.count_nonzero(design)) != 1024
+    ):
+        raise MT3ProductionEvaluationError("selected MT3 binary design is invalid")
+    return design
+
+
 def freeze_development_verdict(
     *,
     summaries: list[MT3CheckpointSummary],
@@ -391,12 +505,17 @@ def freeze_development_verdict(
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--phase", choices=("evaluate", "verdict"), required=True)
+    parser.add_argument(
+        "--phase",
+        choices=("evaluate", "verify-256", "verdict"),
+        required=True,
+    )
     parser.add_argument("--summaries", type=Path)
     parser.add_argument("--implementation-commit")
     parser.add_argument("--artifact", type=Path, action="append")
     parser.add_argument("--training-root", type=Path)
     parser.add_argument("--reference-root", type=Path)
+    parser.add_argument("--selected-updates", type=int)
     parser.add_argument(
         "--variant",
         choices=("FIELD_UNET", "SENS_UNET"),
@@ -416,6 +535,18 @@ def main() -> None:
             reference_root=arguments.reference_root.resolve(),
             output_root=arguments.output.resolve(),
             variants=tuple(arguments.variant or ("FIELD_UNET", "SENS_UNET")),
+        )
+        return
+    if arguments.phase == "verify-256":
+        if arguments.reference_root is None or arguments.selected_updates is None:
+            raise SystemExit(
+                "verify-256 requires --reference-root and --selected-updates"
+            )
+        verify_selected_development_256(
+            evaluation_root=arguments.output.resolve(),
+            reference_root=arguments.reference_root.resolve(),
+            selected_updates=arguments.selected_updates,
+            output_path=arguments.output.resolve() / "selected_verified_256.csv",
         )
         return
     if (

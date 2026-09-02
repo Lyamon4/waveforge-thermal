@@ -1,0 +1,696 @@
+"""Paper-grade development reporting for the frozen WaveForge MT3 campaign."""
+
+from __future__ import annotations
+
+import json
+import shutil
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
+from itertools import pairwise
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg", force=True)
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.figure import Figure
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
+from numpy.typing import NDArray
+
+from waveforge.experiments.run_mt2b_evaluation import validation_tasks
+from waveforge.ml.mt3_evaluation import (
+    MT3CheckpointSummary,
+    MT3DevelopmentVerdict,
+    classify_mt3_development,
+    select_mt3_checkpoint,
+)
+from waveforge.ml.multitask_tasks import SourceLayoutTask
+from waveforge.reproducibility import artifact_sha256
+
+FIELD_COLOR = "#4C78A8"
+SENS_COLOR = "#E45756"
+REFERENCE_COLOR = "#6B7280"
+GOOD_COLOR = "#2A9D8F"
+INK = "#152238"
+MUTED = "#5E6B7A"
+
+
+@dataclass(frozen=True)
+class MT3ReportPaths:
+    """Frozen MT3 artifact roots used by the development package."""
+
+    training_root: Path
+    evaluation_root: Path
+    reference_root: Path
+    output_root: Path
+
+
+def illustrative_layout_indices(gaps: NDArray[np.float64]) -> dict[str, int]:
+    """Select disclosed rank-based layouts without visual cherry-picking."""
+    values = np.asarray(gaps, dtype=np.float64)
+    if values.ndim != 1 or values.size == 0 or not np.isfinite(values).all():
+        raise ValueError("illustrative gaps must be a finite nonempty vector")
+    order = np.argsort(values, kind="stable")
+    return {
+        "best": int(order[0]),
+        "median": int(order[len(order) // 2]),
+        "worst": int(order[-1]),
+    }
+
+
+def save_figure_triplet(
+    figure: Figure,
+    output_dir: Path,
+    name: str,
+) -> tuple[Path, Path, Path]:
+    """Save one figure as 300-dpi PNG plus vector SVG and PDF."""
+    if not name or Path(name).name != name:
+        raise ValueError("figure name must be one safe path component")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    paths = tuple(output_dir / f"{name}.{suffix}" for suffix in ("png", "svg", "pdf"))
+    figure.savefig(paths[0], dpi=300, bbox_inches="tight", facecolor="white")
+    figure.savefig(paths[1], bbox_inches="tight", facecolor="white")
+    figure.savefig(paths[2], bbox_inches="tight", facecolor="white")
+    plt.close(figure)
+    return paths
+
+
+def build_mt3_report_markdown(
+    *,
+    sens: MT3CheckpointSummary,
+    field: MT3CheckpointSummary,
+    verdict: MT3DevelopmentVerdict,
+    figure_names: tuple[str, ...],
+) -> str:
+    """Build the disclosure-first MT3 development report."""
+    figures = "\n".join(f"- `{name}`" for name in figure_names)
+    sens_row = (
+        f"| SENS_UNET_BEST4_R25 | {sens.completed_updates} | "
+        f"{100 * sens.median_r25_relative_gap:.3f}% | "
+        f"{100 * sens.p90_r25_relative_gap:.3f}% | "
+        f"{100 * sens.worst_r25_relative_gap:.3f}% | "
+        f"{sens.r25_win_count} |"
+    )
+    field_row = (
+        f"| FIELD_UNET_BEST4_R25 | {field.completed_updates} | "
+        f"{100 * field.median_r25_relative_gap:.3f}% | "
+        f"{100 * field.p90_r25_relative_gap:.3f}% | "
+        f"{100 * field.worst_r25_relative_gap:.3f}% | "
+        f"{field.r25_win_count} |"
+    )
+    return f"""# WaveForge MT3 development report
+
+## Scope
+
+This package reports **development validation only**. ID/OOD test layouts remain sealed.
+It does not claim final generalization performance.
+
+## Primary method and accounting
+
+The preregistered primary method is `SENS_UNET_BEST4_R25`: frozen SENS_UNET
+generates four candidates, performs four forward-only physics scores, selects the
+best candidate, and applies exactly 25 gradient-refinement updates to one candidate.
+FIELD_UNET is shown as the matched conditioning control.
+
+## Frozen checkpoint results
+
+| Method | Updates | Median gap | P90 gap | Worst gap | Wins / 32 |
+|---|---:|---:|---:|---:|---:|
+{sens_row}
+{field_row}
+
+## Development verdict
+
+`{verdict.status}` - {verdict.exact_reason}.
+
+## Figures
+
+{figures}
+"""
+
+
+def _load_summaries(path: Path) -> list[MT3CheckpointSummary]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        summaries = [MT3CheckpointSummary(**row) for row in payload]
+    except (OSError, json.JSONDecodeError, TypeError) as error:
+        raise RuntimeError("MT3 checkpoint summaries are unreadable") from error
+    if not summaries:
+        raise RuntimeError("MT3 checkpoint summaries are empty")
+    return summaries
+
+
+def _selected_directory(
+    paths: MT3ReportPaths,
+    variant: str,
+    completed_updates: int,
+) -> Path:
+    directory = (
+        paths.evaluation_root / variant.lower() / f"checkpoint_{completed_updates:06d}"
+    )
+    if not (directory / "validation_metrics.csv").is_file():
+        raise RuntimeError(f"missing selected {variant} metrics")
+    return directory
+
+
+def _selected_metrics(
+    paths: MT3ReportPaths,
+    variant: str,
+    completed_updates: int,
+) -> pd.DataFrame:
+    frame = pd.read_csv(
+        _selected_directory(paths, variant, completed_updates)
+        / "validation_metrics.csv"
+    )
+    if len(frame) != 32 or frame["task_index"].tolist() != list(range(32)):
+        raise RuntimeError(f"selected {variant} metrics violate task ordering")
+    return frame
+
+
+def _task_arrays(
+    paths: MT3ReportPaths,
+    variant: str,
+    completed_updates: int,
+    task_index: int,
+) -> dict[str, NDArray[np.float64]]:
+    source = (
+        _selected_directory(paths, variant, completed_updates)
+        / "tasks"
+        / f"task_{task_index:02d}.npz"
+    )
+    with np.load(source, allow_pickle=False) as payload:
+        return {
+            name: np.asarray(payload[name], dtype=np.float64)
+            for name in (
+                "candidate_binary_designs",
+                "refined_continuous_design",
+                "refined_binary_design",
+            )
+        }
+
+
+def _reference_design(paths: MT3ReportPaths, task_index: int) -> np.ndarray:
+    array = np.load(
+        paths.reference_root
+        / "references"
+        / f"task_{task_index:02d}"
+        / "binary_design_64.npy",
+        allow_pickle=False,
+    ).astype(np.float64, copy=False)
+    if array.shape != (64, 64) or int(np.count_nonzero(array)) != 1024:
+        raise RuntimeError("reference design violates exact binary budget")
+    return array
+
+
+def _draw_overlay(axis: plt.Axes, task: SourceLayoutTask) -> None:
+    for left, right, bottom, top in task.bounds:
+        axis.add_patch(
+            Rectangle(
+                (left, bottom),
+                right - left,
+                top - bottom,
+                fill=False,
+                edgecolor="#FFB000",
+                linewidth=1.1,
+            )
+        )
+    axis.axhline(1.0 / 64.0, color="#00A6D6", linewidth=1.4)
+
+
+def _design_panel(
+    axis: plt.Axes,
+    design: np.ndarray,
+    task: SourceLayoutTask,
+    title: str,
+    *,
+    continuous: bool = False,
+) -> None:
+    axis.imshow(
+        design,
+        origin="lower",
+        extent=(0, 1, 0, 1),
+        cmap="viridis" if continuous else "Greys",
+        vmin=0,
+        vmax=1,
+        interpolation="nearest",
+    )
+    _draw_overlay(axis, task)
+    axis.set_xticks([])
+    axis.set_yticks([])
+    axis.set_title(title, fontsize=8)
+
+
+def _training_figure(paths: MT3ReportPaths) -> Figure:
+    figure, axes = plt.subplots(2, 1, figsize=(10.5, 7.5), sharex=True)
+    for variant, color in (("field_unet", FIELD_COLOR), ("sens_unet", SENS_COLOR)):
+        frame = pd.read_csv(paths.training_root / variant / "training_metrics.csv")
+        window = min(75, max(1, len(frame) // 20))
+        label = variant.upper()
+        axes[0].plot(
+            frame["update"],
+            frame["mean_loss"].rolling(window, min_periods=1).median(),
+            color=color,
+            label=label,
+        )
+        axes[1].plot(
+            frame["update"],
+            frame["best_candidate_thermal_smooth"]
+            .rolling(window, min_periods=1)
+            .median(),
+            color=color,
+            label=label,
+        )
+    axes[0].set_ylabel("Training objective")
+    axes[1].set_ylabel("Best candidate thermal objective")
+    axes[1].set_xlabel("Optimizer update")
+    for axis in axes:
+        axis.grid(alpha=0.25)
+        axis.legend(frameon=False)
+    figure.suptitle("Matched 4,000-update FIELD and SENS training trajectories")
+    figure.tight_layout()
+    return figure
+
+
+def _checkpoint_figure(summaries: list[MT3CheckpointSummary]) -> Figure:
+    figure, axes = plt.subplots(1, 2, figsize=(11.0, 4.5))
+    for variant, color in (("FIELD_UNET", FIELD_COLOR), ("SENS_UNET", SENS_COLOR)):
+        rows = sorted(
+            (summary for summary in summaries if summary.variant == variant),
+            key=lambda summary: summary.completed_updates,
+        )
+        updates = [row.completed_updates for row in rows]
+        axes[0].plot(
+            updates,
+            [100 * row.median_r25_relative_gap for row in rows],
+            marker="o",
+            color=color,
+            label=variant,
+        )
+        axes[1].plot(
+            updates,
+            [100 * row.p90_r25_relative_gap for row in rows],
+            marker="o",
+            color=color,
+            label=variant,
+        )
+    for axis, title in zip(axes, ("Median gap", "P90 gap"), strict=True):
+        axis.axhline(0.0, color=INK, linewidth=0.8)
+        axis.set_xlabel("Frozen checkpoint update")
+        axis.set_ylabel("Gap to 600-step gradient (%)")
+        axis.set_title(title)
+        axis.grid(alpha=0.25)
+        axis.legend(frameon=False)
+    figure.suptitle("Development checkpoint quality - independent SciPy64")
+    figure.tight_layout()
+    return figure
+
+
+def _paired_gap_figure(field: pd.DataFrame, sens: pd.DataFrame) -> Figure:
+    figure, axis = plt.subplots(figsize=(11.5, 5.2))
+    x = np.arange(32)
+    axis.plot(
+        x,
+        100 * field["r25_relative_gap"],
+        marker="o",
+        color=FIELD_COLOR,
+        linewidth=1.2,
+        label="FIELD_UNET_BEST4_R25",
+    )
+    axis.plot(
+        x,
+        100 * sens["r25_relative_gap"],
+        marker="o",
+        color=SENS_COLOR,
+        linewidth=1.2,
+        label="SENS_UNET_BEST4_R25",
+    )
+    axis.axhline(0.0, color=INK, linewidth=1.0, label="600-step gradient")
+    axis.set_xlabel("Development layout index")
+    axis.set_ylabel("Relative Tmax gap (%)")
+    axis.set_title("Per-layout solver-matched performance")
+    axis.grid(alpha=0.25)
+    axis.legend(frameon=False, ncol=3)
+    figure.tight_layout()
+    return figure
+
+
+def _gap_distribution_figure(field: pd.DataFrame, sens: pd.DataFrame) -> Figure:
+    figure, axis = plt.subplots(figsize=(7.5, 5.2))
+    values = [
+        100 * field["r25_relative_gap"].to_numpy(dtype=np.float64),
+        100 * sens["r25_relative_gap"].to_numpy(dtype=np.float64),
+    ]
+    violin = axis.violinplot(values, showmedians=True, showextrema=True)
+    for body, color in zip(violin["bodies"], (FIELD_COLOR, SENS_COLOR), strict=True):
+        body.set_facecolor(color)
+        body.set_edgecolor(color)
+        body.set_alpha(0.7)
+    axis.axhline(0.0, color=INK, linewidth=1.0)
+    axis.set_xticks((1, 2), ("FIELD", "SENS"))
+    axis.set_ylabel("Relative Tmax gap (%)")
+    axis.set_title("Distribution across all 32 development layouts")
+    axis.grid(axis="y", alpha=0.25)
+    figure.tight_layout()
+    return figure
+
+
+def _representative_figure(
+    paths: MT3ReportPaths,
+    sens_update: int,
+    sens_metrics: pd.DataFrame,
+) -> Figure:
+    tasks = validation_tasks()
+    indices = illustrative_layout_indices(
+        sens_metrics["r25_relative_gap"].to_numpy(dtype=np.float64)
+    )
+    figure, axes = plt.subplots(3, 4, figsize=(11.2, 8.5))
+    for row, (rank, index) in enumerate(indices.items()):
+        task = tasks[index]
+        arrays = _task_arrays(paths, "SENS_UNET", sens_update, index)
+        source_sum = task.sources.sum(axis=0)
+        axes[row, 0].imshow(
+            source_sum,
+            origin="lower",
+            extent=(0, 1, 0, 1),
+            cmap="Reds",
+        )
+        _draw_overlay(axes[row, 0], task)
+        axes[row, 0].set_xticks([])
+        axes[row, 0].set_yticks([])
+        axes[row, 0].set_title(f"{rank.upper()} layout {index:02d}", fontsize=8)
+        _design_panel(
+            axes[row, 1],
+            _reference_design(paths, index),
+            task,
+            "600-step gradient",
+        )
+        _design_panel(
+            axes[row, 2],
+            arrays["refined_continuous_design"],
+            task,
+            "SENS continuous R25",
+            continuous=True,
+        )
+        _design_panel(
+            axes[row, 3],
+            arrays["refined_binary_design"],
+            task,
+            f"SENS binary gap={100 * sens_metrics.loc[index, 'r25_relative_gap']:.2f}%",
+        )
+    figure.suptitle("Predeclared best, median-rank and worst development examples")
+    figure.tight_layout()
+    return figure
+
+
+def _candidate_atlas_figure(
+    paths: MT3ReportPaths,
+    sens_update: int,
+    sens_metrics: pd.DataFrame,
+) -> Figure:
+    tasks = validation_tasks()
+    indices = illustrative_layout_indices(
+        sens_metrics["r25_relative_gap"].to_numpy(dtype=np.float64)
+    )
+    figure, axes = plt.subplots(3, 6, figsize=(15.0, 7.8))
+    for row, (rank, index) in enumerate(indices.items()):
+        task = tasks[index]
+        arrays = _task_arrays(paths, "SENS_UNET", sens_update, index)
+        for head in range(4):
+            _design_panel(
+                axes[row, head],
+                arrays["candidate_binary_designs"][head],
+                task,
+                f"Head {head}",
+            )
+        _design_panel(
+            axes[row, 4],
+            arrays["refined_binary_design"],
+            task,
+            f"Selected + R25\n{rank} rank",
+        )
+        _design_panel(
+            axes[row, 5],
+            _reference_design(paths, index),
+            task,
+            "600-step gradient",
+        )
+    figure.suptitle("Four generated candidates, one selected refinement chain")
+    figure.tight_layout()
+    return figure
+
+
+def _refinement_figure(
+    paths: MT3ReportPaths,
+    sens_update: int,
+    sens_metrics: pd.DataFrame,
+) -> Figure:
+    indices = illustrative_layout_indices(
+        sens_metrics["r25_relative_gap"].to_numpy(dtype=np.float64)
+    )
+    figure, axes = plt.subplots(1, 2, figsize=(11.0, 4.4))
+    for rank, index in indices.items():
+        path = (
+            _selected_directory(paths, "SENS_UNET", sens_update)
+            / "tasks"
+            / f"task_{index:02d}_trace.json"
+        )
+        records = json.loads(path.read_text(encoding="utf-8"))["records"]
+        axes[0].plot(
+            [row["iteration"] for row in records],
+            [row["total_objective"] for row in records],
+            label=f"{rank} layout {index:02d}",
+        )
+        axes[1].plot(
+            [row["iteration"] for row in records],
+            [row["exact_peak"] for row in records],
+            label=f"{rank} layout {index:02d}",
+        )
+    axes[0].set_title("Refinement objective")
+    axes[1].set_title("Exact peak during refinement")
+    for axis in axes:
+        axis.set_xlabel("Refinement update")
+        axis.grid(alpha=0.25)
+        axis.legend(frameon=False)
+    figure.suptitle("Exactly one selected candidate receives 25 updates")
+    figure.tight_layout()
+    return figure
+
+
+def _architecture_figure() -> Figure:
+    figure, axis = plt.subplots(figsize=(13.5, 4.3))
+    axis.set_xlim(0, 13.5)
+    axis.set_ylim(0, 4.3)
+    axis.axis("off")
+    boxes = (
+        (0.2, 1.25, 2.0, "Thermal task", "3 source layouts\n+ sink boundary"),
+        (2.8, 1.25, 2.0, "Physics probe", "Tmean, Tmax\n+ initial sensitivity"),
+        (5.4, 1.25, 2.0, "Shared U-Net", "2.92 M parameters\n4 candidate heads"),
+        (8.0, 1.25, 2.0, "Physics score", "4 forward solves\nselect best head"),
+        (
+            10.6,
+            1.25,
+            2.5,
+            "Minimal refinement",
+            "one candidate only\n25 gradient updates",
+        ),
+    )
+    for x, y, width, title, body in boxes:
+        axis.add_patch(
+            FancyBboxPatch(
+                (x, y),
+                width,
+                1.55,
+                boxstyle="round,pad=0.04,rounding_size=0.08",
+                facecolor="#F4F7FA",
+                edgecolor=INK,
+                linewidth=1.2,
+            )
+        )
+        axis.text(x + width / 2, y + 1.10, title, ha="center", weight="bold")
+        axis.text(x + width / 2, y + 0.53, body, ha="center", va="center")
+    for left, right in pairwise(boxes):
+        axis.add_patch(
+            FancyArrowPatch(
+                (left[0] + left[2] + 0.08, 2.03),
+                (right[0] - 0.08, 2.03),
+                arrowstyle="-|>",
+                mutation_scale=14,
+                color=SENS_COLOR,
+            )
+        )
+    axis.text(
+        6.75,
+        3.72,
+        "Teacher-free physics training across procedural layouts",
+        ha="center",
+        fontsize=14,
+        weight="bold",
+    )
+    axis.text(
+        6.75,
+        0.45,
+        "At inference: frozen weights; only the preregistered R25 hybrid step adapts",
+        ha="center",
+        color=MUTED,
+    )
+    return figure
+
+
+def _readme_ru(
+    sens: MT3CheckpointSummary,
+    field: MT3CheckpointSummary,
+    verdict: MT3DevelopmentVerdict,
+) -> str:
+    return f"""# WaveForge MT3 - текущий пакет результатов
+
+Это **development validation**, а не финальный ID/OOD test. Закрытые тестовые
+задачи не открывались.
+
+- Главный метод: SENS_UNET -> 4 кандидата -> 4 быстрые проверки физикой ->
+  один лучший кандидат -> ровно 25 шагов доработки.
+- Выбранный checkpoint SENS: {sens.completed_updates} updates.
+- Median gap SENS к 600-step gradient: {100 * sens.median_r25_relative_gap:.3f}%.
+- Median gap FIELD control: {100 * field.median_r25_relative_gap:.3f}%.
+- Машинный verdict: `{verdict.status}`.
+
+Папка `figures` содержит одинаковые изображения в PNG 300 dpi, SVG и PDF.
+"""
+
+
+def _write_json(path: Path, payload: object) -> None:
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def build_mt3_development_package(
+    paths: MT3ReportPaths,
+    *,
+    include_temperature_maps: bool = True,
+) -> Path:
+    """Build one disclosure-complete development package from frozen artifacts."""
+    summaries = _load_summaries(paths.evaluation_root / "checkpoint_summaries.json")
+    sens_rows = [summary for summary in summaries if summary.variant == "SENS_UNET"]
+    sens = select_mt3_checkpoint(sens_rows)
+    matched_field = [
+        summary
+        for summary in summaries
+        if summary.variant == "FIELD_UNET"
+        and summary.completed_updates == sens.completed_updates
+    ]
+    if len(matched_field) != 1:
+        raise RuntimeError("matched FIELD summary is missing at selected SENS update")
+    field = matched_field[0]
+    verdict = classify_mt3_development(
+        median_gap=sens.median_r25_relative_gap,
+        p90_gap=sens.p90_r25_relative_gap,
+        worst_gap=sens.worst_r25_relative_gap,
+        wins=sens.r25_win_count,
+        valid_count=sens.task_count - sens.invalid_count,
+        exact_budget_count=sens.exact_budget_count,
+    )
+    field_metrics = _selected_metrics(paths, "FIELD_UNET", sens.completed_updates)
+    sens_metrics = _selected_metrics(paths, "SENS_UNET", sens.completed_updates)
+    figures_dir = paths.output_root / "figures"
+    models_dir = paths.output_root / "models"
+    data_dir = paths.output_root / "data"
+    for directory in (figures_dir, models_dir, data_dir):
+        directory.mkdir(parents=True, exist_ok=True)
+
+    builders: tuple[tuple[str, Callable[[], Figure]], ...] = (
+        ("01_training_curves", lambda: _training_figure(paths)),
+        ("02_checkpoint_quality", lambda: _checkpoint_figure(summaries)),
+        (
+            "03_per_layout_gap",
+            lambda: _paired_gap_figure(field_metrics, sens_metrics),
+        ),
+        (
+            "04_gap_distribution",
+            lambda: _gap_distribution_figure(field_metrics, sens_metrics),
+        ),
+        (
+            "05_representative_topologies",
+            lambda: _representative_figure(paths, sens.completed_updates, sens_metrics),
+        ),
+        (
+            "06_four_candidate_atlas",
+            lambda: _candidate_atlas_figure(
+                paths, sens.completed_updates, sens_metrics
+            ),
+        ),
+        (
+            "07_refinement_trajectories",
+            lambda: _refinement_figure(paths, sens.completed_updates, sens_metrics),
+        ),
+        ("08_method_diagram", _architecture_figure),
+    )
+    figure_names: list[str] = []
+    for name, builder in builders:
+        save_figure_triplet(builder(), figures_dir, name)
+        figure_names.append(name)
+
+    if include_temperature_maps:
+        # Added only after selected 256x256 verification is available.
+        verified = paths.evaluation_root / "selected_verified_256.csv"
+        if not verified.is_file():
+            raise RuntimeError("selected 256x256 verification is not available")
+
+    report = build_mt3_report_markdown(
+        sens=sens,
+        field=field,
+        verdict=verdict,
+        figure_names=tuple(figure_names),
+    )
+    paths.output_root.mkdir(parents=True, exist_ok=True)
+    (paths.output_root / "MT3_REPORT.md").write_text(
+        report,
+        encoding="utf-8",
+        newline="\n",
+    )
+    (paths.output_root / "README_RU.md").write_text(
+        _readme_ru(sens, field, verdict),
+        encoding="utf-8",
+        newline="\n",
+    )
+    pd.DataFrame(
+        [
+            {"method": "SENS_UNET_BEST4_R25", **asdict(sens)},
+            {"method": "FIELD_UNET_BEST4_R25", **asdict(field)},
+        ]
+    ).to_csv(
+        paths.output_root / "performance_table.csv", index=False, lineterminator="\n"
+    )
+    field_metrics.to_csv(data_dir / "field_validation_metrics.csv", index=False)
+    sens_metrics.to_csv(data_dir / "sens_validation_metrics.csv", index=False)
+    _write_json(paths.output_root / "development_verdict.json", asdict(verdict))
+    _write_json(paths.output_root / "selected_checkpoint.json", asdict(sens))
+    for variant in ("field_unet", "sens_unet"):
+        source = (
+            paths.training_root
+            / variant
+            / f"checkpoint_{sens.completed_updates:06d}.pt"
+        )
+        shutil.copy2(source, models_dir / f"{variant}_selected.pt")
+
+    files = sorted(
+        path
+        for path in paths.output_root.rglob("*")
+        if path.is_file() and path.name != "manifest.json"
+    )
+    manifest = {
+        "schema_version": 1,
+        "scope": "development_validation_only",
+        "test_id_accessed": False,
+        "test_ood_accessed": False,
+        "files": {
+            path.relative_to(paths.output_root).as_posix(): artifact_sha256(path)
+            for path in files
+        },
+    }
+    _write_json(paths.output_root / "manifest.json", manifest)
+    return paths.output_root

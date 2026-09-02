@@ -12,6 +12,7 @@ from waveforge.experiments.run_mt3_evaluation import (
     MT3ProductionEvaluationError,
     production_checkpoint_paths,
     run_checkpoint_evaluation,
+    verify_selected_development_256,
 )
 from waveforge.ml.mt3_evaluation import (
     MT3CheckpointSummary,
@@ -22,6 +23,7 @@ from waveforge.ml.mt3_evaluation import (
     solver_consistent_gap,
     summarize_mt3_checkpoint_rows,
 )
+from waveforge.verification.multitask_verification import IndependentTaskVerification
 
 
 def _summary(
@@ -297,3 +299,64 @@ def test_checkpoint_evaluation_persists_and_resumes_all_32_layouts(
     assert (output / "validation_metrics.csv").is_file()
     assert (output / "checkpoint_summary.json").is_file()
     assert len(list((output / "tasks").glob("task_*.npz"))) == 32
+
+
+def test_selected_256_verification_covers_reference_field_and_sens(
+    tmp_path: Path,
+) -> None:
+    tasks = validation_tasks()
+    evaluation = tmp_path / "evaluation"
+    references = tmp_path / "references"
+    binary = np.zeros((64, 64), dtype=np.float64)
+    binary.reshape(-1)[:1024] = 1.0
+    for variant in ("field_unet", "sens_unet"):
+        task_dir = evaluation / variant / "checkpoint_002500" / "tasks"
+        task_dir.mkdir(parents=True)
+        for index in range(32):
+            np.savez_compressed(
+                task_dir / f"task_{index:02d}.npz",
+                candidate_binary_designs=np.stack([binary] * 4),
+                refined_continuous_design=binary,
+                refined_binary_design=binary,
+            )
+    for index in range(32):
+        directory = references / "references" / f"task_{index:02d}"
+        directory.mkdir(parents=True)
+        np.save(directory / "binary_design_64.npy", binary, allow_pickle=False)
+    task_indices = {task.task_id: index for index, task in enumerate(tasks)}
+
+    def verifier(design, task):
+        index = task_indices[task.task_id]
+        peak = 0.2 + index / 1000.0
+        return IndependentTaskVerification(
+            task_id=task.task_id,
+            resolution=256,
+            design_hash_64=f"design-{index}",
+            transferred_design_hash=f"transferred-{index}",
+            material_fraction=0.25,
+            scenario_peaks=(peak - 0.02, peak - 0.01, peak),
+            worst_peak=peak,
+            maximum_normalized_residual=1e-12,
+            wall_seconds=0.1,
+        )
+
+    output = evaluation / "selected_verified_256.csv"
+    rows = verify_selected_development_256(
+        evaluation_root=evaluation,
+        reference_root=references,
+        selected_updates=2500,
+        output_path=output,
+        verifier=verifier,
+    )
+
+    assert len(rows) == 96
+    assert {row["family"] for row in rows} == {
+        "REFERENCE",
+        "FIELD_UNET_BEST4_R25",
+        "SENS_UNET_BEST4_R25",
+    }
+    assert all(row["resolution"] == 256 for row in rows)
+    assert all(row["material_fraction"] == 0.25 for row in rows)
+    assert all(row["test_id_accessed"] is False for row in rows)
+    assert all(row["test_ood_accessed"] is False for row in rows)
+    assert output.is_file()
