@@ -16,6 +16,10 @@ import torch
 from numpy.typing import NDArray
 
 from waveforge.design.batched_adam_baseline import optimize_adam_batched
+from waveforge.design.epyc9754_benchmark import (
+    EPYC9754ScaleBenchmark,
+    build_epyc9754_scale_benchmark,
+)
 from waveforge.design.mma_baseline import optimize_mma
 from waveforge.ml.mt2b_evaluation import independent_scipy64_tmax
 from waveforge.ml.mt3_conditioning import build_mt3_conditioning, compute_initial_probe
@@ -32,7 +36,11 @@ from waveforge.ml.multitask_tasks import (
     SourceLayoutTask,
     build_frozen_splits,
 )
+from waveforge.physics.boundary_conditions import BoundaryConditions
+from waveforge.physics.grid import Grid2D
+from waveforge.physics.steady_solver import solve_steady
 from waveforge.reproducibility import artifact_sha256, configure_cuda_reproducibility
+from waveforge.verification.high_fidelity import replicate_design
 from waveforge.verification.multitask_verification import verify_binary_task
 
 _BUDGETS = (25, 50, 100, 200, 600)
@@ -67,6 +75,30 @@ def neural_equivalent_evaluations(*, refinement_updates: int) -> int:
     if refinement_updates not in (25, 50):
         raise ValueError("refinement updates must be exactly 25 or 50")
     return 1 + 4 + refinement_updates
+
+
+def independent_source_maps_tmax(
+    design: NDArray[np.float64], task: EPYC9754ScaleBenchmark
+) -> float:
+    """Score a binary design against already registered multi-region source maps."""
+    binary = exact_binary64(design)
+    sources = np.asarray(task.sources, dtype=np.float64)
+    if sources.shape != (3, 64, 64) or not np.isfinite(sources).all():
+        raise ValueError("registered source maps must be finite [3,64,64]")
+    grid = Grid2D(nx=64, ny=64)
+    conductivity = 1.0 + 19.0 * binary
+    peaks: list[float] = []
+    for source in sources:
+        result = solve_steady(
+            grid, conductivity, source, BoundaryConditions.production()
+        )
+        if result.normalized_residual > 1.0e-10:
+            raise MT3FinalRunError("EPYC SciPy64 residual exceeds tolerance")
+        peaks.append(float(np.max(result.temperature)))
+    peak = max(peaks)
+    if not math.isfinite(peak) or peak <= 0.0:
+        raise FloatingPointError("EPYC Tmax must be finite and positive")
+    return peak
 
 
 def _atomic_json(path: Path, payload: object) -> None:
@@ -685,10 +717,141 @@ def run_verification_phase(*, splits: FrozenTaskSplits, output: Path) -> None:
     _atomic_json(output / "verification" / "final_verdicts.json", verdicts)
 
 
+def _verify_epyc_256(
+    design: NDArray[np.float64], benchmark: EPYC9754ScaleBenchmark
+) -> dict[str, object]:
+    binary = exact_binary64(design)
+    transferred = replicate_design(binary, factor=4)
+    sources = np.asarray(benchmark.sources, dtype=np.float64)
+    if sources.shape != (3, 256, 256):
+        raise ValueError("EPYC verification requires registered 256 source maps")
+    grid = Grid2D(nx=256, ny=256)
+    conductivity = 1.0 + 19.0 * transferred
+    peaks: list[float] = []
+    residuals: list[float] = []
+    started = time.perf_counter()
+    for source in sources:
+        result = solve_steady(
+            grid, conductivity, source, BoundaryConditions.production()
+        )
+        peaks.append(float(np.max(result.temperature)))
+        residuals.append(float(result.normalized_residual))
+    if max(residuals) > 1.0e-10:
+        raise MT3FinalRunError("EPYC SciPy256 residual exceeds tolerance")
+    return {
+        "scenario_peaks": peaks,
+        "worst_peak": max(peaks),
+        "maximum_normalized_residual": max(residuals),
+        "material_fraction": float(np.mean(transferred)),
+        "wall_seconds": time.perf_counter() - started,
+    }
+
+
+def run_epyc_phase(*, training_root: Path, output: Path, device: torch.device) -> None:
+    """Run the disclosed synthetic EPYC-scale extreme-OOD secondary benchmark."""
+    destination = output / "epyc9754_scale_synthetic"
+    arrays_path = destination / "designs.npz"
+    result_path = destination / "result.json"
+    benchmark64 = build_epyc9754_scale_benchmark(resolution=64)
+    if _valid_result(result_path, arrays_path, task_id=benchmark64.task_id):
+        print("MT3_EPYC cached", flush=True)
+        return
+    benchmark256 = build_epyc9754_scale_benchmark(resolution=256)
+    if benchmark64.label != "EPYC_9754_SCALE_SYNTHETIC":
+        raise MT3FinalRunError("EPYC benchmark label changed")
+    model = _load_model(
+        training_root / "sens_unet" / "checkpoint_004000.pt",
+        "SENS_UNET",
+        device,
+    )
+    sources = torch.as_tensor(benchmark64.sources, dtype=torch.float64, device=device)
+    probe = compute_initial_probe(sources.unsqueeze(0))
+    condition = build_mt3_conditioning(probe, sources.unsqueeze(0), variant="SENS_UNET")
+    with torch.no_grad():
+        logits = model(condition)[0]
+        projected = project_mt3_candidates(logits.unsqueeze(0), beta=8.0)
+    trajectory = select_and_refine_trajectory(
+        logits,
+        projected.binary[0],
+        benchmark64,  # type: ignore[arg-type]
+        sources,
+        scorer=independent_source_maps_tmax,  # type: ignore[arg-type]
+        steps=(25, 50),
+    )
+    selected_head = trajectory[25].selected_head
+    candidate_binary = projected.binary[0].detach().cpu().numpy().astype(np.float64)
+    sens_best4 = exact_binary64(candidate_binary[selected_head])
+    sens_r25 = exact_binary64(trajectory[25].binary_design.numpy())
+    sens_r50 = exact_binary64(trajectory[50].binary_design.numpy())
+
+    adam = optimize_adam_batched(
+        (benchmark64,),  # type: ignore[arg-type]
+        seeds=(2026092801,),
+        total_updates=600,
+        snapshot_updates=_BUDGETS,
+        device=device,
+    ).tasks[0]
+    mma = optimize_mma(
+        benchmark64,  # type: ignore[arg-type]
+        evaluations=600,
+        seed=2026092802,
+        device=device,
+        snapshot_evaluations=_BUDGETS,
+    )
+    if mma.status != "PASS" or set(mma.snapshots) != set(_BUDGETS):
+        raise MT3FinalRunError("EPYC MMA baseline failed")
+    adam600 = exact_binary64(adam.snapshots[600].binary_design)
+    mma600 = exact_binary64(mma.snapshots[600].binary_design)
+    _atomic_npz(
+        arrays_path,
+        sources_64=benchmark64.sources,
+        candidate_binary_designs=candidate_binary,
+        sens_best4_binary=sens_best4,
+        sens_r25_binary=sens_r25,
+        sens_r50_binary=sens_r50,
+        adam600_binary=adam600,
+        mma600_binary=mma600,
+    )
+    verified = {
+        "SENS_UNET_BEST4": _verify_epyc_256(sens_best4, benchmark256),
+        "SENS_UNET_BEST4_R25": _verify_epyc_256(sens_r25, benchmark256),
+        "SENS_UNET_BEST4_R50": _verify_epyc_256(sens_r50, benchmark256),
+        "ADAM_600": _verify_epyc_256(adam600, benchmark256),
+        "MMA_600": _verify_epyc_256(mma600, benchmark256),
+    }
+    winner, reference = strong_single_reference(
+        adam_tmax=float(verified["ADAM_600"]["worst_peak"]),
+        mma_tmax=float(verified["MMA_600"]["worst_peak"]),
+    )
+    candidate = float(verified["SENS_UNET_BEST4_R25"]["worst_peak"])
+    payload: dict[str, object] = {
+        "schema_version": 1,
+        "status": "PASS",
+        "task_id": benchmark64.task_id,
+        "label": benchmark64.label,
+        "benchmark_role": benchmark64.benchmark_role,
+        "exact_proprietary_cpu_model": False,
+        "package_size_mm": benchmark64.package_size_mm,
+        "workloads": [asdict(workload) for workload in benchmark64.workloads],
+        "regions": [asdict(region) for region in benchmark64.regions],
+        "selected_head": selected_head,
+        "verified_scipy256": verified,
+        "strong_single_family": winner,
+        "strong_single_tmax_scipy256": reference,
+        "sens_r25_relative_gap": (candidate - reference) / reference,
+        "affects_primary_id_ood_verdict": False,
+        "arrays_sha256": artifact_sha256(arrays_path),
+    }
+    _atomic_json(result_path, payload)
+    print("MT3_EPYC PASS", flush=True)
+
+
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--phase", choices=("neural", "adam", "mma", "verify"), required=True
+        "--phase",
+        choices=("neural", "adam", "mma", "verify", "epyc"),
+        required=True,
     )
     parser.add_argument("--authorization", type=Path, required=True)
     parser.add_argument("--authorization-sha256", required=True)
@@ -717,12 +880,18 @@ def main() -> None:
             output=output,
             device=device,
         )
-    else:
+    elif arguments.phase in {"adam", "mma"}:
         run_baseline_phase(
             splits=splits,
             output=output,
             device=device,
             method=arguments.phase,
+        )
+    else:
+        run_epyc_phase(
+            training_root=arguments.training_root.resolve(),
+            output=output,
+            device=device,
         )
 
 

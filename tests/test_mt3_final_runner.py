@@ -3,9 +3,11 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from waveforge.design.epyc9754_benchmark import build_epyc9754_scale_benchmark
 from waveforge.experiments.run_mt3_final_evaluation import (
     _write_task_manifest,
     exact_binary64,
+    independent_source_maps_tmax,
     neural_equivalent_evaluations,
     strong_single_reference,
 )
@@ -54,3 +56,14 @@ def test_opened_task_manifest_is_stable_after_json_round_trip(tmp_path) -> None:
 
     _write_task_manifest(tmp_path, splits)
     _write_task_manifest(tmp_path, splits)
+
+
+def test_epyc_scorer_uses_registered_source_maps_without_primary_task_adapter() -> None:
+    benchmark = build_epyc9754_scale_benchmark(resolution=64)
+    design = np.zeros((64, 64), dtype=np.float64)
+    design[:, :16] = 1.0
+
+    peak = independent_source_maps_tmax(design, benchmark)
+
+    assert np.isfinite(peak)
+    assert peak > 0.0
