@@ -1,0 +1,50 @@
+{
+  "batched_seconds": 41.6806159298867,
+  "per_task_speedup": 3.57674983550033,
+  "rows": [
+    {
+      "batched_tmax_scipy64": 0.44977512706488804,
+      "binary_exact_match": true,
+      "max_abs_logit_difference": 5.960464477539062e-07,
+      "separate_tmax_scipy64": 0.44977512706488804,
+      "task_id": "8b3bfefc7f914f920a892edfb68771b9e81be78889f3dfc68dbfcc50b7d6a117",
+      "task_index": 0,
+      "tmax_abs_difference": 0.0
+    },
+    {
+      "batched_tmax_scipy64": 0.2811365063541627,
+      "binary_exact_match": true,
+      "max_abs_logit_difference": 8.493661880493164e-07,
+      "separate_tmax_scipy64": 0.2811365063541627,
+      "task_id": "85b8bba89f2470f302978c6c6db1ffc24f52fb4d224ca06284391ae31fb59a85",
+      "task_index": 1,
+      "tmax_abs_difference": 0.0
+    },
+    {
+      "batched_tmax_scipy64": 0.29392691513499486,
+      "binary_exact_match": true,
+      "max_abs_logit_difference": 5.960464477539062e-07,
+      "separate_tmax_scipy64": 0.29392691513499486,
+      "task_id": "2e9132acd0f83a92366f8dcf5a18e0bd2918f2c1f4a93b91c721141429f2d1c0",
+      "task_index": 2,
+      "tmax_abs_difference": 0.0
+    },
+    {
+      "batched_tmax_scipy64": 0.23422137515424118,
+      "binary_exact_match": true,
+      "max_abs_logit_difference": 7.35744833946228e-07,
+      "separate_tmax_scipy64": 0.23422137515424118,
+      "task_id": "32ef2ab494b8629eb36881798fcdb2e85199a388b2e87060792f5a44ef9ac591",
+      "task_index": 3,
+      "tmax_abs_difference": 0.0
+    }
+  ],
+  "schema_version": 1,
+  "separate_total_seconds": 149.0811361707747,
+  "status": "PASS",
+  "task_count": 4,
+  "test_id_accessed": false,
+  "test_ood_accessed": false,
+  "updates": 50,
+  "validation_only": true
+}

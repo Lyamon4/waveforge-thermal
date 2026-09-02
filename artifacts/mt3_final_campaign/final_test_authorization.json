@@ -1,0 +1,35 @@
+{
+  "artifacts": {
+    "2026-09-02-mt3-final-test-execution.md": {
+      "path": "docs/superpowers/specs/2026-09-02-mt3-final-test-execution.md",
+      "sha256": "658dd47dc274342e65e98084c609b0a12c34627a194d6100f09ae780caca7fed"
+    },
+    "batched_adam_equivalence.json": {
+      "path": "artifacts/mt3_final_campaign/qualification/batched_adam_equivalence.json",
+      "sha256": "515f38dcda502d464bae2feb594540654446d318ef7e4b1eba9379cbd33c3412"
+    },
+    "field_checkpoint_004000.pt": {
+      "path": "artifacts/mt3_production_v100/mt3_production/field_unet/checkpoint_004000.pt",
+      "sha256": "f6e933ffa4b9d84c3c9180b935066ca0e85e882283f28e46aa37ab27e2477fec"
+    },
+    "mt3_final_evaluation.yaml": {
+      "path": "configs/mt3_final_evaluation.yaml",
+      "sha256": "e91e3023f4ddc8ff7f8a343a139b413d8d5e3411726ff7bcc26443c551bd71a6"
+    },
+    "parent_test_authorization.json": {
+      "path": "artifacts/mt3_development_evaluation/test_authorization.json",
+      "sha256": "ae243d6d53f1e142206c8410fbaa21ab70615edc84c336bfc02927db2fafb1d0"
+    },
+    "sens_checkpoint_004000.pt": {
+      "path": "artifacts/mt3_production_v100/mt3_production/sens_unet/checkpoint_004000.pt",
+      "sha256": "75e2020cbfbcf30b04f95275bcaa6873827c8966b667ef2480f2b9445557c167"
+    }
+  },
+  "bundle_sha256": "0ab5f1f781d6ded44714c6bcafb93f6e4f14ef99d5139b96f66a4c5cf393756a",
+  "development_status": "MT3_DEVELOPMENT_GO",
+  "implementation_commit": "cc7e2284b94a079666dbb0c383d9d4232399df97",
+  "schema_version": 1,
+  "test_authorized": true,
+  "test_id_accessed": false,
+  "test_ood_accessed": false
+}
