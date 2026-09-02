@@ -72,3 +72,22 @@ def test_mma_rejects_unregistered_evaluation_budgets(evaluations: int) -> None:
     task = sample_primary_task(2026092317, 1)
     with pytest.raises(ValueError, match="25/50/100/200/600"):
         optimize_mma(task, evaluations=evaluations, seed=2026092320)
+
+
+def test_mma_trajectory_rejects_unregistered_or_out_of_range_snapshots() -> None:
+    task = sample_primary_task(2026092317, 2)
+
+    with pytest.raises(ValueError, match="snapshot"):
+        optimize_mma(
+            task,
+            evaluations=600,
+            seed=2026092321,
+            snapshot_evaluations=(25, 75, 600),
+        )
+    with pytest.raises(ValueError, match="snapshot"):
+        optimize_mma(
+            task,
+            evaluations=200,
+            seed=2026092321,
+            snapshot_evaluations=(25, 600),
+        )

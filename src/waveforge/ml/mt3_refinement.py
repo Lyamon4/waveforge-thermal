@@ -159,7 +159,12 @@ def _run_physics_refinement(
     sources: Tensor,
     *,
     steps: int,
-) -> tuple[Tensor, tuple[RefinementTraceRecord, ...]]:
+    capture_steps: tuple[int, ...] = (),
+) -> tuple[
+    Tensor,
+    tuple[RefinementTraceRecord, ...],
+    dict[int, Tensor],
+]:
     logits = selected_logits.detach().clone().requires_grad_(True)
     optimizer = torch.optim.Adam(
         [logits],
@@ -170,6 +175,7 @@ def _run_physics_refinement(
     )
     grid = Grid2D(nx=64, ny=64)
     records: list[RefinementTraceRecord] = []
+    snapshots: dict[int, Tensor] = {}
     for iteration in range(steps):
         optimizer.zero_grad(set_to_none=True)
         parameterized = parameterize_design(logits, beta=8.0)
@@ -221,7 +227,10 @@ def _run_physics_refinement(
         ):
             raise FloatingPointError("refinement record contains NaN or Inf")
         records.append(record)
-    return logits.detach(), tuple(records)
+        completed = iteration + 1
+        if completed in capture_steps:
+            snapshots[completed] = logits.detach().clone()
+    return logits.detach(), tuple(records), snapshots
 
 
 def refine_selected_candidate(
@@ -247,7 +256,7 @@ def refine_selected_candidate(
 
     selected_logits = candidate_logits[selected.head_index].to(device=sources.device)
     if stepper is None:
-        final_logits, records = _run_physics_refinement(
+        final_logits, records, _ = _run_physics_refinement(
             selected,
             selected_logits,
             sources,
@@ -315,3 +324,93 @@ def select_and_refine(
         stepper=stepper,
     )
     return replace(result, candidate_scores=scores)
+
+
+def _result_from_logits(
+    *,
+    selected: CandidateScore,
+    scores: tuple[CandidateScore, ...],
+    steps: int,
+    records: tuple[RefinementTraceRecord, ...],
+    logits: Tensor,
+) -> MT3RefinementResult:
+    validate_refinement_accounting(
+        refined_heads=(selected.head_index,),
+        requested_steps=steps,
+        record_count=len(records),
+    )
+    parameterized = parameterize_design(logits, beta=8.0)
+    continuous = parameterized.design.detach()
+    binary, _ = exact_cardinality_binary(continuous, count=1024)
+    return MT3RefinementResult(
+        selected_head=selected.head_index,
+        candidate_scores=scores,
+        requested_steps=steps,
+        refined_heads=(selected.head_index,),
+        records=records,
+        final_logits=logits.detach().cpu(),
+        continuous_design=continuous.cpu(),
+        binary_design=binary.cpu(),
+    )
+
+
+def select_and_refine_trajectory(
+    candidate_logits: Tensor,
+    binary_designs: Tensor,
+    task: SourceLayoutTask,
+    sources: Tensor,
+    *,
+    scorer: SciPy64Evaluator,
+    steps: tuple[int, ...] = (25, 50),
+    allow_cpu_unit_test: bool = False,
+    stepper: RefinementStepper | None = None,
+) -> dict[int, MT3RefinementResult]:
+    """Capture registered R25 and R50 from one selected-candidate chain."""
+    if steps not in ((25,), (50,), (25, 50)):
+        raise ValueError("trajectory steps must be (25,), (50,), or (25,50)")
+    if tuple(candidate_logits.shape) != (4, 64, 64):
+        raise ValueError("candidate logits must have shape [4,64,64]")
+    if tuple(sources.shape) != (3, 64, 64) or sources.dtype is not torch.float64:
+        raise ValueError("sources must have shape [3,64,64] and float64")
+    if sources.device.type != "cuda" and not allow_cpu_unit_test:
+        raise ValueError("production refinement requires CUDA")
+
+    scores = _score_candidates(candidate_logits, binary_designs, task, scorer)
+    selected = min(scores, key=lambda row: (row.binary_tmax, row.head_index))
+    current = candidate_logits[selected.head_index].to(device=sources.device)
+    maximum = max(steps)
+    snapshots: dict[int, Tensor] = {}
+    if stepper is None:
+        _, records, snapshots = _run_physics_refinement(
+            selected,
+            current,
+            sources,
+            steps=maximum,
+            capture_steps=steps,
+        )
+    else:
+        injected: list[RefinementTraceRecord] = []
+        for iteration in range(maximum):
+            current, record = stepper(
+                current,
+                sources,
+                selected.head_index,
+                iteration,
+            )
+            injected.append(record)
+            completed = iteration + 1
+            if completed in steps:
+                snapshots[completed] = current.detach().clone()
+        records = tuple(injected)
+    if set(snapshots) != set(steps):
+        raise MT3InvalidRun("refinement trajectory is missing a registered snapshot")
+    return {
+        step: _result_from_logits(
+            selected=selected,
+            scores=scores,
+            steps=step,
+            records=records[:step],
+            logits=snapshots[step],
+        )
+        for step in steps
+    }

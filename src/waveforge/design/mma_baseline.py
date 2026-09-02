@@ -53,6 +53,15 @@ class MMAEvaluationRecord:
 
 
 @dataclass(frozen=True)
+class MMASnapshot:
+    evaluation: int
+    logits: NDArray[np.float64]
+    binary_design: NDArray[np.float64]
+    binary_cell_count: int
+    binary_material_fraction: float
+
+
+@dataclass(frozen=True)
 class MMABaselineResult:
     status: Literal["PASS", "MMA_BACKEND_UNAVAILABLE", "INVALID_RUN"]
     requested_evaluations: int
@@ -66,6 +75,7 @@ class MMABaselineResult:
     binary_design: NDArray[np.float64] | None
     binary_cell_count: int | None
     binary_material_fraction: float | None
+    snapshots: dict[int, MMASnapshot]
 
 
 def qualify_mma_backend() -> MMAQualification:
@@ -201,10 +211,18 @@ def optimize_mma(
     *,
     device: torch.device | None = None,
     allow_cpu_unit_test: bool = False,
+    snapshot_evaluations: tuple[int, ...] = (),
 ) -> MMABaselineResult:
     """Run the registered restarted-continuation NLopt LD_MMA baseline."""
     if evaluations not in _REGISTERED_BUDGETS:
         raise ValueError("MMA evaluations must be one of 25/50/100/200/600")
+    if tuple(sorted(set(snapshot_evaluations))) != snapshot_evaluations or any(
+        value not in _REGISTERED_BUDGETS or value > evaluations
+        for value in snapshot_evaluations
+    ):
+        raise ValueError(
+            "MMA snapshot evaluations must be registered and within budget"
+        )
     qualification = qualify_mma_backend()
     if not qualification.available:
         return MMABaselineResult(
@@ -220,6 +238,7 @@ def optimize_mma(
             binary_design=None,
             binary_cell_count=None,
             binary_material_fraction=None,
+            snapshots={},
         )
     import nlopt  # type: ignore[import-not-found]
 
@@ -229,6 +248,7 @@ def optimize_mma(
     records: list[MMAEvaluationRecord] = []
     termination_codes: list[int] = []
     evaluation_index = 0
+    raw_snapshots: dict[int, NDArray[np.float64]] = {}
     try:
         for start, stop in _continuation_segments(evaluations):
             beta = beta_for_iteration(start)
@@ -267,12 +287,16 @@ def optimize_mma(
                     )
                 )
                 evaluation_index += 1
+                if evaluation_index in snapshot_evaluations:
+                    raw_snapshots[evaluation_index] = np.array(x, copy=True)
                 return value
 
             optimizer = nlopt.opt(nlopt.LD_MMA, 256)
             optimizer.set_min_objective(callback)
             optimizer.set_maxeval(stop - start)
             current = np.asarray(optimizer.optimize(current), dtype=np.float64)
+            if stop in snapshot_evaluations:
+                raw_snapshots[stop] = current.copy()
             termination_codes.append(int(optimizer.last_optimize_result()))
     except (RuntimeError, FloatingPointError, nlopt.nlopt_error):
         return MMABaselineResult(
@@ -288,6 +312,7 @@ def optimize_mma(
             binary_design=None,
             binary_cell_count=None,
             binary_material_fraction=None,
+            snapshots={},
         )
 
     logits_tensor = torch.as_tensor(
@@ -304,6 +329,36 @@ def optimize_mma(
     binary, budget = exact_cardinality_binary(continuous, count=1024)
     continuous_array = continuous.numpy().astype(np.float64, copy=False)
     binary_array = binary.numpy().astype(np.float64, copy=False)
+    raw_snapshots[evaluations] = current.copy()
+    snapshots: dict[int, MMASnapshot] = {}
+    for snapshot_evaluation in snapshot_evaluations:
+        snapshot_logits = raw_snapshots.get(snapshot_evaluation)
+        if snapshot_logits is None:
+            continue
+        snapshot_tensor = torch.as_tensor(
+            snapshot_logits.reshape(16, 16),
+            dtype=torch.float32,
+            device=target_device,
+        )
+        snapshot_design = (
+            parameterize_design(
+                snapshot_tensor,
+                beta=beta_for_iteration(snapshot_evaluation - 1),
+            )
+            .design.detach()
+            .cpu()
+        )
+        snapshot_binary, snapshot_budget = exact_cardinality_binary(
+            snapshot_design, count=1024
+        )
+        snapshot_binary_array = snapshot_binary.numpy().astype(np.float64, copy=False)
+        snapshots[snapshot_evaluation] = MMASnapshot(
+            evaluation=snapshot_evaluation,
+            logits=snapshot_logits.copy(),
+            binary_design=snapshot_binary_array,
+            binary_cell_count=int(np.count_nonzero(snapshot_binary_array)),
+            binary_material_fraction=snapshot_budget.material_fraction,
+        )
     return MMABaselineResult(
         status="PASS" if len(records) == evaluations else "INVALID_RUN",
         requested_evaluations=evaluations,
@@ -317,4 +372,5 @@ def optimize_mma(
         binary_design=binary_array,
         binary_cell_count=int(np.count_nonzero(binary_array)),
         binary_material_fraction=budget.material_fraction,
+        snapshots=snapshots,
     )

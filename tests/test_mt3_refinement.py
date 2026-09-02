@@ -10,6 +10,7 @@ from waveforge.ml.mt3_refinement import (
     MT3InvalidRun,
     RefinementTraceRecord,
     select_and_refine,
+    select_and_refine_trajectory,
     select_best_candidate,
     validate_refinement_accounting,
 )
@@ -113,6 +114,32 @@ def test_refinement_accounting_rejects_multiple_or_incomplete_chains() -> None:
             requested_steps=25,
             record_count=50,
         )
+
+
+def test_r25_and_r50_share_one_exactly_fifty_step_chain() -> None:
+    candidate_logits, binary_designs = _candidate_fixture()
+    scorer = CountingScorer(scores=[0.20, 0.18, 0.22, 0.19])
+    stepper = CountingStepper()
+    task = sample_primary_task(2026092315, 2)
+    sources = torch.from_numpy(task.sources)
+
+    trajectory = select_and_refine_trajectory(
+        candidate_logits,
+        binary_designs,
+        task,
+        sources,
+        scorer=scorer,
+        steps=(25, 50),
+        stepper=stepper,
+        allow_cpu_unit_test=True,
+    )
+
+    assert scorer.calls == [0, 1, 2, 3]
+    assert stepper.calls_by_head == Counter({1: 50})
+    assert tuple(trajectory) == (25, 50)
+    assert trajectory[25].total_refinement_updates == 25
+    assert trajectory[50].total_refinement_updates == 50
+    assert trajectory[25].selected_head == trajectory[50].selected_head == 1
     with pytest.raises(MT3InvalidRun, match="exactly 25"):
         validate_refinement_accounting(
             refined_heads=(2,),

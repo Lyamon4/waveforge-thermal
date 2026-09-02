@@ -1,0 +1,99 @@
+schema_version: 1
+scope: mt3_frozen_id_ood_final_evaluation
+status: prospectively_approved_before_test_access
+
+parent_development_authorization_sha256: 9a8b374e4988011ac7537c7e358969a42c5b97b8bce2bc4267c07166ea081b9f
+selected_checkpoint_updates: 4000
+frozen_models:
+  FIELD_UNET:
+    sha256: f6e933ffa4b9d84c3c9180b935066ca0e85e882283f28e46aa37ab27e2477fec
+  SENS_UNET:
+    sha256: 75e2020cbfbcf30b04f95275bcaa6873827c8966b667ef2480f2b9445557c167
+
+splits:
+  test_id:
+    count: 32
+    seed: 2026083142
+    bootstrap_seed: 2026092401
+  test_ood:
+    count: 16
+    seed: 2026083143
+    bootstrap_seed: 2026092402
+  bootstrap_resamples: 10000
+  bootstrap_interval_percent: [2.5, 97.5]
+
+neural_methods:
+  primary: SENS_UNET_BEST4_R25
+  reported:
+    - FIELD_UNET_HEAD0
+    - FIELD_UNET_BEST4
+    - FIELD_UNET_BEST4_R25
+    - FIELD_UNET_BEST4_R50
+    - SENS_UNET_HEAD0
+    - SENS_UNET_BEST4
+    - SENS_UNET_BEST4_R25
+    - SENS_UNET_BEST4_R50
+  candidate_count: 4
+  candidate_scorer: independent_scipy64_strict_binary_worst_tmax
+  candidate_tie_break: lower_numeric_head
+  refinement_trajectory:
+    selected_candidates: 1
+    total_updates: 50
+    snapshots: [25, 50]
+
+baselines:
+  adam:
+    updates: 600
+    trajectory_snapshots: [25, 50, 100, 200, 600]
+    vectorized_task_batch: 4
+    independent_taskwise_gradient_clipping: true
+  mma:
+    backend: nlopt_2.10_LD_MMA
+    evaluations: 600
+    trajectory_snapshots: [25, 50, 100, 200, 600]
+  strong_single_start: lower_scipy256_tmax_of_adam600_and_mma600
+  multistart:
+    method: ADAM
+    task_indices_per_split: [0, 1, 2, 3, 4, 5, 6, 7]
+    start_indices: [0, 1, 2, 3]
+    reporting: separate_secondary_comparator
+
+verification:
+  primary_solver: independent_scipy_256
+  strict_binary_cells: 1024
+  material_fraction: 0.25
+  primary_designs_per_task:
+    - SENS_UNET_BEST4_R25
+    - ADAM_600
+    - MMA_600
+  additional_neural_designs_per_task:
+    - FIELD_UNET_BEST4_R25
+    - SENS_UNET_BEST4
+    - SENS_UNET_BEST4_R50
+
+verdicts:
+  beats_single_start:
+    median_gap_strictly_below: 0.0
+    bootstrap_upper_strictly_below: 0.0
+    win_rate_minimum: 0.60
+  competitive:
+    median_gap_maximum: 0.02
+    p90_gap_maximum: 0.07
+    win_rate_minimum: 0.40
+  speed_only:
+    median_gap_strictly_above: 0.02
+    median_gap_maximum: 0.05
+    equivalent_evaluation_speedup_minimum: 10.0
+
+runtime:
+  vast_instance_id: 49667567
+  gpu: Tesla_V100_SXM2_32GB
+  hourly_usd_including_disk: 0.23233333333333334
+  final_campaign_cost_cap_usd: 3.0
+  stop_before_projected_cap_violation: true
+
+epyc_secondary:
+  config: configs/epyc9754_scale_ood.yaml
+  status: synthetic_extreme_ood_application_benchmark
+  affects_primary_id_ood_verdict: false
+
