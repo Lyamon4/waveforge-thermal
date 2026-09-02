@@ -61,6 +61,54 @@ def test_report_discloses_control_refinement_cost_and_development_scope() -> Non
     assert "ID/OOD test layouts remain sealed" in report
 
 
+def test_report_includes_secondary_256_grid_summary_when_verified() -> None:
+    verified = pd.DataFrame(
+        [
+            {"task_index": index, "family": "REFERENCE", "worst_peak": 0.2}
+            for index in range(32)
+        ]
+        + [
+            {
+                "task_index": index,
+                "family": "FIELD_UNET_BEST4_R25",
+                "worst_peak": 0.21,
+            }
+            for index in range(32)
+        ]
+        + [
+            {
+                "task_index": index,
+                "family": "SENS_UNET_BEST4_R25",
+                "worst_peak": 0.198,
+            }
+            for index in range(32)
+        ]
+    )
+    verdict = MT3DevelopmentVerdict(
+        status="MT3_DEVELOPMENT_GO",
+        test_authorized=True,
+        median_gap=0.01,
+        p90_gap=0.06,
+        worst_gap=0.14,
+        win_count=11,
+        valid_count=32,
+        exact_budget_count=32,
+        exact_reason="all locked gates passed",
+    )
+
+    report = build_mt3_report_markdown(
+        sens=_summary("SENS_UNET", 0.01),
+        field=_summary("FIELD_UNET", 0.04),
+        verdict=verdict,
+        figure_names=tuple(),
+        verified_256=verified,
+    )
+
+    assert "Secondary independent SciPy 256x256" in report
+    assert "SENS median gap: -1.000%" in report
+    assert "FIELD median gap: 5.000%" in report
+
+
 def test_illustrative_indices_are_predeclared_best_median_and_worst_ranks() -> None:
     gaps = np.asarray([0.03, -0.02, 0.01, 0.08, 0.00], dtype=np.float64)
 
@@ -153,6 +201,27 @@ def test_package_builds_report_tables_and_figure_triplets_from_frozen_rows(
         directory = references / "references" / f"task_{index:02d}"
         directory.mkdir(parents=True)
         np.save(directory / "binary_design_64.npy", binary, allow_pickle=False)
+    pd.DataFrame(
+        [
+            {
+                "task_index": index,
+                "family": family,
+                "worst_peak": 0.2,
+                "resolution": 256,
+            }
+            for index in range(32)
+            for family in (
+                "REFERENCE",
+                "FIELD_UNET_BEST4_R25",
+                "SENS_UNET_BEST4_R25",
+            )
+        ]
+    ).to_csv(evaluation / "selected_verified_256.csv", index=False)
+
+    def temperature_provider(design, task):
+        del design, task
+        field = np.full((256, 256), 0.2, dtype=np.float64)
+        return field, field, field
 
     package = build_mt3_development_package(
         MT3ReportPaths(
@@ -161,7 +230,8 @@ def test_package_builds_report_tables_and_figure_triplets_from_frozen_rows(
             reference_root=references,
             output_root=output,
         ),
-        include_temperature_maps=False,
+        include_temperature_maps=True,
+        temperature_field_provider=temperature_provider,
     )
 
     assert package == output
@@ -169,6 +239,6 @@ def test_package_builds_report_tables_and_figure_triplets_from_frozen_rows(
     assert (output / "README_RU.md").is_file()
     assert (output / "performance_table.csv").is_file()
     assert (output / "manifest.json").is_file()
-    assert len(list((output / "figures").glob("*.png"))) >= 7
-    assert len(list((output / "figures").glob("*.svg"))) >= 7
-    assert len(list((output / "figures").glob("*.pdf"))) >= 7
+    assert len(list((output / "figures").glob("*.png"))) >= 9
+    assert len(list((output / "figures").glob("*.svg"))) >= 9
+    assert len(list((output / "figures").glob("*.pdf"))) >= 9

@@ -20,6 +20,7 @@ from matplotlib.figure import Figure
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
 from numpy.typing import NDArray
 
+from waveforge.design.scenarios import area_overlap_rectangular_source
 from waveforge.experiments.run_mt2b_evaluation import validation_tasks
 from waveforge.ml.mt3_evaluation import (
     MT3CheckpointSummary,
@@ -28,7 +29,11 @@ from waveforge.ml.mt3_evaluation import (
     select_mt3_checkpoint,
 )
 from waveforge.ml.multitask_tasks import SourceLayoutTask
+from waveforge.physics.boundary_conditions import BoundaryConditions
+from waveforge.physics.grid import Grid2D
+from waveforge.physics.steady_solver import solve_steady
 from waveforge.reproducibility import artifact_sha256
+from waveforge.verification.high_fidelity import replicate_design
 
 FIELD_COLOR = "#4C78A8"
 SENS_COLOR = "#E45756"
@@ -46,6 +51,12 @@ class MT3ReportPaths:
     evaluation_root: Path
     reference_root: Path
     output_root: Path
+
+
+TemperatureFieldProvider = Callable[
+    [np.ndarray, SourceLayoutTask],
+    tuple[np.ndarray, np.ndarray, np.ndarray],
+]
 
 
 def illustrative_layout_indices(gaps: NDArray[np.float64]) -> dict[str, int]:
@@ -84,6 +95,7 @@ def build_mt3_report_markdown(
     field: MT3CheckpointSummary,
     verdict: MT3DevelopmentVerdict,
     figure_names: tuple[str, ...],
+    verified_256: pd.DataFrame | None = None,
 ) -> str:
     """Build the disclosure-first MT3 development report."""
     figures = "\n".join(f"- `{name}`" for name in figure_names)
@@ -101,6 +113,27 @@ def build_mt3_report_markdown(
         f"{100 * field.worst_r25_relative_gap:.3f}% | "
         f"{field.r25_win_count} |"
     )
+    secondary = ""
+    if verified_256 is not None:
+        pivot = verified_256.pivot(
+            index="task_index", columns="family", values="worst_peak"
+        )
+        if tuple(pivot.index) != tuple(range(32)):
+            raise ValueError("256 verification must contain all 32 layouts")
+        field_256 = (pivot["FIELD_UNET_BEST4_R25"] - pivot["REFERENCE"]) / pivot[
+            "REFERENCE"
+        ]
+        sens_256 = (pivot["SENS_UNET_BEST4_R25"] - pivot["REFERENCE"]) / pivot[
+            "REFERENCE"
+        ]
+        secondary = f"""
+## Secondary independent SciPy 256x256 verification
+
+- SENS median gap: {100 * float(np.median(sens_256)):.3f}%.
+- FIELD median gap: {100 * float(np.median(field_256)):.3f}%.
+- This grid-transfer diagnostic does not replace the preregistered SciPy64
+  development checkpoint gate.
+"""
     return f"""# WaveForge MT3 development report
 
 ## Scope
@@ -121,6 +154,7 @@ FIELD_UNET is shown as the matched conditioning control.
 |---|---:|---:|---:|---:|---:|
 {sens_row}
 {field_row}
+{secondary}
 
 ## Development verdict
 
@@ -539,6 +573,162 @@ def _architecture_figure() -> Figure:
     return figure
 
 
+def temperature_fields_256(
+    design: np.ndarray,
+    task: SourceLayoutTask,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Return independent SciPy256 scenario fields for one frozen binary design."""
+    binary = np.asarray(design, dtype=np.float64)
+    if (
+        binary.shape != (64, 64)
+        or not np.isin(binary, (0.0, 1.0)).all()
+        or int(np.count_nonzero(binary)) != 1024
+    ):
+        raise ValueError("temperature maps require an exact-budget binary design")
+    grid = Grid2D(nx=256, ny=256)
+    conductivity = 1.0 + 19.0 * replicate_design(binary, factor=4)
+    fields: list[np.ndarray] = []
+    for bounds in task.bounds:
+        source = area_overlap_rectangular_source(grid, bounds, 1.0)
+        result = solve_steady(
+            grid,
+            conductivity,
+            source,
+            BoundaryConditions.production(),
+        )
+        if result.normalized_residual > 1.0e-10:
+            raise RuntimeError("temperature-map residual exceeds tolerance")
+        fields.append(result.temperature)
+    return fields[0], fields[1], fields[2]
+
+
+def _temperature_figure(
+    paths: MT3ReportPaths,
+    sens_update: int,
+    sens_metrics: pd.DataFrame,
+    verified: pd.DataFrame,
+    provider: TemperatureFieldProvider,
+) -> Figure:
+    tasks = validation_tasks()
+    index = illustrative_layout_indices(
+        sens_metrics["r25_relative_gap"].to_numpy(dtype=np.float64)
+    )["median"]
+    task = tasks[index]
+    families = (
+        ("REFERENCE", _reference_design(paths, index), "600-step gradient"),
+        (
+            "FIELD_UNET_BEST4_R25",
+            _task_arrays(paths, "FIELD_UNET", sens_update, index)[
+                "refined_binary_design"
+            ],
+            "FIELD U-Net + R25",
+        ),
+        (
+            "SENS_UNET_BEST4_R25",
+            _task_arrays(paths, "SENS_UNET", sens_update, index)[
+                "refined_binary_design"
+            ],
+            "SENS U-Net + R25",
+        ),
+    )
+    computed: list[tuple[str, tuple[np.ndarray, np.ndarray, np.ndarray]]] = []
+    for family, design, label in families:
+        fields = tuple(
+            np.asarray(field, dtype=np.float64) for field in provider(design, task)
+        )
+        if (
+            len(fields) != 3
+            or any(field.shape != (256, 256) for field in fields)
+            or any(not np.isfinite(field).all() for field in fields)
+        ):
+            raise RuntimeError("temperature provider returned invalid fields")
+        expected_rows = verified[
+            (verified["task_index"] == index) & (verified["family"] == family)
+        ]
+        if len(expected_rows) != 1:
+            raise RuntimeError("selected 256 verification row is missing")
+        expected = float(expected_rows.iloc[0]["worst_peak"])
+        if abs(max(float(field.max()) for field in fields) - expected) > 1.0e-10:
+            raise RuntimeError("temperature map disagrees with 256 verification")
+        computed.append((label, fields))
+    lower = min(float(field.min()) for _, fields in computed for field in fields)
+    upper = max(float(field.max()) for _, fields in computed for field in fields)
+    figure, axes = plt.subplots(3, 3, figsize=(10.5, 9.6))
+    image = None
+    for row, (label, fields) in enumerate(computed):
+        for column, (scenario, field) in enumerate(zip("ABC", fields, strict=True)):
+            image = axes[row, column].imshow(
+                field,
+                origin="lower",
+                extent=(0, 1, 0, 1),
+                cmap="inferno",
+                vmin=lower,
+                vmax=upper,
+            )
+            _draw_overlay(axes[row, column], task)
+            axes[row, column].set_xticks([])
+            axes[row, column].set_yticks([])
+            axes[row, column].set_title(
+                f"{label} - scenario {scenario}\nTmax={field.max():.6f}",
+                fontsize=8,
+            )
+    if image is not None:
+        figure.colorbar(image, ax=axes.ravel().tolist(), label="Temperature")
+    figure.suptitle(
+        f"Independent SciPy 256x256 temperature fields - layout {index:02d}"
+    )
+    figure.subplots_adjust(top=0.91, right=0.90, wspace=0.16, hspace=0.28)
+    return figure
+
+
+def _grid_transfer_figure(
+    field_metrics: pd.DataFrame,
+    sens_metrics: pd.DataFrame,
+    verified: pd.DataFrame,
+) -> tuple[Figure, pd.DataFrame]:
+    pivot = verified.pivot(index="task_index", columns="family", values="worst_peak")
+    summary = pd.DataFrame(
+        {
+            "task_index": np.arange(32),
+            "field_gap_64": field_metrics["r25_relative_gap"],
+            "sens_gap_64": sens_metrics["r25_relative_gap"],
+            "field_gap_256": (pivot["FIELD_UNET_BEST4_R25"] - pivot["REFERENCE"])
+            / pivot["REFERENCE"],
+            "sens_gap_256": (pivot["SENS_UNET_BEST4_R25"] - pivot["REFERENCE"])
+            / pivot["REFERENCE"],
+        }
+    )
+    figure, axes = plt.subplots(1, 2, figsize=(11.0, 4.6))
+    x = np.arange(32)
+    axes[0].plot(x, 100 * summary["field_gap_64"], color=FIELD_COLOR, label="64x64")
+    axes[0].plot(
+        x,
+        100 * summary["field_gap_256"],
+        color=FIELD_COLOR,
+        linestyle="--",
+        label="256x256",
+    )
+    axes[1].plot(x, 100 * summary["sens_gap_64"], color=SENS_COLOR, label="64x64")
+    axes[1].plot(
+        x,
+        100 * summary["sens_gap_256"],
+        color=SENS_COLOR,
+        linestyle="--",
+        label="256x256",
+    )
+    for axis, title in zip(
+        axes, ("FIELD grid transfer", "SENS grid transfer"), strict=True
+    ):
+        axis.axhline(0.0, color=INK, linewidth=0.8)
+        axis.set_title(title)
+        axis.set_xlabel("Development layout index")
+        axis.set_ylabel("Gap to gradient (%)")
+        axis.grid(alpha=0.25)
+        axis.legend(frameon=False)
+    figure.tight_layout()
+    return figure, summary
+
+
 def _readme_ru(
     sens: MT3CheckpointSummary,
     field: MT3CheckpointSummary,
@@ -572,6 +762,7 @@ def build_mt3_development_package(
     paths: MT3ReportPaths,
     *,
     include_temperature_maps: bool = True,
+    temperature_field_provider: TemperatureFieldProvider = temperature_fields_256,
 ) -> Path:
     """Build one disclosure-complete development package from frozen artifacts."""
     summaries = _load_summaries(paths.evaluation_root / "checkpoint_summaries.json")
@@ -634,17 +825,49 @@ def build_mt3_development_package(
         save_figure_triplet(builder(), figures_dir, name)
         figure_names.append(name)
 
+    verified_frame: pd.DataFrame | None = None
     if include_temperature_maps:
-        # Added only after selected 256x256 verification is available.
         verified = paths.evaluation_root / "selected_verified_256.csv"
         if not verified.is_file():
             raise RuntimeError("selected 256x256 verification is not available")
+        verified_frame = pd.read_csv(verified)
+        expected_families = {
+            "REFERENCE",
+            "FIELD_UNET_BEST4_R25",
+            "SENS_UNET_BEST4_R25",
+        }
+        if (
+            len(verified_frame) != 96
+            or set(verified_frame["family"]) != expected_families
+        ):
+            raise RuntimeError("selected 256x256 verification is incomplete")
+        save_figure_triplet(
+            _temperature_figure(
+                paths,
+                sens.completed_updates,
+                sens_metrics,
+                verified_frame,
+                temperature_field_provider,
+            ),
+            figures_dir,
+            "09_temperature_maps_256",
+        )
+        figure_names.append("09_temperature_maps_256")
+        grid_figure, grid_summary = _grid_transfer_figure(
+            field_metrics,
+            sens_metrics,
+            verified_frame,
+        )
+        save_figure_triplet(grid_figure, figures_dir, "10_grid_transfer_64_to_256")
+        figure_names.append("10_grid_transfer_64_to_256")
+        grid_summary.to_csv(data_dir / "grid_transfer_metrics.csv", index=False)
 
     report = build_mt3_report_markdown(
         sens=sens,
         field=field,
         verdict=verdict,
         figure_names=tuple(figure_names),
+        verified_256=verified_frame,
     )
     paths.output_root.mkdir(parents=True, exist_ok=True)
     (paths.output_root / "MT3_REPORT.md").write_text(
