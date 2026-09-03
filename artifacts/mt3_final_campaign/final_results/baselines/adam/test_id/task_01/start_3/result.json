@@ -1,0 +1,22 @@
+{
+  "allocated_task_wall_seconds": 125.18485926184803,
+  "arrays_sha256": "62cea5012a96b1ca6a0c16ffda37311e8cba438bdfa725842893e24a3d2f282e",
+  "batch_wall_seconds": 500.73943704739213,
+  "completed_updates": 600,
+  "job_id": "test_id_01_adam_start3",
+  "method": "ADAM",
+  "schema_version": 1,
+  "seed": 2026092513,
+  "snapshot_tmax_scipy64": {
+    "100": 0.2655459051923814,
+    "200": 0.2258928616286028,
+    "25": 0.48017452038281566,
+    "50": 0.35305834269140957,
+    "600": 0.1908853531561527
+  },
+  "split": "test_id",
+  "start_index": 3,
+  "status": "PASS",
+  "task_id": "dac92434b1112767532908874080455af868f9b7cabff3cd0627f8a6f747629b",
+  "task_index": 1
+}

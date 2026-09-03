@@ -1,0 +1,24 @@
+{
+  "arrays_sha256": "d6becf8b0f43f8023fb00145a079d2828efadda587fdf2f96d447d9b9f0b75eb",
+  "best4_tmax_scipy64": 0.14633655891101804,
+  "binary_cell_count": 1024,
+  "candidate_tmax_scipy64": [
+    0.14669245985015097,
+    0.29185915964403736,
+    0.14633655891101804,
+    0.29682746136068205
+  ],
+  "head0_tmax_scipy64": 0.14669245985015097,
+  "probe_seconds": 0.7275284379720688,
+  "r25_equivalent_evaluations": 30,
+  "r25_tmax_scipy64": 0.14614600514872245,
+  "r50_equivalent_evaluations": 55,
+  "r50_tmax_scipy64": 0.1463351734991456,
+  "schema_version": 1,
+  "selected_head": 2,
+  "single_r50_chain_seconds": 38.465884417295456,
+  "status": "PASS",
+  "task_id": "6961218c30291666205b2e2865e35c5992c3217207e94bc3a7d015110b340b88",
+  "unet_forward_seconds": 0.05102879740297794,
+  "variant": "FIELD_UNET"
+}

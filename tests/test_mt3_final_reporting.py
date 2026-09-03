@@ -10,6 +10,8 @@ from waveforge.reporting.mt3_final import (
     FINAL_FIGURE_SPECS,
     MT3FinalEvidence,
     MT3FinalReportPaths,
+    _finalize_epyc_package_layout,
+    _finalize_gallery_layout,
     build_final_report_markdown,
     build_mt3_final_package,
     build_runtime_figure,
@@ -22,6 +24,47 @@ from waveforge.reporting.mt3_final import (
     ranked_layout_indices,
     validate_final_artifact_counts,
 )
+
+
+def test_gallery_layout_keeps_two_line_panel_titles_below_suptitle() -> None:
+    figure, axes = plt.subplots(3, 6, figsize=(15.2, 8.0))
+    for axis in axes[0]:
+        axis.set_title("SENS + R25\ngap=-12.74%", fontsize=8)
+    suptitle = figure.suptitle(
+        "OOD best, median-rank and worst frozen examples", weight="bold"
+    )
+
+    _finalize_gallery_layout(figure)
+    figure.canvas.draw()
+    renderer = figure.canvas.get_renderer()
+
+    suptitle_box = suptitle.get_window_extent(renderer)
+    assert all(
+        axis.title.get_window_extent(renderer).y1 < suptitle_box.y0 for axis in axes[0]
+    )
+    plt.close(figure)
+
+
+def test_epyc_package_layout_separates_footer_from_axis_labels() -> None:
+    figure, axes = plt.subplots(1, 3, figsize=(15.0, 5.0))
+    for axis in axes:
+        axis.set_xlabel("Package width (mm)")
+    footer = figure.text(
+        0.5,
+        0.015,
+        "Synthetic region geometry/power maps; not an exact thermal model.",
+        ha="center",
+    )
+
+    _finalize_epyc_package_layout(figure)
+    figure.canvas.draw()
+    renderer = figure.canvas.get_renderer()
+
+    footer_box = footer.get_window_extent(renderer)
+    assert all(
+        axis.xaxis.label.get_window_extent(renderer).y0 > footer_box.y1 for axis in axes
+    )
+    plt.close(figure)
 
 
 def test_final_figure_registry_is_complete_unique_and_disclosure_first() -> None:

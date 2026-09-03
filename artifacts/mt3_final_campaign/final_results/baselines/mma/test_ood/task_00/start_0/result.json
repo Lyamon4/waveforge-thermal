@@ -1,0 +1,27 @@
+{
+  "arrays_sha256": "c2a021545bcc666b757904815f5905d64e0997391caeb92fc89f5953cd658f40",
+  "completed_evaluations": 600,
+  "job_id": "test_ood_00_mma_start0",
+  "method": "MMA",
+  "schema_version": 1,
+  "seed": 2026202500,
+  "snapshot_tmax_scipy64": {
+    "100": 0.17852697898613956,
+    "200": 0.18013167222051368,
+    "25": 0.1857708223577334,
+    "50": 0.17666346944826644,
+    "600": 0.16906030423941248
+  },
+  "split": "test_ood",
+  "start_index": 0,
+  "status": "PASS",
+  "task_id": "d4ac626e8bf36b34e3bcdd3bc9c510f6adb0d1dd65f69c0cde211f43298ef2fd",
+  "task_index": 0,
+  "termination_codes": [
+    5,
+    5,
+    5,
+    5
+  ],
+  "wall_seconds": 481.03610349074006
+}

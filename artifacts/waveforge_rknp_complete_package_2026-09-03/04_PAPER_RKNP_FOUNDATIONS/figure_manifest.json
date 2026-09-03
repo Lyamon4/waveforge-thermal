@@ -1,0 +1,207 @@
+{
+  "artifact_hashes": {
+    "FIGURE_GUIDE.md": "b80183e781c320cab4ecf101bd68583caeede5f57a7378d56b9ab2bd96d661e3",
+    "fig01_problem_setup.pdf": "abeaffa9409ebedf3bd7cd903deb258002a1e291fdadafa8703eca947137c13b",
+    "fig01_problem_setup.png": "abebd9540a512d726b1252ab173c5aac0dfb66b096be075501378a7eedb2d679",
+    "fig01_problem_setup.svg": "948c1657da7f0cff58421ca337910e57ec5a09a4714007a81b0df1de4c96cf30",
+    "fig02_waveforge_workflow.pdf": "2be87658bbe9c80c038b4021acfd62805d4d7b6b8bd0cabe71df390ba248856b",
+    "fig02_waveforge_workflow.png": "0ca9b971bad9801f594f580daac8495667fd03b3908072e7c280dca63c938448",
+    "fig02_waveforge_workflow.svg": "07118453cd35ebb4da4031d0d1c427e6b3841ed246f34aeb52b0d91275a530bb",
+    "fig03_nca_architecture.pdf": "30031df5b7f540aa32661acceb3f863356c55fee5fcde63a1fb53b75bd895c8b",
+    "fig03_nca_architecture.png": "f45e0e9534bc691bcc312b6beec9d60a9c0de07f1cd71955b77827519f5c262c",
+    "fig03_nca_architecture.svg": "2d479be1363c0e863fc63b5a4f8fe1c76f5dd451e2a6389fa48be4a2ed9cd52a",
+    "fig04_solver_validation.pdf": "f67e3acd9861811f54d416a1a6996e8ecb849d6b5c5730d5c5e4a4b4e40a7f01",
+    "fig04_solver_validation.png": "960c889dbc91fca05b11297cd780a87454d1dd28c184b4ca3b59a7aff2eda99a",
+    "fig04_solver_validation.svg": "65e3cb23165912b6eaac30af7733641fc8447aa36bf6cfacc6d98769a9b8d726",
+    "fig05_gate2_design_evolution.pdf": "684bf0faa47c5030c178a3d5ed1957c960fcd3d4141691eea63d181ac109989e",
+    "fig05_gate2_design_evolution.png": "ecdd6023e1a9d15c537b593f2cb715ef75c114a53293289a71b751631058567b",
+    "fig05_gate2_design_evolution.svg": "1a7024ab3999d7bdb994be7259d65a3fb5ca6acdf0f3940a66bb403a43e0da49",
+    "fig06_strong_tree_baseline.pdf": "989dba068ed968242f4c3020d70c65dcebcf2abd8c4285c9a938fa4a8dd56f1a",
+    "fig06_strong_tree_baseline.png": "8da3b67e1f35bbba4382ef48543f6f72cc151f9bf5b121149a0f85b4516a2140",
+    "fig06_strong_tree_baseline.svg": "bdae5e0d1ecd876eba384e67dc922da3ed63539c834724a6ccda67911d0d64f9",
+    "fig07_topology_comparison.pdf": "9c62a4e29c9b4e8cfe5921be59057ca9945288ea165f137e9f47eaba21328767",
+    "fig07_topology_comparison.png": "3ddb19d2af186c8e54f9ac4b56325e5727435b9a7255954e1861ff893c5bcf36",
+    "fig07_topology_comparison.svg": "4fc87151d17334eb87d3f4ef466257957cab4c0805b3ab8b90b5af2f6c5a5547",
+    "fig08_nca2_seed_gallery.pdf": "dc2d095bb8922bbeb8437e61b2f050a946c489d69927cf75f532baf6c1be9c5a",
+    "fig08_nca2_seed_gallery.png": "ee9c1d05b3c5d1ca36a02efc5806f4d77b4847539fa111bcea20fbdb86fcd044",
+    "fig08_nca2_seed_gallery.svg": "9730d9505e9c5a95cd9b214f35dba7dc3539dbf26430e9c08262b92e46791c72",
+    "fig09_success_failure_anatomy.pdf": "4db01d15a093538f22af5ed6ba1fb2274d266d43d9339d2d15668739fadd6f62",
+    "fig09_success_failure_anatomy.png": "ee2b2e56acf8e31d23e2c264987286c2ae1563dcd21548bee1b63245ad0905b0",
+    "fig09_success_failure_anatomy.svg": "6c7e0e9264098f95637a3d00c0d4fe98b1c48400137fe962149f7ccbb1eafd57",
+    "fig10_nca_growth_rollout.pdf": "88cc12976e0d0d1f76dba318e974b6639c5fb73b6b873c8f6817c519f1c96e35",
+    "fig10_nca_growth_rollout.png": "ec2810b0a10059ff82f9e5cac7209bc488fb1279ad469cc1ef315ae29e74a169",
+    "fig10_nca_growth_rollout.svg": "7c950fed9894480764fefb35b8eb59732c74b818f22b1279f681d15cbbaac0d1",
+    "fig11_temperature_scenarios.pdf": "fe314b352867044eb46dfdb8d1fae7fafa5171a9f10cf8b9725d20aef818eb67",
+    "fig11_temperature_scenarios.png": "bb7f17f5bb0feb60492ef97ccb030a35166ed65c2d41bb4ec3ff702ea9803baf",
+    "fig11_temperature_scenarios.svg": "6d8a208f5c0d500a4f094cbdaf28d696bbde579e0259e7946d777a39ccded68d",
+    "fig12_training_stability.pdf": "0cc670c47ee318e556d993c4497d19121391eeb9e5d2cc38984b8952e84a3627",
+    "fig12_training_stability.png": "1f177c03eec35058b68c21fad10b710b041771d2683597bce06db823ebe08a7a",
+    "fig12_training_stability.svg": "5b03b10a15e02a8ef1f8a1e1e7b6ea993439c941121b93cd2daf58ddcfbff48b",
+    "fig13_protocol_qualification.pdf": "b8d89650052eb5e9e915a9be4cd79336c6e0f60cafbacffc5e6dec447d30b7a3",
+    "fig13_protocol_qualification.png": "6d32ca98c71b0c18f58d5672e25aa061ef91a1b03e05c97576c71b49728457e6",
+    "fig13_protocol_qualification.svg": "c6bfa88bd94497cfd7afd12b1aa9a0f63db2184e73a958fbb37eeb1b0d36bd3c",
+    "fig14_performance_against_tree.pdf": "e5bcf4d617cffaa2253466cd55b819520f266d7f793e39665126c277e9a5dbe8",
+    "fig14_performance_against_tree.png": "12356f12ce1b860529c07bb53488d8c473342b91cdb9873dad528fa60728fdf1",
+    "fig14_performance_against_tree.svg": "f11aa23a0bd6757282f39c2d2ffed41cbfc4baf301cacb100409f62d526b98e1",
+    "fig15_grid_transfer.pdf": "1e8561bf6bba502f2548515cd9f691b45d1b2c377c78befebe07f9d662504d6b",
+    "fig15_grid_transfer.png": "4772abdb575fba0e27943a9ba52e66935b1dad4435d0b9c0cf1d968732c79d2c",
+    "fig15_grid_transfer.svg": "8b3d3c4a28ebb681d4d60c1c348c63ec9687fc7609c3826257f9a8251a0cf2ca",
+    "fig16_budget_connectivity.pdf": "9dafdd735fc7920203730846becf9e0d36117791d043b2fa3e7aee7a0369212f",
+    "fig16_budget_connectivity.png": "28dbe40a5943c92cec897ebcef9efd5e7702bcbb23bbc1384ccf0630da1dc2f7",
+    "fig16_budget_connectivity.svg": "15d896b1f027d81c628eaf311b7257090e31a9555c39e252950b0437495c434f",
+    "fig17_research_timeline.pdf": "d8c90567466c89db5ec9084c3203374c999e73535d3197115332b34b0d874042",
+    "fig17_research_timeline.png": "99e9be09828faa908ac6da2086b7466dcb35d9609a662ec5a37f8540a249eb57",
+    "fig17_research_timeline.svg": "62bb13b7c1c266ccfa0bd009fa27f4f2c8b48512717ee21aa2788c9a401344f0",
+    "fig18_graphical_abstract.pdf": "0d3519f3a8d7fda12b782c84d1ef1178bcadbf6d861975b4de3364e5db83d03e",
+    "fig18_graphical_abstract.png": "926a99d1d17c435f83968ff5fa89f3adc95092f42c05a3bc7b7481c8d4416667",
+    "fig18_graphical_abstract.svg": "0f3e5fbd605fee0615a275ae41cb72b6e4c8ba4e9d29b3573be9875edd4ee221"
+  },
+  "claim_scope": "fixed_A_B_C_task_capacity_not_generalization",
+  "dpi": 300,
+  "figure_count": 18,
+  "figures": [
+    {
+      "caption_ru": "\u041f\u043e\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430 \u0437\u0430\u0434\u0430\u0447\u0438: \u0442\u0440\u0438 \u0440\u0430\u0432\u043d\u043e\u043c\u043e\u0449\u043d\u044b\u0445 hotspot, \u043e\u0445\u043b\u0430\u0436\u0434\u0430\u0435\u043c\u0430\u044f \u043d\u0438\u0436\u043d\u044f\u044f \u0433\u0440\u0430\u043d\u0438\u0446\u0430 \u0438 \u0431\u044e\u0434\u0436\u0435\u0442 \u0432\u044b\u0441\u043e\u043a\u043e\u043f\u0440\u043e\u0432\u043e\u0434\u044f\u0449\u0435\u0433\u043e \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u0430 25%.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig01_problem_setup",
+      "stem": "fig01_problem_setup",
+      "title": "Thermal inverse-design problem"
+    },
+    {
+      "caption_ru": "\u041f\u043e\u043b\u043d\u044b\u0439 \u043f\u0440\u043e\u0432\u0435\u0440\u044f\u0435\u043c\u044b\u0439 \u043a\u043e\u043d\u0442\u0443\u0440: \u043f\u043e\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0430, differentiable optimization, \u0441\u0442\u0440\u043e\u0433\u0430\u044f \u0431\u0438\u043d\u0430\u0440\u0438\u0437\u0430\u0446\u0438\u044f \u0438 \u043d\u0435\u0437\u0430\u0432\u0438\u0441\u0438\u043c\u0430\u044f SciPy-\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig02_waveforge_workflow",
+      "stem": "fig02_waveforge_workflow",
+      "title": "WaveForge scientific workflow"
+    },
+    {
+      "caption_ru": "\u0410\u0440\u0445\u0438\u0442\u0435\u043a\u0442\u0443\u0440\u0430 pure NCA: \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e\u0435 \u043e\u0431\u0449\u0435\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u043e, 64 \u0441\u0438\u043d\u0445\u0440\u043e\u043d\u043d\u044b\u0445 \u0448\u0430\u0433\u0430 \u0438 persistent physical conditioning.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig03_nca_architecture",
+      "stem": "fig03_nca_architecture",
+      "title": "Pure neural cellular automaton"
+    },
+    {
+      "caption_ru": "Manufactured solution \u0434\u0435\u043c\u043e\u043d\u0441\u0442\u0440\u0438\u0440\u0443\u0435\u0442 \u0432\u0442\u043e\u0440\u043e\u0439 \u043f\u043e\u0440\u044f\u0434\u043e\u043a \u0441\u0445\u043e\u0434\u0438\u043c\u043e\u0441\u0442\u0438 reference solver.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig04_solver_validation",
+      "stem": "fig04_solver_validation",
+      "title": "Validated finite-volume physics"
+    },
+    {
+      "caption_ru": "\u041f\u0435\u0440\u0435\u0445\u043e\u0434 \u043e\u0442 \u043d\u0430\u0447\u0430\u043b\u044c\u043d\u043e\u0433\u043e \u043f\u043e\u043b\u044f \u043a continuous \u0438 strict-binary \u043a\u043e\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0438 Gate 2A.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig05_gate2_design_evolution",
+      "stem": "fig05_gate2_design_evolution",
+      "title": "Classical inverse-design evolution"
+    },
+    {
+      "caption_ru": "\u041b\u0443\u0447\u0448\u0435\u0435 \u043f\u0430\u0440\u0430\u043c\u0435\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u043e\u0435 \u0434\u0435\u0440\u0435\u0432\u043e \u0438\u0437 \u0437\u0430\u0440\u0430\u043d\u0435\u0435 \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u043e\u0433\u043e \u0433\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u043e\u0433\u043e family.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig06_strong_tree_baseline",
+      "stem": "fig06_strong_tree_baseline",
+      "title": "Strong parametric branching baseline"
+    },
+    {
+      "caption_ru": "\u0421\u043e\u043f\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u0438\u0435 strong tree, pixel optimization \u0438 \u043b\u0443\u0447\u0448\u0435\u0439 NCA-\u0442\u043e\u043f\u043e\u043b\u043e\u0433\u0438\u0438 \u043f\u0440\u0438 \u043e\u0434\u0438\u043d\u0430\u043a\u043e\u0432\u043e\u043c \u0431\u044e\u0434\u0436\u0435\u0442\u0435.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig07_topology_comparison",
+      "stem": "fig07_topology_comparison",
+      "title": "Three cooling-design strategies"
+    },
+    {
+      "caption_ru": "\u0412\u0441\u0435 \u0442\u0440\u0438 production seed \u0431\u0435\u0437 cherry-picking: \u0434\u0432\u0430 \u0441\u0438\u043b\u044c\u043d\u044b\u0445 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u0430 \u0438 \u043e\u0434\u0438\u043d collapse.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig08_nca2_seed_gallery",
+      "stem": "fig08_nca2_seed_gallery",
+      "title": "NCA-2 outcomes across all seeds"
+    },
+    {
+      "caption_ru": "\u0413\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u0447\u0435\u0441\u043a\u043e\u0435 \u0440\u0430\u0437\u043b\u0438\u0447\u0438\u0435 \u043c\u0435\u0436\u0434\u0443 collapsed seed \u0438 \u043b\u0443\u0447\u0448\u0438\u043c seed \u043f\u0440\u0438 \u043e\u0434\u043d\u043e\u0439 \u0430\u0440\u0445\u0438\u0442\u0435\u043a\u0442\u0443\u0440\u0435 \u0438 protocol.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig09_success_failure_anatomy",
+      "stem": "fig09_success_failure_anatomy",
+      "title": "Anatomy of success and failure"
+    },
+    {
+      "caption_ru": "\u0420\u043e\u0441\u0442 material logit \u043b\u0443\u0447\u0448\u0435\u0433\u043e NCA seed \u043e\u0442 \u043d\u0443\u043b\u0435\u0432\u043e\u0433\u043e \u0441\u043e\u0441\u0442\u043e\u044f\u043d\u0438\u044f \u0434\u043e \u0448\u0430\u0433\u0430 64.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig10_nca_growth_rollout",
+      "stem": "fig10_nca_growth_rollout",
+      "title": "Cooling topology grown by local updates"
+    },
+    {
+      "caption_ru": "\u0422\u0435\u043c\u043f\u0435\u0440\u0430\u0442\u0443\u0440\u043d\u044b\u0435 \u043f\u043e\u043b\u044f A/B/C \u0432\u0441\u0435\u0445 production seed, \u043f\u0435\u0440\u0435\u0441\u0447\u0438\u0442\u0430\u043d\u043d\u044b\u0435 CPU SciPy \u043d\u0430 \u0441\u0435\u0442\u043a\u0435 256\u00d7256.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig11_temperature_scenarios",
+      "stem": "fig11_temperature_scenarios",
+      "title": "Independent temperature verification"
+    },
+    {
+      "caption_ru": "\u0414\u0438\u043d\u0430\u043c\u0438\u043a\u0430 objective \u0442\u0440\u0451\u0445 seed \u0438 \u0433\u0440\u0430\u043d\u0438\u0446\u044b prospective continuation stages.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig12_training_stability",
+      "stem": "fig12_training_stability",
+      "title": "Training dynamics and continuation stages"
+    },
+    {
+      "caption_ru": "\u0421\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u0435 constant-LR Protocol A \u0438 decayed-LR Protocol B \u043d\u0430 development seeds.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig13_protocol_qualification",
+      "stem": "fig13_protocol_qualification",
+      "title": "Prospective protocol qualification"
+    },
+    {
+      "caption_ru": "\u0421\u0440\u0430\u0432\u043d\u0435\u043d\u0438\u0435 Tmax strong tree, \u043f\u0440\u0435\u0434\u044b\u0434\u0443\u0449\u0435\u0433\u043e WaveForge optimizer \u0438 \u0432\u0441\u0435\u0445 NCA-2 seeds.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig14_performance_against_tree",
+      "stem": "fig14_performance_against_tree",
+      "title": "Solver-verified performance"
+    },
+    {
+      "caption_ru": "\u0421\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u043d\u043e\u0441\u0442\u044c \u043d\u0435\u0437\u0430\u0432\u0438\u0441\u0438\u043c\u043e\u0439 \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0438 128\u00d7128 \u0438 primary 256\u00d7256.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig15_grid_transfer",
+      "stem": "fig15_grid_transfer",
+      "title": "Grid-transfer diagnostic"
+    },
+    {
+      "caption_ru": "Material budget \u0438 connectivity diagnostics \u043f\u0443\u0431\u043b\u0438\u043a\u0443\u044e\u0442\u0441\u044f \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e \u043e\u0442 thermal verdict.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig16_budget_connectivity",
+      "stem": "fig16_budget_connectivity",
+      "title": "Budget and engineering connectivity"
+    },
+    {
+      "caption_ru": "\u0427\u0435\u0441\u0442\u043d\u0430\u044f \u043f\u043e\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c: validation, inverse design, strong challenge, capacity evidence \u0438 instability.",
+      "claim_limit": "\u0422\u043e\u043b\u044c\u043a\u043e \u0437\u0430\u0444\u0438\u043a\u0441\u0438\u0440\u043e\u0432\u0430\u043d\u043d\u044b\u0435 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u044b WaveForge.",
+      "figure_id": "fig17_research_timeline",
+      "stem": "fig17_research_timeline",
+      "title": "Evidence accumulated by successive gates"
+    },
+    {
+      "caption_ru": "\u0413\u0440\u0430\u0444\u0438\u0447\u0435\u0441\u043a\u043e\u0435 \u0440\u0435\u0437\u044e\u043c\u0435 \u044d\u043a\u0441\u043f\u0435\u0440\u0438\u043c\u0435\u043d\u0442\u0430: NCA \u0432\u044b\u0440\u0430\u0449\u0438\u0432\u0430\u0435\u0442 \u0442\u043e\u043f\u043e\u043b\u043e\u0433\u0438\u044e, physics \u043d\u0430\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442 \u043e\u0431\u0443\u0447\u0435\u043d\u0438\u0435, SciPy \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0430\u0435\u0442 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442.",
+      "claim_limit": "\u041e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u043d\u043e \u043f\u043e\u043a\u0430\u0437\u0430\u0442\u044c NCA2_NO_GO_EFFECT: 2/3 effect passes, stability gate failed; generalization \u043d\u0435 \u043f\u0440\u043e\u0432\u0435\u0440\u0435\u043d\u0430.",
+      "figure_id": "fig18_graphical_abstract",
+      "stem": "fig18_graphical_abstract",
+      "title": "WaveForge Thermal \u2014 graphical abstract"
+    }
+  ],
+  "formats": [
+    "png",
+    "svg",
+    "pdf"
+  ],
+  "schema_version": 1,
+  "scientific_verdict": "NCA2_NO_GO_EFFECT",
+  "source_hashes": {
+    "artifacts/gate1_physics/validation_metrics.csv": "23df738d5f1a554f9c4933db7d215221c215fed07b98c1c042813480c2d4f598",
+    "artifacts/gate2_design/gate2_verdict.json": "a927bdc3793b9d00cc57c4dcc74c7f288d6e6f579ff02786b19a74fb10d86b81",
+    "artifacts/gate2a_challenge/challenge_verdict.json": "7bda8901cb03040016e3245687626b4ebeaa6118ea18cd2bfcd552d29e40bd88",
+    "artifacts/nca2_stabilization/connectivity_metrics.csv": "7086eb8b1fcbdb72fec07de41a65513e4b23f2ad0ed5cf8a369de8e2312590c0",
+    "artifacts/nca2_stabilization/nca2_verdict.json": "034a1596ec23f55e3f9fe8ebae285d7a6a76ab896a27c4a8126005f1307b2ac8",
+    "artifacts/nca2_stabilization/qualification_verdict.json": "d4300e35b4b96d546683c45e57e17a68e373d8c34030d8f5d4c82ec5e8b70205",
+    "artifacts/nca2_stabilization/verified_128_metrics.csv": "da6d574bea360b37101392a9c75d8da7f6dffb9e6c73b69e079f2b790e2a85d1",
+    "artifacts/nca2_stabilization/verified_256_metrics.csv": "2a3ad123d60039357aa9c51e7bf63c8ab70596c4aa276ba135305c39c3865ec2"
+  }
+}

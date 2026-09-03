@@ -1,0 +1,274 @@
+{
+  "affects_primary_id_ood_verdict": false,
+  "arrays_sha256": "631cc87928b34372f7cff60c29c62540284b93fb1c006b0bf37d6ff379af9cb5",
+  "benchmark_role": "secondary_extreme_ood",
+  "exact_proprietary_cpu_model": false,
+  "label": "EPYC_9754_SCALE_SYNTHETIC",
+  "package_size_mm": [
+    75.4,
+    72.0
+  ],
+  "regions": [
+    {
+      "center_mm": [
+        11.0,
+        53.0
+      ],
+      "normalized_bounds": [
+        0.07957559681697612,
+        0.21220159151193632,
+        0.685625,
+        0.7865972222222222
+      ],
+      "region_id": "CCD_1",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        28.8,
+        53.0
+      ],
+      "normalized_bounds": [
+        0.3156498673740053,
+        0.44827586206896547,
+        0.685625,
+        0.7865972222222222
+      ],
+      "region_id": "CCD_2",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        46.6,
+        53.0
+      ],
+      "normalized_bounds": [
+        0.5517241379310345,
+        0.6843501326259946,
+        0.685625,
+        0.7865972222222222
+      ],
+      "region_id": "CCD_3",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        64.4,
+        53.0
+      ],
+      "normalized_bounds": [
+        0.7877984084880637,
+        0.9204244031830239,
+        0.685625,
+        0.7865972222222222
+      ],
+      "region_id": "CCD_4",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        11.0,
+        19.0
+      ],
+      "normalized_bounds": [
+        0.07957559681697612,
+        0.21220159151193632,
+        0.21340277777777777,
+        0.31437499999999996
+      ],
+      "region_id": "CCD_5",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        28.8,
+        19.0
+      ],
+      "normalized_bounds": [
+        0.3156498673740053,
+        0.44827586206896547,
+        0.21340277777777777,
+        0.31437499999999996
+      ],
+      "region_id": "CCD_6",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        46.6,
+        19.0
+      ],
+      "normalized_bounds": [
+        0.5517241379310345,
+        0.6843501326259946,
+        0.21340277777777777,
+        0.31437499999999996
+      ],
+      "region_id": "CCD_7",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        64.4,
+        19.0
+      ],
+      "normalized_bounds": [
+        0.7877984084880637,
+        0.9204244031830239,
+        0.21340277777777777,
+        0.31437499999999996
+      ],
+      "region_id": "CCD_8",
+      "size_mm": [
+        10.0,
+        7.27
+      ]
+    },
+    {
+      "center_mm": [
+        37.7,
+        36.0
+      ],
+      "normalized_bounds": [
+        0.33421750663129973,
+        0.6657824933687002,
+        0.3888888888888889,
+        0.6111111111111112
+      ],
+      "region_id": "IO_DIE",
+      "size_mm": [
+        25.0,
+        16.0
+      ]
+    }
+  ],
+  "schema_version": 1,
+  "selected_head": 1,
+  "sens_r25_relative_gap": 1.008300965003052,
+  "status": "PASS",
+  "strong_single_family": "ADAM_600",
+  "strong_single_tmax_scipy256": 33.92165010734858,
+  "task_id": "30ec004ebfc56f51165b23dd3f66a7fff964328cb74d6cc09bdb224c1312a2ae",
+  "verified_scipy256": {
+    "ADAM_600": {
+      "material_fraction": 0.25,
+      "maximum_normalized_residual": 8.577555921487156e-12,
+      "scenario_peaks": [
+        29.48649725434067,
+        33.70630155636731,
+        33.92165010734858
+      ],
+      "wall_seconds": 2.1226364076137543,
+      "worst_peak": 33.92165010734858
+    },
+    "MMA_600": {
+      "material_fraction": 0.25,
+      "maximum_normalized_residual": 9.083989658159652e-12,
+      "scenario_peaks": [
+        31.0589505593892,
+        35.500886150631224,
+        35.46671630865518
+      ],
+      "wall_seconds": 2.1130928117781878,
+      "worst_peak": 35.500886150631224
+    },
+    "SENS_UNET_BEST4": {
+      "material_fraction": 0.25,
+      "maximum_normalized_residual": 9.19213100546474e-12,
+      "scenario_peaks": [
+        65.30930944087689,
+        74.5410673099508,
+        79.29399861926716
+      ],
+      "wall_seconds": 2.0642955359071493,
+      "worst_peak": 79.29399861926716
+    },
+    "SENS_UNET_BEST4_R25": {
+      "material_fraction": 0.25,
+      "maximum_normalized_residual": 7.52346036721126e-12,
+      "scenario_peaks": [
+        56.271702044657566,
+        66.18525438158257,
+        68.12488264508404
+      ],
+      "wall_seconds": 2.018473744392395,
+      "worst_peak": 68.12488264508404
+    },
+    "SENS_UNET_BEST4_R50": {
+      "material_fraction": 0.25,
+      "maximum_normalized_residual": 7.57817139782592e-12,
+      "scenario_peaks": [
+        51.3112723916699,
+        60.42138330955309,
+        61.98026689137373
+      ],
+      "wall_seconds": 2.296135986223817,
+      "worst_peak": 61.98026689137373
+    }
+  },
+  "workloads": [
+    {
+      "region_powers_watts": [
+        35.0,
+        35.0,
+        35.0,
+        35.0,
+        35.0,
+        35.0,
+        35.0,
+        35.0,
+        80.0
+      ],
+      "workload_id": "uniform_compute"
+    },
+    {
+      "region_powers_watts": [
+        55.0,
+        50.0,
+        25.0,
+        20.0,
+        60.0,
+        55.0,
+        25.0,
+        20.0,
+        50.0
+      ],
+      "workload_id": "localized_compute"
+    },
+    {
+      "region_powers_watts": [
+        45.0,
+        45.0,
+        45.0,
+        45.0,
+        20.0,
+        20.0,
+        20.0,
+        20.0,
+        100.0
+      ],
+      "workload_id": "asymmetric_rows"
+    }
+  ]
+}

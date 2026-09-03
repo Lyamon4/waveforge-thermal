@@ -867,6 +867,11 @@ def scipy256_temperature_provider(
     return tuple(fields)
 
 
+def _finalize_gallery_layout(figure: Figure) -> None:
+    """Reserve a title band above two-line gallery panel titles."""
+    figure.tight_layout(rect=(0, 0, 1, 0.91))
+
+
 def _ranked_topology_figure(
     result_root: Path,
     evidence: MT3FinalEvidence,
@@ -930,7 +935,7 @@ def _ranked_topology_figure(
         f"{split_label} best, median-rank and worst frozen examples",
         weight="bold",
     )
-    figure.tight_layout()
+    _finalize_gallery_layout(figure)
     return figure
 
 
@@ -1083,6 +1088,11 @@ def _connectivity_figure(frame: pd.DataFrame) -> Figure:
     return figure
 
 
+def _finalize_epyc_package_layout(figure: Figure) -> None:
+    """Keep the disclosure footer visually separate from axis labels."""
+    figure.tight_layout(rect=(0, 0.10, 1, 0.94))
+
+
 def _epyc_package_figure() -> Figure:
     benchmark = build_epyc9754_scale_benchmark(resolution=64)
     figure, axes = plt.subplots(1, 3, figsize=(15.0, 5.0))
@@ -1141,7 +1151,7 @@ def _epyc_package_figure() -> Figure:
         color=MUTED,
         fontsize=8,
     )
-    figure.tight_layout(rect=(0, 0.04, 1, 0.94))
+    _finalize_epyc_package_layout(figure)
     return figure
 
 

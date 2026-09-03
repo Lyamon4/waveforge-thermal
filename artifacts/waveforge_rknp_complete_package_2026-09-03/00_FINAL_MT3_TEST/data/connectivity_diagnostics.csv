@@ -1,0 +1,193 @@
+split,task_index,method,component_count,sink_connected_material_fraction,source_a_contact,source_b_contact,source_c_contact,engineering_connectivity_pass
+test_id,0,SENS + R25,1,1.0,True,True,True,True
+test_id,0,FIELD + R25,1,1.0,True,True,True,True
+test_id,0,Adam-600,1,1.0,True,True,True,True
+test_id,0,MMA-600,1,1.0,True,True,True,True
+test_id,1,SENS + R25,1,1.0,True,True,True,True
+test_id,1,FIELD + R25,1,1.0,True,True,True,True
+test_id,1,Adam-600,1,1.0,True,True,True,True
+test_id,1,MMA-600,1,1.0,True,True,True,True
+test_id,2,SENS + R25,1,1.0,True,True,True,True
+test_id,2,FIELD + R25,1,1.0,True,True,True,True
+test_id,2,Adam-600,1,1.0,True,True,True,True
+test_id,2,MMA-600,1,1.0,True,True,True,True
+test_id,3,SENS + R25,1,1.0,True,True,True,True
+test_id,3,FIELD + R25,1,1.0,True,True,True,True
+test_id,3,Adam-600,1,1.0,True,True,True,True
+test_id,3,MMA-600,1,1.0,True,True,True,True
+test_id,4,SENS + R25,1,1.0,True,True,True,True
+test_id,4,FIELD + R25,1,1.0,True,True,True,True
+test_id,4,Adam-600,1,1.0,True,True,True,True
+test_id,4,MMA-600,1,1.0,True,True,True,True
+test_id,5,SENS + R25,1,1.0,True,True,True,True
+test_id,5,FIELD + R25,1,1.0,True,True,True,True
+test_id,5,Adam-600,1,1.0,True,True,True,True
+test_id,5,MMA-600,1,1.0,True,True,True,True
+test_id,6,SENS + R25,1,1.0,True,True,True,True
+test_id,6,FIELD + R25,1,1.0,True,True,True,True
+test_id,6,Adam-600,1,1.0,True,True,True,True
+test_id,6,MMA-600,1,1.0,True,True,True,True
+test_id,7,SENS + R25,1,1.0,True,True,True,True
+test_id,7,FIELD + R25,1,1.0,True,True,True,True
+test_id,7,Adam-600,1,1.0,True,True,True,True
+test_id,7,MMA-600,1,1.0,True,True,True,True
+test_id,8,SENS + R25,1,1.0,True,True,True,True
+test_id,8,FIELD + R25,1,1.0,True,True,True,True
+test_id,8,Adam-600,1,1.0,True,True,True,True
+test_id,8,MMA-600,1,1.0,True,True,True,True
+test_id,9,SENS + R25,1,1.0,True,True,True,True
+test_id,9,FIELD + R25,1,1.0,True,True,True,True
+test_id,9,Adam-600,1,1.0,True,True,True,True
+test_id,9,MMA-600,1,1.0,True,True,True,True
+test_id,10,SENS + R25,1,1.0,True,True,True,True
+test_id,10,FIELD + R25,1,1.0,True,True,True,True
+test_id,10,Adam-600,1,1.0,True,True,True,True
+test_id,10,MMA-600,1,1.0,True,True,True,True
+test_id,11,SENS + R25,1,1.0,True,True,True,True
+test_id,11,FIELD + R25,1,1.0,True,True,True,True
+test_id,11,Adam-600,1,1.0,True,True,True,True
+test_id,11,MMA-600,1,1.0,True,True,True,True
+test_id,12,SENS + R25,1,1.0,True,True,True,True
+test_id,12,FIELD + R25,1,1.0,True,True,True,True
+test_id,12,Adam-600,1,1.0,True,True,True,True
+test_id,12,MMA-600,1,1.0,True,True,True,True
+test_id,13,SENS + R25,1,1.0,True,True,True,True
+test_id,13,FIELD + R25,1,1.0,True,True,True,True
+test_id,13,Adam-600,1,1.0,True,True,True,True
+test_id,13,MMA-600,1,1.0,True,True,True,True
+test_id,14,SENS + R25,1,1.0,True,True,True,True
+test_id,14,FIELD + R25,1,1.0,True,True,True,True
+test_id,14,Adam-600,1,1.0,True,True,True,True
+test_id,14,MMA-600,1,1.0,True,True,True,True
+test_id,15,SENS + R25,1,1.0,True,True,True,True
+test_id,15,FIELD + R25,1,1.0,True,True,True,True
+test_id,15,Adam-600,1,1.0,True,True,True,True
+test_id,15,MMA-600,1,1.0,True,True,True,True
+test_id,16,SENS + R25,1,1.0,True,True,True,True
+test_id,16,FIELD + R25,1,1.0,True,True,True,True
+test_id,16,Adam-600,1,1.0,True,True,True,True
+test_id,16,MMA-600,1,1.0,True,True,True,True
+test_id,17,SENS + R25,1,1.0,True,True,True,True
+test_id,17,FIELD + R25,1,1.0,True,True,True,True
+test_id,17,Adam-600,1,1.0,True,True,True,True
+test_id,17,MMA-600,1,1.0,True,True,True,True
+test_id,18,SENS + R25,1,1.0,True,True,True,True
+test_id,18,FIELD + R25,1,1.0,True,True,True,True
+test_id,18,Adam-600,1,1.0,True,True,True,True
+test_id,18,MMA-600,1,1.0,True,True,True,True
+test_id,19,SENS + R25,1,1.0,True,True,True,True
+test_id,19,FIELD + R25,1,1.0,True,True,True,True
+test_id,19,Adam-600,1,1.0,True,True,True,True
+test_id,19,MMA-600,1,1.0,True,True,True,True
+test_id,20,SENS + R25,1,1.0,True,True,True,True
+test_id,20,FIELD + R25,1,1.0,True,True,True,True
+test_id,20,Adam-600,1,1.0,True,True,True,True
+test_id,20,MMA-600,1,1.0,True,True,True,True
+test_id,21,SENS + R25,1,1.0,True,True,True,True
+test_id,21,FIELD + R25,1,1.0,True,True,True,True
+test_id,21,Adam-600,1,1.0,True,True,True,True
+test_id,21,MMA-600,1,1.0,True,True,True,True
+test_id,22,SENS + R25,1,1.0,True,True,True,True
+test_id,22,FIELD + R25,1,1.0,True,True,True,True
+test_id,22,Adam-600,1,1.0,True,True,True,True
+test_id,22,MMA-600,1,1.0,True,True,True,True
+test_id,23,SENS + R25,1,1.0,True,True,True,True
+test_id,23,FIELD + R25,1,1.0,True,True,True,True
+test_id,23,Adam-600,1,1.0,True,True,True,True
+test_id,23,MMA-600,1,1.0,True,True,True,True
+test_id,24,SENS + R25,1,1.0,True,True,True,True
+test_id,24,FIELD + R25,1,1.0,True,True,True,True
+test_id,24,Adam-600,1,1.0,True,True,True,True
+test_id,24,MMA-600,1,1.0,True,True,True,True
+test_id,25,SENS + R25,1,1.0,True,True,True,True
+test_id,25,FIELD + R25,1,1.0,True,True,True,True
+test_id,25,Adam-600,1,1.0,True,True,True,True
+test_id,25,MMA-600,1,1.0,True,True,True,True
+test_id,26,SENS + R25,1,1.0,True,True,True,True
+test_id,26,FIELD + R25,1,1.0,True,True,True,True
+test_id,26,Adam-600,1,1.0,True,True,True,True
+test_id,26,MMA-600,1,1.0,True,True,True,True
+test_id,27,SENS + R25,1,1.0,True,True,True,True
+test_id,27,FIELD + R25,1,1.0,True,True,True,True
+test_id,27,Adam-600,1,1.0,True,True,True,True
+test_id,27,MMA-600,1,1.0,True,True,True,True
+test_id,28,SENS + R25,1,1.0,True,True,True,True
+test_id,28,FIELD + R25,1,1.0,True,True,True,True
+test_id,28,Adam-600,1,1.0,True,True,True,True
+test_id,28,MMA-600,1,1.0,True,True,True,True
+test_id,29,SENS + R25,1,1.0,True,True,True,True
+test_id,29,FIELD + R25,1,1.0,True,True,True,True
+test_id,29,Adam-600,1,1.0,True,True,True,True
+test_id,29,MMA-600,1,1.0,True,True,True,True
+test_id,30,SENS + R25,1,1.0,True,True,True,True
+test_id,30,FIELD + R25,1,1.0,True,True,True,True
+test_id,30,Adam-600,1,1.0,True,True,True,True
+test_id,30,MMA-600,1,1.0,True,True,True,True
+test_id,31,SENS + R25,1,1.0,True,True,True,True
+test_id,31,FIELD + R25,1,1.0,True,True,True,True
+test_id,31,Adam-600,1,1.0,True,True,True,True
+test_id,31,MMA-600,1,1.0,True,True,True,True
+test_ood,0,SENS + R25,1,1.0,True,True,True,True
+test_ood,0,FIELD + R25,1,1.0,True,True,True,True
+test_ood,0,Adam-600,1,1.0,True,True,True,True
+test_ood,0,MMA-600,1,1.0,True,True,True,True
+test_ood,1,SENS + R25,1,1.0,True,True,True,True
+test_ood,1,FIELD + R25,1,1.0,True,True,True,True
+test_ood,1,Adam-600,1,1.0,True,True,True,True
+test_ood,1,MMA-600,1,1.0,True,True,True,True
+test_ood,2,SENS + R25,1,1.0,True,True,True,True
+test_ood,2,FIELD + R25,1,1.0,True,True,True,True
+test_ood,2,Adam-600,1,1.0,True,True,True,True
+test_ood,2,MMA-600,2,1.0,True,True,True,True
+test_ood,3,SENS + R25,1,1.0,True,True,True,True
+test_ood,3,FIELD + R25,1,1.0,True,True,True,True
+test_ood,3,Adam-600,1,1.0,True,True,True,True
+test_ood,3,MMA-600,1,1.0,True,True,True,True
+test_ood,4,SENS + R25,1,1.0,True,True,True,True
+test_ood,4,FIELD + R25,1,1.0,True,True,True,True
+test_ood,4,Adam-600,1,1.0,True,True,True,True
+test_ood,4,MMA-600,1,1.0,True,True,True,True
+test_ood,5,SENS + R25,1,1.0,True,True,True,True
+test_ood,5,FIELD + R25,1,1.0,True,True,True,True
+test_ood,5,Adam-600,1,1.0,True,True,True,True
+test_ood,5,MMA-600,1,1.0,True,True,True,True
+test_ood,6,SENS + R25,1,1.0,True,True,True,True
+test_ood,6,FIELD + R25,1,1.0,True,True,True,True
+test_ood,6,Adam-600,1,1.0,True,True,True,True
+test_ood,6,MMA-600,1,1.0,True,True,True,True
+test_ood,7,SENS + R25,1,1.0,True,True,True,True
+test_ood,7,FIELD + R25,1,1.0,True,True,True,True
+test_ood,7,Adam-600,1,1.0,True,True,True,True
+test_ood,7,MMA-600,1,1.0,True,True,True,True
+test_ood,8,SENS + R25,1,1.0,True,True,True,True
+test_ood,8,FIELD + R25,1,1.0,True,True,True,True
+test_ood,8,Adam-600,1,1.0,True,True,True,True
+test_ood,8,MMA-600,1,1.0,True,True,True,True
+test_ood,9,SENS + R25,1,1.0,True,True,True,True
+test_ood,9,FIELD + R25,1,1.0,True,True,True,True
+test_ood,9,Adam-600,1,1.0,True,True,True,True
+test_ood,9,MMA-600,1,1.0,True,True,True,True
+test_ood,10,SENS + R25,1,1.0,True,True,True,True
+test_ood,10,FIELD + R25,1,1.0,True,True,True,True
+test_ood,10,Adam-600,1,1.0,True,True,True,True
+test_ood,10,MMA-600,1,1.0,True,True,True,True
+test_ood,11,SENS + R25,1,1.0,True,True,True,True
+test_ood,11,FIELD + R25,1,1.0,True,True,True,True
+test_ood,11,Adam-600,1,1.0,True,True,True,True
+test_ood,11,MMA-600,1,1.0,True,True,True,True
+test_ood,12,SENS + R25,1,1.0,True,True,True,True
+test_ood,12,FIELD + R25,1,1.0,True,True,True,True
+test_ood,12,Adam-600,1,1.0,True,True,True,True
+test_ood,12,MMA-600,1,1.0,True,True,True,True
+test_ood,13,SENS + R25,1,1.0,True,True,True,True
+test_ood,13,FIELD + R25,1,1.0,True,True,True,True
+test_ood,13,Adam-600,1,1.0,True,True,True,True
+test_ood,13,MMA-600,1,1.0,True,True,True,True
+test_ood,14,SENS + R25,1,1.0,True,True,True,True
+test_ood,14,FIELD + R25,2,0.984375,True,True,True,True
+test_ood,14,Adam-600,1,1.0,True,True,True,True
+test_ood,14,MMA-600,1,1.0,True,True,True,True
+test_ood,15,SENS + R25,1,1.0,True,True,True,True
+test_ood,15,FIELD + R25,1,1.0,True,True,True,True
+test_ood,15,Adam-600,1,1.0,True,True,True,True
+test_ood,15,MMA-600,1,1.0,True,True,True,True

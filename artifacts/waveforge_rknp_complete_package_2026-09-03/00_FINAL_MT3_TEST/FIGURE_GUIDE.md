@@ -1,0 +1,21 @@
+# Final figure guide
+
+- `01_final_summary` - full frozen ID/OOD result.
+- `02_id_gap_distribution` - frozen ID split only.
+- `03_ood_gap_distribution` - frozen OOD split only.
+- `04_solver_verified_scatter` - independent SciPy256 values.
+- `05_quality_compute_pareto` - registered evaluation budgets.
+- `06_adam_budget_trajectory` - single-start Adam trajectory.
+- `07_adam_vs_mma` - registered 600-evaluation baselines.
+- `08_field_vs_sens` - matched frozen neural variants.
+- `09_multistart_comparison` - registered 16-task subset.
+- `10_id_topology_gallery` - rank-selected ID layouts.
+- `11_ood_topology_gallery` - rank-selected OOD layouts.
+- `12_candidate_diversity` - four frozen U-Net heads.
+- `13_test_layout_atlas` - all frozen test layouts.
+- `14_method_diagram` - inference and evaluation accounting.
+- `15_connectivity_diagnostics` - engineering diagnostic, not primary gate.
+- `16_epyc_package_and_workloads` - EPYC 9754-scale synthetic benchmark; not an exact proprietary model.
+- `17_epyc_topology_comparison` - EPYC 9754-scale synthetic benchmark; secondary only.
+- `18_epyc_temperature_maps` - EPYC 9754-scale synthetic benchmark; secondary only.
+- `19_measured_runtime` - measured wall time separated from equivalent-evaluation accounting.

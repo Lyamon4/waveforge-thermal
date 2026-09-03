@@ -1170,3 +1170,69 @@ temperature-map figure; добавлен layout regression test. Финальн�
 `610 passed`; Ruff lint/format: PASS. Закрытые ID/OOD test layouts до этого
 момента не открывались, поэтому эти числа являются development evidence, а не
 финальным generalization claim.
+
+## 2026-09-03 — MT3 final frozen ID/OOD evaluation
+
+После frozen development authorization были открыты только заранее
+зарегистрированные test sets: `32` unseen ID layouts и `16` harder OOD
+layouts. Веса FIELD/SENS checkpoint 4,000 не изменялись. Для каждого layout
+сохранены четыре frozen candidates; четыре forward-only physics scores
+выбирали один candidate, и только выбранный design получал зарегистрированные
+R25/R50 refinement chains. Conventional comparison включал Adam-600 и
+MMA-600; primary comparator на каждой задаче — лучший из этих двух. Все
+headline temperatures пересчитаны одним independent SciPy solver на сетке
+`256x256`.
+
+Заранее зарегистрированный primary `SENS_UNET_BEST4_R25` получил:
+
+- ID: median gap `-0.041391788095330506`, mean gap `-0.04472630`, p90
+  `-0.014305321360075314`, worst `-0.00021285056760607512`, wins `32/32`,
+  bootstrap median 95% CI
+  `[-0.05924837803424966, -0.023328906192021107]`; verdict
+  `MT3_BEATS_SINGLE_START_ID`;
+- OOD: median gap `0.011813766913074737`, mean gap `-0.00101551`, p90
+  `0.0500177554280926`, worst `0.07400492489058648`, wins `7/16`, bootstrap
+  95% CI `[-0.04240173231040028, 0.029865348284048045]`; verdict
+  `MT3_COMPETITIVE_OOD`.
+
+Во всех 48 primary tasks material fraction равна ровно `0.25`, invalid count
+равен нулю, maximum normalized residual по полному verification table равен
+`1.1508338737881788e-11`. Primary accounting использует `30` против `600`
+эквивалентных task-specific physics evaluations (`20x` reduction). Это не
+является утверждением о global optimum.
+
+Matched FIELD control опубликован без post-hoc замены primary method. Его R25
+результат сильнее: ID wins `32/32`, median gap `-0.05529142`; OOD wins
+`16/16`, median gap `-0.05495037`. Fair best-of-four comparison SENS R25
+против Adam best-of-four на первых восьми заранее зарегистрированных layouts:
+ID wins `8/8`, median gap `-0.05776278`; OOD wins `3/8`, median gap
+`0.02251561`.
+
+Secondary `EPYC_9754_SCALE_SYNTHETIC` stress test использовал публичный
+package scale `75.4 x 72.0 mm`, восемь synthetic CCD regions, центральный I/O
+region и три disclosed `360 W` workload maps. Он не является точной моделью
+закрытого AMD thermal stack и не влияет на primary ID/OOD verdict. SENS R25
+на этом extreme-OOD benchmark получил Tmax `68.1248826451` против
+`33.9216501073` у Adam-600 (relative gap `+1.0083009650`), то есть выявил
+чёткую границу переноса модели, обученной на ровно трёх hotspots.
+
+Локальная копия remote campaign проверена полностью: `241/241` NPZ artifacts
+совпали с зарегистрированными SHA-256; verification table содержит `288`
+строк, primary table `48`, multistart table `16`. Frozen model file hashes:
+FIELD `f6e933ffa4b9d84c3c9180b935066ca0e85e882283f28e46aa37ab27e2477fec`,
+SENS `75e2020cbfbcf30b04f95275bcaa6873827c8966b667ef2480f2b9445557c167`.
+Authorization bundle SHA-256 остался
+`0ab5f1f781d6ded44714c6bcafb93f6e4f14ef99d5139b96f66a4c5cf393756a`.
+
+Финальная V100 instance проработала `45819.57 s` (`12.7277 h`) по
+`$0.232333/h`, ориентировочная compute+disk стоимость `$2.957` до возможного
+округления Vast.ai. После проверенного скачивания instance `49667567`
+уничтожена; повторная проверка Vast.ai вернула пустой список instances.
+
+Собран `artifacts/mt3_final_campaign/final_package`: `19` зарегистрированных
+figures в PNG 300 dpi, SVG и PDF, tables, report и обе frozen models. После
+визуального QA добавлены regression tests, резервирующие отдельные поля для
+двухстрочных gallery titles и EPYC disclosure footer. Единый презентационный
+архив `artifacts/waveforge_rknp_complete_package_2026-09-03` содержит `253`
+файла и `214` visual artifacts, включая clearly separated final, development,
+negative NCA history и foundation sections.
