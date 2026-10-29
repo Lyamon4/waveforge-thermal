@@ -2,8 +2,8 @@
   "files": [
     {
       "file": "comparison.csv",
-      "bytes": 94959,
-      "sha256": "f912f52cc136ea794efce937b924adcedcfc317e9c4759128dd4dfb39d362750"
+      "bytes": 94670,
+      "sha256": "2ac79a637d6ab018586dc647e33a89bfd696c44fb5c697c3fc3702d81d0a492e"
     },
     {
       "file": "designs/case_00/Matched-Adam.npz",
@@ -727,8 +727,8 @@
     },
     {
       "file": "designs/index.json",
-      "bytes": 52168,
-      "sha256": "f67c39fc7e8317cd9aeb69d50f39322dd625590b7d9e05decefe7b2c1287e6ef"
+      "bytes": 50851,
+      "sha256": "0cdb1e52817244a45cd890c0543bf8c181bf3e3812e8f76be0ea5cb28774baf2"
     },
     {
       "file": "figures/01_ОБУЧЕНИЕ.png",
@@ -767,8 +767,8 @@
     },
     {
       "file": "inputs/evaluation_tasks.json",
-      "bytes": 27772,
-      "sha256": "7160454bf68b9b763fc5e000abc445debbf7018322b1bba8f9496235990d5fd2"
+      "bytes": 26263,
+      "sha256": "e107c6c34f8e83b0efe0c41424ffbf6835fa0b820eb24336398103112635455d"
     },
     {
       "file": "inputs/predictions.npz",
@@ -782,25 +782,25 @@
     },
     {
       "file": "methodology.json",
-      "bytes": 3630,
-      "sha256": "567c19112aee21b195007d9857e58373c875ac415cb2d040fa67bafd7ab9dff4"
+      "bytes": 3519,
+      "sha256": "97d06e3d4aee96a284c7417dc8e9354029b0eccb930e0c99dc7defb7665e91b3"
     },
     {
       "file": "metrics.json",
-      "bytes": 11993,
-      "sha256": "9aae90c89db64dd743e84c1df16a3f2c86df0ea9751a3653fcdea6b63f01fbda"
+      "bytes": 11518,
+      "sha256": "17be866839537050d82b795aca6db57fd568680f557b516e99870df6f973dd6d"
     },
     {
       "file": "numerical_checks.json",
-      "bytes": 1818291,
-      "sha256": "edb8bb9564cfdfdbff89d72c5e2ff5e996a2c40572697aa4fcc513d733eea21e"
+      "bytes": 1776879,
+      "sha256": "ed4adf9f29ea39f782ab15a3643b940c246bcbec415014a91c7df44268b76de8"
     },
     {
       "file": "training_history.csv",
-      "bytes": 54447,
-      "sha256": "1f286ed5e0d94d0def963240053d6e78f373835acb4bc6228ebd8ea0830fc658"
+      "bytes": 54146,
+      "sha256": "2bcf2015ed07e692f4e870f78d39fc277f93257c0bf30b69839d15b777979bf7"
     }
   ],
   "total_files": 160,
-  "total_bytes": 184021235
+  "total_bytes": 183975821
 }
