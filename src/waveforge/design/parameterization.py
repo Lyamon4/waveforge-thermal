@@ -162,12 +162,26 @@ def project_volume(
                 "target volume is outside the bisection bracket"
             )
 
-        for _ in range(maximum_iterations):
-            midpoint = 0.5 * (lower + upper)
-            midpoint_mean = torch.sigmoid(beta * (logits + midpoint)).mean()
-            lower = torch.where(midpoint_mean < target, midpoint, lower)
-            upper = torch.where(midpoint_mean >= target, midpoint, upper)
-        offset = 0.5 * (lower + upper)
+        from waveforge.runtime import runtime_options
+
+        if runtime_options().accelerated_projection:
+            from waveforge.design.projection_graph import replay_bisection
+
+            offset = replay_bisection(
+                logits,
+                beta=beta,
+                target=target,
+                bracket=bracket,
+                iterations=maximum_iterations,
+                batched=False,
+            )
+        else:
+            for _ in range(maximum_iterations):
+                midpoint = 0.5 * (lower + upper)
+                midpoint_mean = torch.sigmoid(beta * (logits + midpoint)).mean()
+                lower = torch.where(midpoint_mean < target, midpoint, lower)
+                upper = torch.where(midpoint_mean >= target, midpoint, upper)
+            offset = 0.5 * (lower + upper)
 
     design = _ImplicitVolumeProjection.apply(logits, offset, beta)
     achieved_mean = float(design.detach().mean().item())

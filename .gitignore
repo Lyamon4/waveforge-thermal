@@ -12,3 +12,25 @@ dist/
 artifacts/**/raw_frames/
 artifacts/**/temporary_matrices/
 *.npz.tmp
+
+# Local experiment outputs and private supporting documents
+*.md
+*.MD
+*.txt
+*.TXT
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.pdf
+*.gif
+*.webp
+*.mp4
+*.blend
+*.pt
+*.pth
+*.npz
+*.log
+.env
+.env.*
+scratch/
