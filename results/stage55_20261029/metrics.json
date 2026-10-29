@@ -1,0 +1,476 @@
+{
+  "all:Standard:nominal:R0": {
+    "median_gain_percent": 8.704421898285272,
+    "wins": 14,
+    "losses": 2,
+    "ties": 0,
+    "minimum": -0.4818052147373948,
+    "maximum": 15.586880384471854
+  },
+  "all:Standard:nominal:R25": {
+    "median_gain_percent": 10.421830582347136,
+    "wins": 15,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.35069401156605656,
+    "maximum": 18.867372569744713
+  },
+  "all:Standard:nominal:MultiR25": {
+    "median_gain_percent": 10.569028756795014,
+    "wins": 16,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 1.020053469870882,
+    "maximum": 18.96766517285546
+  },
+  "all:Standard:power:R0": {
+    "median_gain_percent": 8.48881561051875,
+    "wins": 15,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.028577587674070634,
+    "maximum": 16.105509612997935
+  },
+  "all:Standard:power:R25": {
+    "median_gain_percent": 11.171946382350201,
+    "wins": 15,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.028577587674070634,
+    "maximum": 20.51028188081651
+  },
+  "all:Standard:power:MultiR25": {
+    "median_gain_percent": 11.251965993027861,
+    "wins": 16,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 1.3766207925227039,
+    "maximum": 20.681381067354458
+  },
+  "all:Matched:nominal:R0": {
+    "median_gain_percent": -0.3407545397942605,
+    "wins": 6,
+    "losses": 10,
+    "ties": 0,
+    "minimum": -7.05237837600507,
+    "maximum": 2.219805668863826
+  },
+  "all:Matched:nominal:R25": {
+    "median_gain_percent": 1.4891987666528914,
+    "wins": 13,
+    "losses": 3,
+    "ties": 0,
+    "minimum": -5.524738323783495,
+    "maximum": 4.639796716307079
+  },
+  "all:Matched:nominal:MultiR25": {
+    "median_gain_percent": 1.637224165878759,
+    "wins": 12,
+    "losses": 4,
+    "ties": 0,
+    "minimum": -4.08331561404173,
+    "maximum": 4.7920063531449575
+  },
+  "all:Matched:power:R0": {
+    "median_gain_percent": 0.24455727005180242,
+    "wins": 8,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -7.007799991809687,
+    "maximum": 3.381316079408766
+  },
+  "all:Matched:power:R25": {
+    "median_gain_percent": 2.975658615730686,
+    "wins": 13,
+    "losses": 3,
+    "ties": 0,
+    "minimum": -4.666923473929521,
+    "maximum": 5.374980735173149
+  },
+  "all:Matched:power:MultiR25": {
+    "median_gain_percent": 2.914758938143149,
+    "wins": 13,
+    "losses": 3,
+    "ties": 0,
+    "minimum": -3.1965657534387613,
+    "maximum": 5.693723073903142
+  },
+  "all:MultiStart:nominal:R0": {
+    "median_gain_percent": -3.927379747042962,
+    "wins": 1,
+    "losses": 15,
+    "ties": 0,
+    "minimum": -12.277458922031322,
+    "maximum": 0.41342241444994526
+  },
+  "all:MultiStart:nominal:R25": {
+    "median_gain_percent": -1.6908030130907257,
+    "wins": 1,
+    "losses": 15,
+    "ties": 0,
+    "minimum": -10.312744697184826,
+    "maximum": 2.878120177131756
+  },
+  "all:MultiStart:nominal:MultiR25": {
+    "median_gain_percent": -1.8714126893149334,
+    "wins": 1,
+    "losses": 15,
+    "ties": 0,
+    "minimum": -8.80591987197102,
+    "maximum": 3.0331417222607273
+  },
+  "all:MultiStart:power:R0": {
+    "median_gain_percent": -3.349949943323254,
+    "wins": 0,
+    "losses": 16,
+    "ties": 0,
+    "minimum": -12.695990002487832,
+    "maximum": -0.423633835362231
+  },
+  "all:MultiStart:power:R25": {
+    "median_gain_percent": -1.2326716025057767,
+    "wins": 1,
+    "losses": 15,
+    "ties": 0,
+    "minimum": -9.057052507447121,
+    "maximum": 1.9202347224738054
+  },
+  "all:MultiStart:power:MultiR25": {
+    "median_gain_percent": -1.282092011846595,
+    "wins": 2,
+    "losses": 14,
+    "ties": 0,
+    "minimum": -7.525022389372316,
+    "maximum": 2.1190713290071406
+  },
+  "diagnostic:Standard:nominal:R0": {
+    "median_gain_percent": 7.983345073895245,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 1.7099152147513106,
+    "maximum": 15.586880384471854
+  },
+  "diagnostic:Standard:nominal:R25": {
+    "median_gain_percent": 9.758908256924492,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 5.450940744831911,
+    "maximum": 17.6760457328709
+  },
+  "diagnostic:Standard:nominal:MultiR25": {
+    "median_gain_percent": 9.884862059683934,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 4.667141622609695,
+    "maximum": 17.807447499546882
+  },
+  "diagnostic:Standard:power:R0": {
+    "median_gain_percent": 8.315030120045872,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 1.6552993016961153,
+    "maximum": 16.105509612997935
+  },
+  "diagnostic:Standard:power:R25": {
+    "median_gain_percent": 10.181539366453805,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 5.391094751880125,
+    "maximum": 18.14441451268747
+  },
+  "diagnostic:Standard:power:MultiR25": {
+    "median_gain_percent": 10.310061249782208,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 4.795496440396849,
+    "maximum": 18.310359922508162
+  },
+  "diagnostic:Matched:nominal:R0": {
+    "median_gain_percent": -0.2264174934838673,
+    "wins": 3,
+    "losses": 5,
+    "ties": 0,
+    "minimum": -2.1097305978504894,
+    "maximum": 2.219805668863826
+  },
+  "diagnostic:Matched:nominal:R25": {
+    "median_gain_percent": 2.3264467258884096,
+    "wins": 7,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -1.154669954809517,
+    "maximum": 4.639796716307079
+  },
+  "diagnostic:Matched:nominal:MultiR25": {
+    "median_gain_percent": 1.9704975262014928,
+    "wins": 7,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.7299206186347332,
+    "maximum": 4.7920063531449575
+  },
+  "diagnostic:Matched:power:R0": {
+    "median_gain_percent": 1.019294601813891,
+    "wins": 5,
+    "losses": 3,
+    "ties": 0,
+    "minimum": -1.3074646663511753,
+    "maximum": 3.018007606660423
+  },
+  "diagnostic:Matched:power:R25": {
+    "median_gain_percent": 3.354460122820705,
+    "wins": 7,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.37684255420124296,
+    "maximum": 5.374980735173149
+  },
+  "diagnostic:Matched:power:MultiR25": {
+    "median_gain_percent": 3.310197726838412,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 0.16166180078757078,
+    "maximum": 5.566813552783703
+  },
+  "diagnostic:MultiStart:nominal:R0": {
+    "median_gain_percent": -2.768722119254181,
+    "wins": 1,
+    "losses": 7,
+    "ties": 0,
+    "minimum": -5.679621431890434,
+    "maximum": 0.41342241444994526
+  },
+  "diagnostic:MultiStart:nominal:R25": {
+    "median_gain_percent": -1.0251576809963914,
+    "wins": 1,
+    "losses": 7,
+    "ties": 0,
+    "minimum": -1.6918733687311303,
+    "maximum": 2.878120177131756
+  },
+  "diagnostic:MultiStart:nominal:MultiR25": {
+    "median_gain_percent": -0.8607771042226846,
+    "wins": 1,
+    "losses": 7,
+    "ties": 0,
+    "minimum": -2.500068092876875,
+    "maximum": 3.0331417222607273
+  },
+  "diagnostic:MultiStart:power:R0": {
+    "median_gain_percent": -3.2354652313030625,
+    "wins": 0,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -5.19956507423281,
+    "maximum": -0.5227911601734243
+  },
+  "diagnostic:MultiStart:power:R25": {
+    "median_gain_percent": -1.137331441163897,
+    "wins": 1,
+    "losses": 7,
+    "ties": 0,
+    "minimum": -1.8961223523922621,
+    "maximum": 1.9202347224738054
+  },
+  "diagnostic:MultiStart:power:MultiR25": {
+    "median_gain_percent": -1.0915679976926898,
+    "wins": 2,
+    "losses": 6,
+    "ties": 0,
+    "minimum": -1.840488571960585,
+    "maximum": 2.1190713290071406
+  },
+  "dev:Standard:nominal:R0": {
+    "median_gain_percent": 9.059896290279651,
+    "wins": 6,
+    "losses": 2,
+    "ties": 0,
+    "minimum": -0.4818052147373948,
+    "maximum": 14.05206941027592
+  },
+  "dev:Standard:nominal:R25": {
+    "median_gain_percent": 10.8199799436236,
+    "wins": 7,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.35069401156605656,
+    "maximum": 18.867372569744713
+  },
+  "dev:Standard:nominal:MultiR25": {
+    "median_gain_percent": 10.681349787887594,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 1.020053469870882,
+    "maximum": 18.96766517285546
+  },
+  "dev:Standard:power:R0": {
+    "median_gain_percent": 9.379737601065731,
+    "wins": 7,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.028577587674070634,
+    "maximum": 15.601485149687338
+  },
+  "dev:Standard:power:R25": {
+    "median_gain_percent": 12.177726035256836,
+    "wins": 7,
+    "losses": 1,
+    "ties": 0,
+    "minimum": -0.028577587674070634,
+    "maximum": 20.51028188081651
+  },
+  "dev:Standard:power:MultiR25": {
+    "median_gain_percent": 11.985279138041099,
+    "wins": 8,
+    "losses": 0,
+    "ties": 0,
+    "minimum": 1.3766207925227039,
+    "maximum": 20.681381067354458
+  },
+  "dev:Matched:nominal:R0": {
+    "median_gain_percent": -1.4928893131926164,
+    "wins": 3,
+    "losses": 5,
+    "ties": 0,
+    "minimum": -7.05237837600507,
+    "maximum": 1.9351692575206887
+  },
+  "dev:Matched:nominal:R25": {
+    "median_gain_percent": 0.6028219432228757,
+    "wins": 6,
+    "losses": 2,
+    "ties": 0,
+    "minimum": -5.524738323783495,
+    "maximum": 4.607064636906742
+  },
+  "dev:Matched:nominal:MultiR25": {
+    "median_gain_percent": 0.4070122157431082,
+    "wins": 5,
+    "losses": 3,
+    "ties": 0,
+    "minimum": -4.08331561404173,
+    "maximum": 4.682751296913373
+  },
+  "dev:Matched:power:R0": {
+    "median_gain_percent": -1.3216627260337437,
+    "wins": 3,
+    "losses": 5,
+    "ties": 0,
+    "minimum": -7.007799991809687,
+    "maximum": 3.381316079408766
+  },
+  "dev:Matched:power:R25": {
+    "median_gain_percent": 1.4466227905921694,
+    "wins": 6,
+    "losses": 2,
+    "ties": 0,
+    "minimum": -4.666923473929521,
+    "maximum": 5.004280424183419
+  },
+  "dev:Matched:power:MultiR25": {
+    "median_gain_percent": 0.707013520806123,
+    "wins": 5,
+    "losses": 3,
+    "ties": 0,
+    "minimum": -3.1965657534387613,
+    "maximum": 5.693723073903142
+  },
+  "dev:MultiStart:nominal:R0": {
+    "median_gain_percent": -6.23040474520727,
+    "wins": 0,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -12.277458922031322,
+    "maximum": -2.24071448673637
+  },
+  "dev:MultiStart:nominal:R25": {
+    "median_gain_percent": -3.412141748502264,
+    "wins": 0,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -10.312744697184826,
+    "maximum": -1.176492779355656
+  },
+  "dev:MultiStart:nominal:MultiR25": {
+    "median_gain_percent": -3.544018776808171,
+    "wins": 0,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -8.80591987197102,
+    "maximum": -1.0962173293917044
+  },
+  "dev:MultiStart:power:R0": {
+    "median_gain_percent": -5.582918230369369,
+    "wins": 0,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -12.695990002487832,
+    "maximum": -0.423633835362231
+  },
+  "dev:MultiStart:power:R25": {
+    "median_gain_percent": -2.8974398421862535,
+    "wins": 0,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -9.057052507447121,
+    "maximum": -0.423633835362231
+  },
+  "dev:MultiStart:power:MultiR25": {
+    "median_gain_percent": -3.179443667142542,
+    "wins": 0,
+    "losses": 8,
+    "ties": 0,
+    "minimum": -7.525022389372316,
+    "maximum": -0.07979035516948133
+  },
+  "refinement_activity": {
+    "single_unique_maps": [
+      26,
+      26,
+      25,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26,
+      26
+    ],
+    "multi_unique_maps": [
+      28,
+      28,
+      28,
+      28,
+      27,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28,
+      28
+    ],
+    "median_single": 26.0,
+    "median_multi": 28.0,
+    "unchanged_single_count": 2,
+    "requested_gradient_queries": 25
+  }
+}

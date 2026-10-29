@@ -1,0 +1,19 @@
+{
+  "latest": "stage55_20261029",
+  "runs": [
+    {
+      "path": "stage55_20261029",
+      "checkpoint": "models/manifold_unet_ribbed.pt",
+      "evaluation_tasks": 16,
+      "split": "open development"
+    },
+    {
+      "path": "latest",
+      "description": "Historical Stage5.2 results retained unchanged"
+    },
+    {
+      "path": "flow_penalty_comparison",
+      "description": "Historical flow-penalty comparison retained unchanged"
+    }
+  ]
+}

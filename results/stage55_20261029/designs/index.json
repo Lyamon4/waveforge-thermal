@@ -1,0 +1,1317 @@
+{
+  "designs": [
+    {
+      "task_index": 0,
+      "method": "Standard-Adam",
+      "file": "designs/case_00/Standard-Adam.npz",
+      "sha256": "45d4c15a65550a94d524ceb7767dfad8752a30f0499fd1c6b3db308fee721c72",
+      "binary_sha256": "5bab04b920d59fe14e63e36144c7699938236b1c1cb6ced952b3dfb355e1df7c",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 0,
+      "method": "Standard-MMA",
+      "file": "designs/case_00/Standard-MMA.npz",
+      "sha256": "1c509fd315754bf2ff92caafb91abf965e9663618aacd95476d4f9bfb3d30747",
+      "binary_sha256": "6b48f23a144d80a9fb558eb8f773f84eeb3d4a43fb0b9670a46855c1af701e91",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 0,
+      "method": "Matched-Adam",
+      "file": "designs/case_00/Matched-Adam.npz",
+      "sha256": "40d4d250ed343eb705f21a2301d4f84337a1ffba44ddf194f68714bed6c88fac",
+      "binary_sha256": "eca3eb8e5590ee9d493e2d0d6766720a790089a5c6ec3d5340b54a2388ae6309",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 0,
+      "method": "Matched-MMA",
+      "file": "designs/case_00/Matched-MMA.npz",
+      "sha256": "a3cd21374e25c4d56d2caa1efe6046f90517e46d2f53fbbf4ce10d2ed20919f6",
+      "binary_sha256": "61af84e09c414dcc2b880303a276a982d0570666b9dad6e8439bd31915bfe8fe",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 0,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_00/MultiStart-Adam.npz",
+      "sha256": "26de424bd814f74e142633522febd0ab4d01a6da48e3ef45d7b5c7b611b857f3",
+      "binary_sha256": "a739a8bdeda0391e4c33e3aa7ddc14de9c9662598b0ea85a19bbdcc5c3c69080",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 0,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_00/MultiStart-MMA.npz",
+      "sha256": "87065f41e6aee2cba65b760de929aae41450b354b43e590b1aa5b11905838d92",
+      "binary_sha256": "da4f39e8b5eb73a3f7158e51d6436027710bb8af7c5a0765705e1c8fe5705a56",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 0,
+      "method": "R0",
+      "file": "designs/case_00/R0.npz",
+      "sha256": "3fa84f018dd3a5b08ce3dcc4f2922c4c7086775fad74d27c537055e2cd69d63d",
+      "binary_sha256": "e072cb982b69ba59109ccad699df623e3decf362cf7c2801fd83f5f5a3156019",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 0,
+      "method": "R25",
+      "file": "designs/case_00/R25.npz",
+      "sha256": "16f4473f81be834872ea28ea17f386088ebef780e95111fe6862069c99a3120a",
+      "binary_sha256": "5ade18228cd56eedb3a35b7ab0c1d94433a21e6064ce1b13b8f57e850968cdec",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 0,
+      "method": "MultiR25",
+      "file": "designs/case_00/MultiR25.npz",
+      "sha256": "0c5a174d58d53af4528431479de62a9c6f462989c5a3951a6180ed774e203917",
+      "binary_sha256": "8c38f053fe5f124c8dff8f94bef71dbbd389305facf65e12fb52adcfd57ae882",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 1,
+      "method": "Standard-Adam",
+      "file": "designs/case_01/Standard-Adam.npz",
+      "sha256": "c9fe669e2c08cc7834dd651062d89312d119746aba112c64814819d7ce41680e",
+      "binary_sha256": "029239add25f20836e7013a075815a9c52230853f95ae33c72863d2af8ad59df",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 1,
+      "method": "Standard-MMA",
+      "file": "designs/case_01/Standard-MMA.npz",
+      "sha256": "940605b518ea0aaa2d09651ff26101a4aceccb9436956372c380b15743c87fdb",
+      "binary_sha256": "99b8e5d285bcb749bce05b57db3ec0e38bc3b3e46dc6a70e16f5b6823114fce3",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 1,
+      "method": "Matched-Adam",
+      "file": "designs/case_01/Matched-Adam.npz",
+      "sha256": "2e9f27883832fc7872d1d9ffe6efc2bcb9928d5574bfa580e7eee1456119001d",
+      "binary_sha256": "c79b31293262802dd2d3bbfefab89a881b8fedc03aa4bd8098128ef42d4b5770",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 1,
+      "method": "Matched-MMA",
+      "file": "designs/case_01/Matched-MMA.npz",
+      "sha256": "1c5ea6ce0192236d031a8079f0d759cd0f9de39f75fe3183eba24d93084183e6",
+      "binary_sha256": "9c757e301f61a1dbdf88dcac839247844ce06514f465a8886c3e278a882481ca",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 1,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_01/MultiStart-Adam.npz",
+      "sha256": "88ae0e1899d9a299a04086ddaaddd9b9824bd183e259f714eee512c65f833a31",
+      "binary_sha256": "abb0eace3c3581774ca34eb17fdf66659ba0a16cde6c88053604cdb1a9563339",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 1,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_01/MultiStart-MMA.npz",
+      "sha256": "a003b16a7a95fe79f8a457c06f99d66a5211e3e60663712616afef04e78a4c4e",
+      "binary_sha256": "9ab9de07fb7a496667e87f98da00d4efc819112fb2de2da096d42e8aca89e461",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 1,
+      "method": "R0",
+      "file": "designs/case_01/R0.npz",
+      "sha256": "f077089ce661c21e04df5345359be0455d4eee707bc9a156308329021c1ee750",
+      "binary_sha256": "0b29615006e47ce332eac0f8628adab85f4670d39267927a115c0b589b5a734c",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 1,
+      "method": "R25",
+      "file": "designs/case_01/R25.npz",
+      "sha256": "0d8bf334c696a66979a453c93a774887854c6867c10f6624a22e45726d91a458",
+      "binary_sha256": "eca14fc3de23b15216a3455497c1a4147356366b6323b50780a2595b29c71afd",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 1,
+      "method": "MultiR25",
+      "file": "designs/case_01/MultiR25.npz",
+      "sha256": "d5547be4132e5393b2c4deed0db60706b9523ee4a804b28b287f52b57aebe395",
+      "binary_sha256": "2215bea2b697f492968875f8366c6ad8552c8f51fd1c3785116a3cfb53f11ba5",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 2,
+      "method": "Standard-Adam",
+      "file": "designs/case_02/Standard-Adam.npz",
+      "sha256": "2737c2fc7618fac0fe853d3d0732d8101924564c31c0d6ba4a1e5cf42d86e9ef",
+      "binary_sha256": "59ced222e178086e5ea63eb8d98c91bd1a08d8f18ce854de3f9d9725d9178e1f",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 2,
+      "method": "Standard-MMA",
+      "file": "designs/case_02/Standard-MMA.npz",
+      "sha256": "f9d1bf706abe62235b5bc1d8965570619f40e55d0db718d64135d019eff3563e",
+      "binary_sha256": "061bcbebc08b94d881bf40f5897bb3e7890a4c1e5d42de230254ac884ce4fd2e",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 2,
+      "method": "Matched-Adam",
+      "file": "designs/case_02/Matched-Adam.npz",
+      "sha256": "75ed1d5eac9c45da9ba69ca31d1b8ce2a9fe93d4ae9cd4057676d6b876553aa9",
+      "binary_sha256": "691a9a04d5c2112642a41ba9ebf93632d5fde1f386246e484375a1b571f540cf",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 2,
+      "method": "Matched-MMA",
+      "file": "designs/case_02/Matched-MMA.npz",
+      "sha256": "71baefc73c4676e1311309fb28a1a982f05269aeb52fae8baff6a4fe771fd6ea",
+      "binary_sha256": "93d26296de09b9a049d0321b2d57ed0bfd9b163e5311898871f37ef5717078ee",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 2,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_02/MultiStart-Adam.npz",
+      "sha256": "90139d2a15a649361816d78220858efe1eb9d46a14f7dfaac9dcc5998f4b6e92",
+      "binary_sha256": "8dac1db4eda3c80eceeabe9eb085fc0348f6d7d4b3acd6f26d08c720c94da19b",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 2,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_02/MultiStart-MMA.npz",
+      "sha256": "6e5cb96d849dd49d18a97532bd43a23c78d8c29f4da1cba8efaa6817cf785a12",
+      "binary_sha256": "605e6447b9b66ee428d0b48169a501eed05f7d61be446069213bfbed2554cf2d",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 2,
+      "method": "R0",
+      "file": "designs/case_02/R0.npz",
+      "sha256": "01cf8fe03b70224b60580db3911a8d6405536102d70d5ec62457cf0c8459a651",
+      "binary_sha256": "abc108230bc0eaf5ff21844cdb5f8a61f14fa0267e71fea125c1cc43b43a4af3",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 2,
+      "method": "R25",
+      "file": "designs/case_02/R25.npz",
+      "sha256": "0246c79ff5aa8226d050a73402571c1e2e30c857f29ef1db429492ac09c31c89",
+      "binary_sha256": "e0b83fc3d0f6d02bfff219d7886bb77dd7bb7e173fcbfbb8a1734b93f88df2c0",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 2,
+      "method": "MultiR25",
+      "file": "designs/case_02/MultiR25.npz",
+      "sha256": "a06a2c6f28ae21ade5df232d953e01639b35337445e12da4e8f1b9ec2b492df4",
+      "binary_sha256": "e3e0a17d8375042a219eaadf72be6562ae2e4e9bea89e04888e64bded8db084e",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 3,
+      "method": "Standard-Adam",
+      "file": "designs/case_03/Standard-Adam.npz",
+      "sha256": "dcba254d9fc4d6348f27bc3a45d8eb0e73ee7d8cede934c10061f6adf54ea96f",
+      "binary_sha256": "f98367c0194288e6331bc2c0ec375df83be7037ded9e99c8358ca2527a946efc",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 3,
+      "method": "Standard-MMA",
+      "file": "designs/case_03/Standard-MMA.npz",
+      "sha256": "080ff0f6b93129aa739c488dfa1abc2ede8d13e17654d28d367e9dea73d87297",
+      "binary_sha256": "4f27b734a9579e41dda013211b406366e21d2825fd43037eba92388fbb1410f4",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 3,
+      "method": "Matched-Adam",
+      "file": "designs/case_03/Matched-Adam.npz",
+      "sha256": "5e602e0220acf297de40d3c693842d48c14ee94529fa6edb20ee9c2585f9b9e5",
+      "binary_sha256": "bcf81f81e78c6c9bd85c0bc1b71e4a25549810812048349ddbb295715aad41e5",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 3,
+      "method": "Matched-MMA",
+      "file": "designs/case_03/Matched-MMA.npz",
+      "sha256": "b3374e00bf20ab574d3fbf2aa78f761b2f7ec6b9729a4ece3b48193f2c75b178",
+      "binary_sha256": "159b3325d7c4ae8de89b19225d697f7f6335eb3b8a704f29960c7bcc2d639cbd",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 3,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_03/MultiStart-Adam.npz",
+      "sha256": "6de0c891c34937be58079f15464a9cf33b1543adb9eab68405d62bc4116e176f",
+      "binary_sha256": "b211e24dd2f3a5c3b20ab49581a0be86139dbfe5f64f782282e8d66609e50ada",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 3,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_03/MultiStart-MMA.npz",
+      "sha256": "52f99d7c3790b3f07be8f42af6f7f21718a6f8356df3f69e013272e20e1d5441",
+      "binary_sha256": "7a10500305d3b09885ffeb5d65d96976b914c06a147d10d4e6931d3901c5af3b",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 3,
+      "method": "R0",
+      "file": "designs/case_03/R0.npz",
+      "sha256": "3d9abb8c646bbcd4c7a4cf3ffe9da8a3cd674bfff15bee9aea7a70de0ddbf4c8",
+      "binary_sha256": "95a27a2356132d16dbfa357eed8a4f8a9fb804896b06c9f0418f9ac9c8301bda",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 3,
+      "method": "R25",
+      "file": "designs/case_03/R25.npz",
+      "sha256": "f84cdad7ef9947b082f539e8771715fce1b7bedf76c2ff18b14811a68e49f909",
+      "binary_sha256": "f9554fd236244b9edd1c876a71b18f3ed99cf02a63d1776b8041f212733ed847",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 3,
+      "method": "MultiR25",
+      "file": "designs/case_03/MultiR25.npz",
+      "sha256": "d49f8f5ff83c35d70001751023d016f42d49d685c3f8845cf9887abb0fd491f1",
+      "binary_sha256": "59529e81b02640ed6a3480490f182bb4b155661e0d65c7df69e1cdff0e06694c",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 4,
+      "method": "Standard-Adam",
+      "file": "designs/case_04/Standard-Adam.npz",
+      "sha256": "2cdcc5c76302e568376ce3e20b89cfea1d1c28ff6664042ec56e2a656e134e86",
+      "binary_sha256": "f487a0387c5f23efeffbe93c9d7d7a4ea3bf2dc96f86fc2beb5d9729d19af11b",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 4,
+      "method": "Standard-MMA",
+      "file": "designs/case_04/Standard-MMA.npz",
+      "sha256": "9ab82a11edb04c3e9f7176ba86b859b591d84ee72a973ecf0b867019aea17c63",
+      "binary_sha256": "2a231cca3ca71522d34a46b8f2418931648d20190e27d3362848c51fc7a1e88c",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 4,
+      "method": "Matched-Adam",
+      "file": "designs/case_04/Matched-Adam.npz",
+      "sha256": "f3adc35e929f0a8acbcee7efb205b7ff2230ccfac522d172fb5592f18c6c05ef",
+      "binary_sha256": "3ce4a2744482f86c3eb0e02ff8fd1ea8fed74f8bf15bde9ff49a2e47b5f7a217",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 4,
+      "method": "Matched-MMA",
+      "file": "designs/case_04/Matched-MMA.npz",
+      "sha256": "130e33c4c8836db29ae5abad78e0fcba7610a77c4003407458257450fad7d4cc",
+      "binary_sha256": "6725b7e949ab06a7325beb02448b6150a769c2711f12d7493fe54f5864588e99",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 4,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_04/MultiStart-Adam.npz",
+      "sha256": "d6d6f1b082e804733de8cdabb062012a2af5dc326608266d42e69cc81fcf1534",
+      "binary_sha256": "56ddc0758a4009d91e85c6c7df1fcab5ff9fa7234053333e9a1c60110bc18d87",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 4,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_04/MultiStart-MMA.npz",
+      "sha256": "4fa614850576e7c43aacab46dc9d9e19406b92a54a8858fab24149bf44bb3495",
+      "binary_sha256": "cef8d2e8a7418ef74fce04c8cc8de007f0e5620f3965ff21e0fbba6845c15739",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 4,
+      "method": "R0",
+      "file": "designs/case_04/R0.npz",
+      "sha256": "81dc4561719e2e45515f71f94c4dc0aae1fd033d162824728ad230083137d932",
+      "binary_sha256": "c10398a4f02058b5b7cb4c294cff6ca7f0ae41be56a2be0632971bd5ff2f4980",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 4,
+      "method": "R25",
+      "file": "designs/case_04/R25.npz",
+      "sha256": "7b7013492043ed83425c8c26d8dc47e4bd5e48745c1f63634f2da949fba94495",
+      "binary_sha256": "dace2d8c5bfc396c0632680a82e308e160ce116a383ae7a41bddea290be92c86",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 4,
+      "method": "MultiR25",
+      "file": "designs/case_04/MultiR25.npz",
+      "sha256": "dc01b9c6d21e20b6ff889dc700456e520a0f51151b93d5e891f483b1bea455de",
+      "binary_sha256": "66844e63453cf88a6fbb981b99153e697907a1adfd9e114b4bc479450175fddc",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 5,
+      "method": "Standard-Adam",
+      "file": "designs/case_05/Standard-Adam.npz",
+      "sha256": "9d8bcae8ef3e159845e06192399fdad792ec288517be9dfc61b516be13d23777",
+      "binary_sha256": "ac04202d3ae5c06904da83a76a060fd9166e15d8b929407b317f9fbcb8801222",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 5,
+      "method": "Standard-MMA",
+      "file": "designs/case_05/Standard-MMA.npz",
+      "sha256": "5e21be7a5288d5da8776d5c0d6b582cdf28a1de07c7df2888d57cad0ef60f4e7",
+      "binary_sha256": "95a03326cf96177457f10ccc86a72f4c142de24493a82f73316e95c1d65678c7",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 5,
+      "method": "Matched-Adam",
+      "file": "designs/case_05/Matched-Adam.npz",
+      "sha256": "38101a1cfb416409f171c3065a3a08ed4d21539b48c466a89e27a334aca665c0",
+      "binary_sha256": "772a1ac746963817f3cec57f86d5e28885b0f0de9fcd90baf21e801ea4006031",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 5,
+      "method": "Matched-MMA",
+      "file": "designs/case_05/Matched-MMA.npz",
+      "sha256": "dfda397208d66360b4b6ce063f8a369b69a09441f1f04073208c5beed3b37c00",
+      "binary_sha256": "39a573abb3df9098fdddf3a9d6de183e2ca83e8949e1f7e2062c9af989c295b8",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 5,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_05/MultiStart-Adam.npz",
+      "sha256": "9038f09e9bcd4b7decf4b44ad6ffb9303225078ee0c62bc387b17217663eda9c",
+      "binary_sha256": "c0197b5da0f69929cb16ea0eedebd2378d0c85ed9a874cca3a2381ba01a6547e",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 5,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_05/MultiStart-MMA.npz",
+      "sha256": "57c40ea6ad9466d0c44a112dc91f07f2caf2ea157d708d778b63d1e5d51a2d8b",
+      "binary_sha256": "7f83ef91c1f4bfadcf535bfcf388b2eee32eda3185121f8ab54fc04f619e2811",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 5,
+      "method": "R0",
+      "file": "designs/case_05/R0.npz",
+      "sha256": "b10cfb9597c2b8cf42635ad1b4897b2cfe3227a52e7130d01ee2be7858277660",
+      "binary_sha256": "7fead5cba65da62867174cbd5ac66d06b2ef6bf86d205b6cb69d63517b1275f4",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 5,
+      "method": "R25",
+      "file": "designs/case_05/R25.npz",
+      "sha256": "1c4a771964506355831e82c9d17d2c748daa425468572c49a1b930767e545f27",
+      "binary_sha256": "476e1d80cbb9c9ff98af384d44604773286ae19740dc337b3d0fef5d90b1cdcf",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 5,
+      "method": "MultiR25",
+      "file": "designs/case_05/MultiR25.npz",
+      "sha256": "f0a7c7d8e80fe86ecabaefe48705987b2eb78a054e4b8ada3ebe11b3acc87375",
+      "binary_sha256": "f0e26ca57094bfc5e2204333081976d709bad685d6dbf7bafacfb5e89eec7b8a",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 6,
+      "method": "Standard-Adam",
+      "file": "designs/case_06/Standard-Adam.npz",
+      "sha256": "c6a5f67a2dbe37982103758992c557ef737a34fbc5bf8b381c59e2df2538dc4c",
+      "binary_sha256": "037bd02310eb1bc25b132b8e2fb791cba262684978c7fb4c6e069cb622ce82ca",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 6,
+      "method": "Standard-MMA",
+      "file": "designs/case_06/Standard-MMA.npz",
+      "sha256": "db3b6eae2ca5722301245161e4b91f66e88d7053c43edb57a984e2ea1030b1dc",
+      "binary_sha256": "14583c70d0b4ca575e588ec177f9343ac0defe6533ab72e226b545152ee8b6f6",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 6,
+      "method": "Matched-Adam",
+      "file": "designs/case_06/Matched-Adam.npz",
+      "sha256": "f4578d0add4169830106776f786baf83fd86c5e588a5191726b30fa04bda2384",
+      "binary_sha256": "e3d8371bc006c45d3c6f4b4466c4f9250695f057f04f9eb708944c25cf486da3",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 6,
+      "method": "Matched-MMA",
+      "file": "designs/case_06/Matched-MMA.npz",
+      "sha256": "3f5361aad1cc1a77956c87818ecc55fc43b2988a0ca197f516c947dac1c66b5f",
+      "binary_sha256": "c69a987aa3864ae9a6fd80d2d2e9cb68fe4083af4f9f411718ec24be9705ab53",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 6,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_06/MultiStart-Adam.npz",
+      "sha256": "8d2343459073b5b08870e185da20da8cbbd8ed9ff7f5718c454304abc455a914",
+      "binary_sha256": "a6ea652077d146747d755bdbb8909c98084ccdd6b4682110eca3b30f51cfcc57",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 6,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_06/MultiStart-MMA.npz",
+      "sha256": "292b711033a634ec73a5b667889d207ae92e5d604a972e9b9cd6c0f61a39031b",
+      "binary_sha256": "4bd57b4601abda8eaff58b8f63e2ef64d9967ec40129d6f9d79f7270da1d7933",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 6,
+      "method": "R0",
+      "file": "designs/case_06/R0.npz",
+      "sha256": "b883a5052e7d876be9f2ffec0f12f04bc7c8dd247317f8c1c616b44153f38dbc",
+      "binary_sha256": "3a5ccb8805448c6d7535900f923bfa84af8155cc3d1d4334fa4b18a147793cff",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 6,
+      "method": "R25",
+      "file": "designs/case_06/R25.npz",
+      "sha256": "2e341241901b24b24d0e38c1b17be1a35cffe2670f2617a9a3348857513ec794",
+      "binary_sha256": "119537f3c3da525f0e3865d79839ffce6640302c430aa2e8912deab868b1e4b3",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 6,
+      "method": "MultiR25",
+      "file": "designs/case_06/MultiR25.npz",
+      "sha256": "df74061c1fe06424ff3b23071bb60b0ced7a1332aa850e040f12f5543d6e060d",
+      "binary_sha256": "f76614f415813a4e73ae9feb940091094e3fe1e3b76268df863de2f7f7e4f3ff",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 7,
+      "method": "Standard-Adam",
+      "file": "designs/case_07/Standard-Adam.npz",
+      "sha256": "3d2564317018b2da6f09629edfebd3e537fb30ec484ba07abb5d9cdd9c02b8db",
+      "binary_sha256": "67ebc08adcc30ef54dca792faec17c2146f0de1e0d13bfbf9e956db8899ed67b",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 7,
+      "method": "Standard-MMA",
+      "file": "designs/case_07/Standard-MMA.npz",
+      "sha256": "a327f2bcc033d35ca20add6310a9176fed35d0f63b95ccafe4048aaad1bb1193",
+      "binary_sha256": "4d07891401c11b2c29a89dfbbbff4a022ffb44bbf91a460553a7d11a620529bb",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 7,
+      "method": "Matched-Adam",
+      "file": "designs/case_07/Matched-Adam.npz",
+      "sha256": "107e847e158561ab5830e8d89afd480857182741f52673734e880ca1825a0410",
+      "binary_sha256": "396c08f0dd0ffca02a880895bbc9130883dfb437a294ac8cb3085703bbd3d9b0",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 7,
+      "method": "Matched-MMA",
+      "file": "designs/case_07/Matched-MMA.npz",
+      "sha256": "cd6ebdabb0e491f8a638e879922f7d147c78e315083eb140e459e4fcdb396ef6",
+      "binary_sha256": "76ef2745b96723386d17825c803ab0888e9e0233c93151ce363e3273241bbab4",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 7,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_07/MultiStart-Adam.npz",
+      "sha256": "c7a78e13865239e5013d5ea2a0681de86560c25b23bc4d2643fc7fb9a4ff9c27",
+      "binary_sha256": "98f3cecf5dfdfcc75e92f7a7dbc7defff4db8ab572d0722afa9ac9a7306e3d9f",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 7,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_07/MultiStart-MMA.npz",
+      "sha256": "7f0a212531e98b002e4a5e5b50bfc9e7f64bb8f3741d95cd14f3887560daedcc",
+      "binary_sha256": "8330bff19c3340855a649b3942d77be2f6109e47df5f45eccb185f3f0ca301e9",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 7,
+      "method": "R0",
+      "file": "designs/case_07/R0.npz",
+      "sha256": "4b7621e05f9e0b918193d62faa15ea04ed6ae3fd05dc147143dc4f2f31c6411a",
+      "binary_sha256": "948cd126769f6e5b98df1adc16fd057657c1897d3d1986b659cf52b39f291c96",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 7,
+      "method": "R25",
+      "file": "designs/case_07/R25.npz",
+      "sha256": "fd5fd789eaee512ffbb2976120760102be7a734dc5147a8f91bfb099996b0c46",
+      "binary_sha256": "1339f9db559c05c462ff4aa981150bb92fae48b2dc28c400e534656a0d396b98",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 7,
+      "method": "MultiR25",
+      "file": "designs/case_07/MultiR25.npz",
+      "sha256": "8a132d5e3a079bc42fd806449e66604b9649823d3c968352b35b0b45bdd149cb",
+      "binary_sha256": "1ad3e304f83ac62b4d7052135b86c9fa8b1198936d546d85414381b97df0fb88",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 8,
+      "method": "Standard-Adam",
+      "file": "designs/case_08/Standard-Adam.npz",
+      "sha256": "f9b366ce45f1d3fab404eaed475012c33233493227782997016dc3f07a0824bc",
+      "binary_sha256": "057d1ac2dc8e99a7dd588e9317b65a5d81f3b6aa3bc2006673fd1e64d5e9a866",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 8,
+      "method": "Standard-MMA",
+      "file": "designs/case_08/Standard-MMA.npz",
+      "sha256": "41a16270e33da663d37e1755f56578602ac49c9ca1c55a9ed33184cf8c90504a",
+      "binary_sha256": "cadc145373c33af3540c9259324756996537e9afb020902098db97acd11e915d",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 8,
+      "method": "Matched-Adam",
+      "file": "designs/case_08/Matched-Adam.npz",
+      "sha256": "2dde67c537fb50cd4dd69bf511e8e0a7d8580baf4c9ddcce832a17d5a65437e2",
+      "binary_sha256": "1db62cf97058534421e770725006ee9c911495ef62243bf59ed361f62d71f549",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 8,
+      "method": "Matched-MMA",
+      "file": "designs/case_08/Matched-MMA.npz",
+      "sha256": "94824058547d678e333204861d54a12732cc364ea43c7f3f5bb264b54c5904af",
+      "binary_sha256": "1b3e4a01ab41fbf4fb4dc96d3a05836e0a17d405049a670962005614227e8093",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 8,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_08/MultiStart-Adam.npz",
+      "sha256": "e106389eb584876086b0a3b80869589b1889cccc06b9264ccd110d913eab361c",
+      "binary_sha256": "1e6f988a2f93ca395ee50f36a58c634927372d661cb5bcbcf9ea721e5e14cc54",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 8,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_08/MultiStart-MMA.npz",
+      "sha256": "4dbd79e18a2e3b4006a2d787f34c8d6aa2ea333e1f9a791bf071a8d989efd6c3",
+      "binary_sha256": "1c6ffd7331047d38d049a596ae6017f2a236d828c5e196d1754b4c89957285b4",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 8,
+      "method": "R0",
+      "file": "designs/case_08/R0.npz",
+      "sha256": "2795f08c07efdd04797d80fb3c1007b5c18ee50f56af11cbfe6734af7850254e",
+      "binary_sha256": "40593ae190ca7573a72ae29dbd2885933f983331d5f03458be90b0fe7c9e5ded",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 8,
+      "method": "R25",
+      "file": "designs/case_08/R25.npz",
+      "sha256": "11fa9755d3b4238a28bde3233b910fdfcab5cff2be712141377bf879424cdf5f",
+      "binary_sha256": "5d1ce16762ea1a82dcd5fb5280702f8b121a36372aa68157539edd7d929dd08f",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 8,
+      "method": "MultiR25",
+      "file": "designs/case_08/MultiR25.npz",
+      "sha256": "61339f24879ef2ad9a7f794ad167cbe9573ccf95a53d203f33f5d24ed4d02628",
+      "binary_sha256": "9d0ce50c23d78a8dbf0154870897a17c0c3daf229218f02be71a163707136306",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 9,
+      "method": "Standard-Adam",
+      "file": "designs/case_09/Standard-Adam.npz",
+      "sha256": "bc5fa9ae7c923b625bd1311992b11dda992901e61c072680c6268102a86d0a83",
+      "binary_sha256": "87f08172c68665e1a75ac777cf94c16c8f159a83f2f858af1b491b063234c21e",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 9,
+      "method": "Standard-MMA",
+      "file": "designs/case_09/Standard-MMA.npz",
+      "sha256": "ab95b44926223fa314569c4827604206ec4931bf4c5c3c51a03b893eedfaedca",
+      "binary_sha256": "8804d2bfcb36ed25cbc83a1270d505649e72d992a8a7edfb6349a996053c4705",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 9,
+      "method": "Matched-Adam",
+      "file": "designs/case_09/Matched-Adam.npz",
+      "sha256": "e61ce63d25acd0bebf1eb9273bb8a557aaf7947072242bd014d66cfb6be925e0",
+      "binary_sha256": "6d7313ed57c410121dd1fb75ed1d9d232e8a58dbc41d25bcc12395fd115c67f9",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 9,
+      "method": "Matched-MMA",
+      "file": "designs/case_09/Matched-MMA.npz",
+      "sha256": "3b9d65b6849f180a6045773fd9ac644484f60dae626d8f6f026d0e3e017708ae",
+      "binary_sha256": "e4b224edc88a85e8c6fa901b42fc9b73436b477e4f77c968e1243c72884b262c",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 9,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_09/MultiStart-Adam.npz",
+      "sha256": "255a7f81041064d84d2eb6351e2275a1a668d3c3fee17891bfb167f7588facfd",
+      "binary_sha256": "b43698e77b92abe70e92dd9d180f37dba9e8776ccc680e68adccda99b060719e",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 9,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_09/MultiStart-MMA.npz",
+      "sha256": "cb71f8cfc679572d52c6dd0ff2ba337d462e60b761c3e690a8724ee916128630",
+      "binary_sha256": "ade72a5d3e045a28bd3ad02d71279cb7afcdd66df9d06e035b5abac5cda09083",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 9,
+      "method": "R0",
+      "file": "designs/case_09/R0.npz",
+      "sha256": "83a51f6a10f5b1e08f00182866717d2f2a47c52648ff09d85a0e64e92d3ba5f9",
+      "binary_sha256": "899087e4c62436dd3dea508a0e6dcbd4f827da941f03f8274fc7055dfe5cc74e",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 9,
+      "method": "R25",
+      "file": "designs/case_09/R25.npz",
+      "sha256": "83a51f6a10f5b1e08f00182866717d2f2a47c52648ff09d85a0e64e92d3ba5f9",
+      "binary_sha256": "899087e4c62436dd3dea508a0e6dcbd4f827da941f03f8274fc7055dfe5cc74e",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 9,
+      "method": "MultiR25",
+      "file": "designs/case_09/MultiR25.npz",
+      "sha256": "4b407cea22daebd2ad5168276418bddcd8afadfdf440033fe3638554e3ae2acb",
+      "binary_sha256": "49612daf122455288176e6aaba24fd9c796f3aa58c0492619ec36b135407bce6",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 10,
+      "method": "Standard-Adam",
+      "file": "designs/case_10/Standard-Adam.npz",
+      "sha256": "908d5528353a45980d0e3d90b6a22dc3584486fad64ffbc66ae63a64407407d2",
+      "binary_sha256": "b22f2fa2e24131adba1dfdd0ca382976aad6105ebb6632b8124bedfcef0263fb",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 10,
+      "method": "Standard-MMA",
+      "file": "designs/case_10/Standard-MMA.npz",
+      "sha256": "5b89e86800e032b620d7e378f6a3439ab6707c606e9451f86da4b0639023b7de",
+      "binary_sha256": "ffc50c3c016158701b914fe42233a49b6567862c90b1a4158666f3390359318f",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 10,
+      "method": "Matched-Adam",
+      "file": "designs/case_10/Matched-Adam.npz",
+      "sha256": "e107f3970506372865f5c8d3716e0aca65a44282d4ad20b5956653e42edf336e",
+      "binary_sha256": "0e15b98d3e48ef6db821afa8af0462bc3f0b592e4266bbe2cf92c231e26eaaa1",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 10,
+      "method": "Matched-MMA",
+      "file": "designs/case_10/Matched-MMA.npz",
+      "sha256": "ca6ae4f623ea44a1fcdff3e4d94415f5f7de20bdcdd354f939cfeea41e4ff6fe",
+      "binary_sha256": "affaa067bec74b013beea733e36f90d384f2969e2102da3f7e7936166bf321f9",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 10,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_10/MultiStart-Adam.npz",
+      "sha256": "4ba010132f29544334170a4829c133cab9ca4e0085f3cf8b2dbff6a0e996d3c8",
+      "binary_sha256": "a9a19bb019b0c85c59c8bfe4260b91c0cbf0185b6885ed03f40880802baf8b1a",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 10,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_10/MultiStart-MMA.npz",
+      "sha256": "0ba71e14e27202014a8b8e2f4d8a5be6513d861685c6d0393b91cf21f50b9601",
+      "binary_sha256": "f35cee62d2cfbdd84cbc8859e4ffc57ef0e54434732f44ef9b2a474f2207effa",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 10,
+      "method": "R0",
+      "file": "designs/case_10/R0.npz",
+      "sha256": "c47dacf234259d3dd4f6ec63acf6591ea38312c9eced93bf0eda65445595e075",
+      "binary_sha256": "03672a06cf3611e32555191603336550d883550838623e4ffa7177afc3083815",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 10,
+      "method": "R25",
+      "file": "designs/case_10/R25.npz",
+      "sha256": "c47dacf234259d3dd4f6ec63acf6591ea38312c9eced93bf0eda65445595e075",
+      "binary_sha256": "03672a06cf3611e32555191603336550d883550838623e4ffa7177afc3083815",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 10,
+      "method": "MultiR25",
+      "file": "designs/case_10/MultiR25.npz",
+      "sha256": "b7dd2244cfbf740d76571b5f4d676c48c586f3a47e1ba12d8cea67b4dd1e567a",
+      "binary_sha256": "a65bf15f7ef37829ff2ec69d90a11fe8e23263fb2c3955f89a009120a5378dbe",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 11,
+      "method": "Standard-Adam",
+      "file": "designs/case_11/Standard-Adam.npz",
+      "sha256": "f26d4fc29de82d081f8256fea65dcb7951a5bffc0dc0a7219ae852b559366f9f",
+      "binary_sha256": "13e7e604927ab9971498a1531079483ddbde1daa32541b0e3d174357ce386f76",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 11,
+      "method": "Standard-MMA",
+      "file": "designs/case_11/Standard-MMA.npz",
+      "sha256": "6e35f376851f0406793bd008bd0b630180dae37c52909c35529366140abf2337",
+      "binary_sha256": "99b8e5d285bcb749bce05b57db3ec0e38bc3b3e46dc6a70e16f5b6823114fce3",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 11,
+      "method": "Matched-Adam",
+      "file": "designs/case_11/Matched-Adam.npz",
+      "sha256": "5b744549c9d2f5b77d1fccc53da861b97bff901f4f5f0f86ff141d29dd776f2d",
+      "binary_sha256": "560269758a82cba16a3d331c581353680da7a5c4238255b8642a4db06941f2a8",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 11,
+      "method": "Matched-MMA",
+      "file": "designs/case_11/Matched-MMA.npz",
+      "sha256": "8ac63e672d419d0701cddb1739cd8218132c2406e3fa40780bc6b8408c94c586",
+      "binary_sha256": "bbf4fc795e1819162cdb88b0b471715767fd8862f2c694ec3772c1fd78b45fbb",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 11,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_11/MultiStart-Adam.npz",
+      "sha256": "e2b01161d9334737ac05f571249240c8823038ef6d01a698db2579ab44270b74",
+      "binary_sha256": "953ba43ef30db1a8071591f79c4b6470e7043ae4be554d9e236edd0c4388db23",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 11,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_11/MultiStart-MMA.npz",
+      "sha256": "aba62fb421ef5fa05c2d6ef48facf123a801e4a769598aef833833ab584d1ebc",
+      "binary_sha256": "ce22d30068b276b61265875adfb9630f46f17d341058d5ff8e319e867fce71d5",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 11,
+      "method": "R0",
+      "file": "designs/case_11/R0.npz",
+      "sha256": "0d30d8a9d344898b5516fc8b49b110de7c3fe43baffa31109fd0c3735ead3b92",
+      "binary_sha256": "5b711782868236b9b8de721fb63cf3b1a584749c5c5fbdc9a8406968e5dbdb1a",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 11,
+      "method": "R25",
+      "file": "designs/case_11/R25.npz",
+      "sha256": "3d2ebb171a66b0f02d3eb0a890ece2390321ce699212a23e1a32d7677ce95e2e",
+      "binary_sha256": "77bd71c4288e77e09dfae3237b1a4dfeea3c29f73da4921738c2d49292d712f6",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 11,
+      "method": "MultiR25",
+      "file": "designs/case_11/MultiR25.npz",
+      "sha256": "b3d31e7a977ca8ce769b4bea80671c3ab53277bded7d03b32cfee7269395cbbd",
+      "binary_sha256": "5aa085231c2559f9cf213a13b2a6dfb36c1bbfb318d1ee841f37ffdb551f1105",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 12,
+      "method": "Standard-Adam",
+      "file": "designs/case_12/Standard-Adam.npz",
+      "sha256": "f2bc79b153c38b87983391acbb0e3f448bbd2e00bf27677ccf9db8c91cf90d9a",
+      "binary_sha256": "bdab8154911c56f7c32420304604d0514fd2eb255a9497e6840fd104a33db877",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 12,
+      "method": "Standard-MMA",
+      "file": "designs/case_12/Standard-MMA.npz",
+      "sha256": "e792f8df5c0da30247089ee12bf2774b011be0ce1f105ad84cd6e90a3e16ad8c",
+      "binary_sha256": "94c9f37458c683aa4ad4743db954d06393a24bf2e92a31e2b58822fe8d540e35",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 12,
+      "method": "Matched-Adam",
+      "file": "designs/case_12/Matched-Adam.npz",
+      "sha256": "71dfcf73aaa8f92d74d07c526bfe971e9fb5b3a40a51ce3c619bf366a3daf399",
+      "binary_sha256": "c0fbea7f72eb87258e5ecc58a317a8ce865752029446a1569d8eb7d53a500d2a",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 12,
+      "method": "Matched-MMA",
+      "file": "designs/case_12/Matched-MMA.npz",
+      "sha256": "fc42c34532442776689c002fdeab5a01c64559ee969aefd43e5103a3cf04c328",
+      "binary_sha256": "f80c08ed513e0122871c9e17059dd970166bd968f0de981eb0103b37e7b1303c",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 12,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_12/MultiStart-Adam.npz",
+      "sha256": "5c220aad93044cfea0842e92891c816b698c1e5bd8237758966e82fb4a888047",
+      "binary_sha256": "cf5adbac32a07fe9eaca964a1f5f96879f8c45f4d6d21eb84efdd735c1bef91d",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 12,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_12/MultiStart-MMA.npz",
+      "sha256": "0c59db5be56e881188495a2c3a7b668f00f1355e065187b89936e896745ec023",
+      "binary_sha256": "3d38eebbe2083262b244ae7c01e4f45074554bc4960d81cdbc52bf9f1a133fb5",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 12,
+      "method": "R0",
+      "file": "designs/case_12/R0.npz",
+      "sha256": "f22e181b2dc04f14c0a5c2b3f0eaa52045f612e5e3b6506c9e24bc252147471e",
+      "binary_sha256": "be263b06cde60a7544240942966fb1cf4904e5a54ef337a13cf36d41d261e715",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 12,
+      "method": "R25",
+      "file": "designs/case_12/R25.npz",
+      "sha256": "52cf8261367e0ae222d5e075111b7ffb3efc0752d441d88c52107f7bbb2665e2",
+      "binary_sha256": "552e578e02ba625d6adbc97b89c283da65063f793a546cb6e9cc193e7b93408a",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 12,
+      "method": "MultiR25",
+      "file": "designs/case_12/MultiR25.npz",
+      "sha256": "ecac9b778ef06138e04fc3b0cb54fdbe7a8dc35e24db5451b32a32e13b85a42d",
+      "binary_sha256": "759bfd426e60fad0a33e5a3c9e82fb2eb9fa7f2ea94f723df154b1bf4333b11a",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 13,
+      "method": "Standard-Adam",
+      "file": "designs/case_13/Standard-Adam.npz",
+      "sha256": "a778e3a61a2cd0da109c63def013768eb5c8ccbfc2f03ced3a7c4caf4029d76a",
+      "binary_sha256": "f75c5af75d771877587b65199d05a2c2cf38a9b70f56e8528f19facb800e7083",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 13,
+      "method": "Standard-MMA",
+      "file": "designs/case_13/Standard-MMA.npz",
+      "sha256": "6e7a231abbdd7d1dea19015f8b2d4b60fdb4235ec7d3aba49a5d88f754773912",
+      "binary_sha256": "d5172b076d7cd6e2d1589d3a8b5620b8c866b861675e0bb98075f0101953f67b",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 13,
+      "method": "Matched-Adam",
+      "file": "designs/case_13/Matched-Adam.npz",
+      "sha256": "1ed0b95059476dbd43e169342f5c2187e1ac4827a4bf2cc3f28a87a0a581b24f",
+      "binary_sha256": "57c4135ca13471fd15ce99333e708622e86b8634cdeaeed3c57e83500e9ea4fe",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 13,
+      "method": "Matched-MMA",
+      "file": "designs/case_13/Matched-MMA.npz",
+      "sha256": "6f16e3f1d0b00c930895234d3414c0bb2934467267a26ae90ced73b635c6f07c",
+      "binary_sha256": "920e9172adc0e2684bf9aed7ea7a53fbece993cf4dbc305243a3dbce27fc2204",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 13,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_13/MultiStart-Adam.npz",
+      "sha256": "e8f9e302ab39d01e12f6b6283be2fcc0d3f1b19b41efddfc9e34a72f1b213cd9",
+      "binary_sha256": "0b73f2f69ba0eed8107c93a07ea42fdbab370baa4a6f593a62731020d2de7e03",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 13,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_13/MultiStart-MMA.npz",
+      "sha256": "baf9b3144e04298b2c83cf2567226719f7dd3a70eb79aa4710fd5a85ef5e880c",
+      "binary_sha256": "175362ac27df6de2e07113db48db182df1613ccb89ae2259cbaa3e2f9bc87c03",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 13,
+      "method": "R0",
+      "file": "designs/case_13/R0.npz",
+      "sha256": "5cb90a9f21ecebd4e1c9d2ab7503b0e93b2563074fe5d279e1543515a9490a1b",
+      "binary_sha256": "980219d15c50b4912f8b93f638e1056541f525fb71346877bab24c0ccdee993b",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 13,
+      "method": "R25",
+      "file": "designs/case_13/R25.npz",
+      "sha256": "18de1870817b6ee9daa5112945936b3d22c08f59eb43011ac56767ad7a973fed",
+      "binary_sha256": "4dab740e2132ccb1b09be8fecc3ea1258ba550c2b3766f822b9e66a8472c2c80",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 13,
+      "method": "MultiR25",
+      "file": "designs/case_13/MultiR25.npz",
+      "sha256": "5cb90a9f21ecebd4e1c9d2ab7503b0e93b2563074fe5d279e1543515a9490a1b",
+      "binary_sha256": "980219d15c50b4912f8b93f638e1056541f525fb71346877bab24c0ccdee993b",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 14,
+      "method": "Standard-Adam",
+      "file": "designs/case_14/Standard-Adam.npz",
+      "sha256": "726e4f861393512be56ede11bb1519ffbefa726d16a796e66a0ce7ed1b6f38b5",
+      "binary_sha256": "99b8e5d285bcb749bce05b57db3ec0e38bc3b3e46dc6a70e16f5b6823114fce3",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 14,
+      "method": "Standard-MMA",
+      "file": "designs/case_14/Standard-MMA.npz",
+      "sha256": "726e4f861393512be56ede11bb1519ffbefa726d16a796e66a0ce7ed1b6f38b5",
+      "binary_sha256": "99b8e5d285bcb749bce05b57db3ec0e38bc3b3e46dc6a70e16f5b6823114fce3",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 14,
+      "method": "Matched-Adam",
+      "file": "designs/case_14/Matched-Adam.npz",
+      "sha256": "ab064cf0703fc0c3034338ba0129998693a998c577cbc0af69bd81cc13144e91",
+      "binary_sha256": "6c3099256ab0665c333ed81103da6e4e53fc52aa6ef583a84a4ddfc002a749c8",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 14,
+      "method": "Matched-MMA",
+      "file": "designs/case_14/Matched-MMA.npz",
+      "sha256": "33198a2653217d052a1639974018c30538a8778944d6ac011347210ac446331e",
+      "binary_sha256": "287f1fd03a797cb3efe766dc9dc0b4acb99ea21cd87eafb5f161d26bbe54d246",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 14,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_14/MultiStart-Adam.npz",
+      "sha256": "1974241290e328e5c27eba34da4f563d73998703c5ade98fa8c4cb54201737d2",
+      "binary_sha256": "5a957a7a6fb5c07be645b34ae953ac0e846e443107ff4dd16c5ab461dc372e3b",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 14,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_14/MultiStart-MMA.npz",
+      "sha256": "b295a1e9001e9a7aa5f7973f9143a0dfc57aacc696e60638064b92fcdc9325a6",
+      "binary_sha256": "8f4c23be228b942d0bdf71a12478293e442abf0597a170e5d12cce6598e59d97",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 14,
+      "method": "R0",
+      "file": "designs/case_14/R0.npz",
+      "sha256": "1fecf10635e3670eff7fa7497f11a0e3355d5bd42915fbdbac2a34c9b77ecaea",
+      "binary_sha256": "a022dacca901a913bc916d6a6f888d31e64c338330dd519d91db5b22d712ee7a",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 14,
+      "method": "R25",
+      "file": "designs/case_14/R25.npz",
+      "sha256": "c421e5ec6d57523c8081cee3821b880e0b52d26002c82b95f08bef4dc9b285f1",
+      "binary_sha256": "e4462c31bb11e1e3b4a971b2e1356cd10f60ed0d793f20eab7773754cb3d9b38",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 14,
+      "method": "MultiR25",
+      "file": "designs/case_14/MultiR25.npz",
+      "sha256": "d316c013f8197e8cbf152ff29ef151b45fb4fa143d1da04465e15cb0775ba120",
+      "binary_sha256": "7514194250958aeceb4c76ad4213285e193755360936c5cb2728bdbcdee2706d",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 15,
+      "method": "Standard-Adam",
+      "file": "designs/case_15/Standard-Adam.npz",
+      "sha256": "9f745d36d8ead79402b1c9e71e0b56e99daef261fed630d0fabe660c7aa226aa",
+      "binary_sha256": "21667dd0e170d1cffe4bb9ff67a23a0ea24a626ef2d77f3ed35057d3f4cad343",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 15,
+      "method": "Standard-MMA",
+      "file": "designs/case_15/Standard-MMA.npz",
+      "sha256": "e9b476c0ea26da369b7b84ba60976de0f9d38ed5db29170a9a38b9a4d53fd8c7",
+      "binary_sha256": "99b8e5d285bcb749bce05b57db3ec0e38bc3b3e46dc6a70e16f5b6823114fce3",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 15,
+      "method": "Matched-Adam",
+      "file": "designs/case_15/Matched-Adam.npz",
+      "sha256": "be4c66a7c4e7cb45c14751151f90f0e47a8e8d4652dbf63f97370d60d96fff6b",
+      "binary_sha256": "65b16bb17d437c3561dfcba0a427e3fd030e546ed2259d6e1eadfd38d3e6c585",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 15,
+      "method": "Matched-MMA",
+      "file": "designs/case_15/Matched-MMA.npz",
+      "sha256": "85b70d9cedd8ac34a33e59cde56b95b7ce14f0749f2dd914b835c2e914b82caa",
+      "binary_sha256": "e1c8e4b7cec454fbddceee098582471bae26046926b41d48e973f0468736d8cd",
+      "fallback_used": false,
+      "objective_queries": 600
+    },
+    {
+      "task_index": 15,
+      "method": "MultiStart-Adam",
+      "file": "designs/case_15/MultiStart-Adam.npz",
+      "sha256": "9e2c98e5c2654c8592b460c757eae76c5d484fd8b2e86f028ee7b1bf1d9334e3",
+      "binary_sha256": "1287a0697e8a8f6eb0d95e78678ab4b65d64ad314ba9371be08b1ad35e8ca6a4",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 15,
+      "method": "MultiStart-MMA",
+      "file": "designs/case_15/MultiStart-MMA.npz",
+      "sha256": "24a927de6de4db7c7704cc720a96a295e2b14ea483eccd2db5eb0d14f1509d79",
+      "binary_sha256": "3e2fe6fe048756a277dc3785412d0fb4429aaa155870a2d0f67f556d18ca4515",
+      "fallback_used": false,
+      "objective_queries": 2400
+    },
+    {
+      "task_index": 15,
+      "method": "R0",
+      "file": "designs/case_15/R0.npz",
+      "sha256": "bd4b66662019eec07f0b51f86bf3bf7cbfc3fab45f5ee9bf5d8125a9d967de48",
+      "binary_sha256": "5d148d6b7eb2a5901febe095f77db4070b46c5b78c7c06c9a44684993800976a",
+      "fallback_used": false,
+      "objective_queries": 0
+    },
+    {
+      "task_index": 15,
+      "method": "R25",
+      "file": "designs/case_15/R25.npz",
+      "sha256": "b4813fd27ef088ca6808550d06063aca1c29c2c792c96a24c93b89692dedf655",
+      "binary_sha256": "84cf0a8b9c519efe04cc26b75a555f2a9313a4eb0d7536ccd17472b9841310b5",
+      "fallback_used": false,
+      "objective_queries": 25
+    },
+    {
+      "task_index": 15,
+      "method": "MultiR25",
+      "file": "designs/case_15/MultiR25.npz",
+      "sha256": "c8740af0efce43d1fd0d33b210c3b48f81ee3361d6fec3ad5332e1d2b87389a1",
+      "binary_sha256": "db304f732ded7058f6e187a93a619da603d092072067e95f00c1ed6874eb0fff",
+      "fallback_used": false,
+      "objective_queries": 25
+    }
+  ],
+  "array_axes": {
+    "binary": [
+      "x",
+      "y"
+    ],
+    "temperature": [
+      "power_scenario",
+      "stack_layer",
+      "x",
+      "y"
+    ],
+    "temperature_units": "Kelvin rise above inlet water",
+    "pressure_units": "Pa",
+    "face_flow_units": "m3/s"
+  },
+  "evaluation_mode_for_saved_fields": "nominal 10000Pa",
+  "geometry": "binary64x64; fine_binary exactly replicated2x to128x128"
+}

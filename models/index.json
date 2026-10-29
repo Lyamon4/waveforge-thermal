@@ -1,5 +1,5 @@
 {
-  "default_checkpoint": "manifold_unet.pt",
+  "default_checkpoint": "manifold_unet_ribbed.pt",
   "models": [
     {
       "file": "vascular_unet_initial.pt",
@@ -44,10 +44,50 @@
       "role": "later fine-tuned checkpoint, inferior nominal median in the matched control",
       "state_dict_key": "model",
       "weight_dtype": "torch.float32"
+    },
+    {
+      "file": "manifold_unet_chiplet_locked.pt",
+      "architecture": "LockedUNet",
+      "sha256": "51781bf9636a193cd0aeb4736f78923d37a7e5b1a14c607c74a377f43226a2fe",
+      "bytes": 3854163,
+      "state_dict_key": "model",
+      "weight_dtype": "torch.float32",
+      "role": "Previous chiplet-locked checkpoint; Stage5.4",
+      "portable_model": "manifold_unet_chiplet_locked.torchscript.pt"
+    },
+    {
+      "file": "manifold_unet_ribbed.pt",
+      "architecture": "RibbedUNet",
+      "sha256": "3e431a8ad2e2bcd55a0a17a8c3917417cdc08db12a5006f6c31182088c7b4922",
+      "bytes": 3997587,
+      "state_dict_key": "model",
+      "weight_dtype": "torch.float32",
+      "role": "Stage5.5 checkpoint used in the published comparison",
+      "portable_model": "manifold_unet_ribbed.torchscript.pt"
     }
   ],
   "note": "Stage5.2 reuses the Stage5 weights; no duplicate checkpoint is needed. Flow-penalty steps are additional fine-tuning steps, not total training steps.",
-  "load": {
+  "default_portable_model": "manifold_unet_ribbed.torchscript.pt",
+  "latest_results": "../results/stage55_20261029",
+  "portable_inference": {
+    "load": "torch.jit.load(path, map_location=\"cpu\").eval()",
+    "input_shape": [
+      "batch",
+      13,
+      64,
+      64
+    ],
+    "input_semantics": "Precomputed physics conditioning in the canonical Y orientation; not raw unnormalized power maps",
+    "output_shape": [
+      "batch",
+      4,
+      4125
+    ],
+    "output_semantics": "Four parameter vectors, requiring geometric decoding and physical candidate scoring; not direct channel masks",
+    "binary_design_examples": "../results/stage55_20261029/designs"
+  },
+  "legacy_example": "python examples/evaluate_pretrained_mcl.py --checkpoint models/manifold_unet.pt --output artifacts/pretrained_example",
+  "legacy_load": {
     "import_path": "waveforge.lab.mcl.stage5_decoder.ManifoldUNet",
     "torch_load_weights_only": true,
     "state_dict_key": "model",
@@ -57,6 +97,5 @@
       64,
       64
     ]
-  },
-  "example": "python examples/evaluate_pretrained_mcl.py --output artifacts/pretrained_example"
+  }
 }

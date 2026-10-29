@@ -1,0 +1,55 @@
+{
+  "load": "torch.jit.load(path, map_location=\"cpu\").eval()",
+  "models": [
+    {
+      "file": "manifold_unet_ribbed.torchscript.pt",
+      "architecture": "RibbedUNet",
+      "format": "TorchScript",
+      "input_shape": [
+        "batch",
+        13,
+        64,
+        64
+      ],
+      "output_shape": [
+        "batch",
+        4,
+        4125
+      ],
+      "dtype": "float32",
+      "source_checkpoint_sha256": "3e431a8ad2e2bcd55a0a17a8c3917417cdc08db12a5006f6c31182088c7b4922",
+      "sha256": "908bea7475aef734ea86ee16ec5dc7a3e6c366ec15a8959b4b69165fe02fc6e5",
+      "bytes": 4133710,
+      "smoke_batches": [
+        1,
+        2
+      ],
+      "max_absolute_output_error": 0.0
+    },
+    {
+      "file": "manifold_unet_chiplet_locked.torchscript.pt",
+      "architecture": "LockedUNet",
+      "format": "TorchScript",
+      "input_shape": [
+        "batch",
+        13,
+        64,
+        64
+      ],
+      "output_shape": [
+        "batch",
+        4,
+        4121
+      ],
+      "dtype": "float32",
+      "source_checkpoint_sha256": "51781bf9636a193cd0aeb4736f78923d37a7e5b1a14c607c74a377f43226a2fe",
+      "sha256": "f70313e86499ffa5b15aab43cf71040a1061f64d4eb9ef19a59cf2c5e13cbd4d",
+      "bytes": 3997430,
+      "smoke_batches": [
+        1,
+        2
+      ],
+      "max_absolute_output_error": 0.0
+    }
+  ]
+}
