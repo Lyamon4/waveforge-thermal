@@ -1,0 +1,39 @@
+{
+  "measured_device_parameters": false,
+  "profiles": [
+    {
+      "name": "initial supplied microchannel model",
+      "pressure_pa": 15000,
+      "resistance_ratio": 100000,
+      "h_air": 20
+    },
+    {
+      "name": "laminar patch",
+      "pressure_pa": 10000,
+      "resistance_ratio": 100000,
+      "h_air": 20,
+      "channel_width_m": 0.0002
+    },
+    {
+      "name": "qualification-era profile",
+      "pressure_pa": 2500,
+      "resistance_ratio": 10000,
+      "h_air": 500,
+      "channel_width_m": 0.0002
+    },
+    {
+      "name": "current high-flow research profile",
+      "pressure_pa": 10000,
+      "resistance_ratio": 10000,
+      "h_air": 10,
+      "channel_width_m": 0.00028
+    }
+  ],
+  "interpretation": [
+    "These are different assumed model profiles, not measurements of an AMD cold plate.",
+    "Earlier profile changes were explicitly specified before later training; this does not provide empirical calibration.",
+    "Lower resistance_ratio increases numerical leakage through nominally solid regions and can affect designs.",
+    "Sensitivity of the current ranking to resistance_ratio is still required.",
+    "Stage5.1 and Stage5.2 comparisons use the same current physical profile."
+  ]
+}
