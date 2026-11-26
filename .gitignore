@@ -20,3 +20,4 @@ docs/
 *.tmp
 .env
 .env.*
+!/README.md

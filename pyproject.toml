@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "waveforge-thermal"
 version = "0.1.0"
 description = "Neural microchannel cooling design with coupled flow and thermal evaluation"
+readme = "README.md"
 requires-python = ">=3.11,<3.12"
 dependencies = [
     "matplotlib>=3.11,<3.12",
