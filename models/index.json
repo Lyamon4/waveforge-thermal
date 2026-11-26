@@ -66,6 +66,57 @@
       "role": "Stage5.5 checkpoint used in the published comparison",
       "portable_model": "manifold_unet_ribbed.torchscript.pt",
       "import_path": "waveforge.lab.mcl.ribbed_channels.RibbedUNet"
+    },
+    {
+      "file": "manifold_unet_amortized_r0.pt",
+      "architecture": "CandidatePortfolio",
+      "parameters": 1984816,
+      "sha256": "48162fa3540e56b9fdf79681a3c94ed4468262fd8b78f231828401f9915563bf",
+      "bytes": 7995553,
+      "role": "experimental zero-refinement source/student portfolio",
+      "state_dict_key": "model",
+      "weight_dtype": "torch.float32",
+      "teacher_free": false,
+      "import_path": "waveforge.lab.mcl.amortized_policy.CandidatePortfolio",
+      "loader": "waveforge.lab.mcl.amortized_policy.load_policy",
+      "portable_model": "manifold_unet_amortized_r0.torchscript.pt",
+      "portable_output_shape": [
+        "batch",
+        8,
+        4125
+      ],
+      "prediction_space": "physical",
+      "decoder_head_ids": [
+        0,
+        1,
+        2,
+        3,
+        0,
+        1,
+        2,
+        3
+      ],
+      "online_refinement_updates": 0,
+      "results": "../results/amortized_20261030"
+    },
+    {
+      "file": "solver_free_20261030/model_frozen.pt",
+      "architecture": "GeneratorOnlyPolicy",
+      "sha256": "e83fea4937f3d9eb6ed6c8af430141e39487ec33d51f49cffc604d133975783e",
+      "selector_file": "selector.joblib",
+      "selector_sha256": "749440a60d8b54ae1d5a5adb4892a76635f1eb756c848eb0bdf5bfc53779c339",
+      "role": "experimental solver-free inference; quality gate not passed",
+      "import_path": "waveforge.lab.mcl.solver_free.load_solver_free",
+      "online_physical_solves": 0,
+      "results": "../results/solver_free_20261030"
+    },
+    {
+      "file": "solver_free_20261030/selector_v2.joblib",
+      "architecture": "LightGBM selector (solver-free v2)",
+      "sha256": "536505e4b65715adf78f2f84df2525298d811588fd34119cdba22d14657f39b3",
+      "bytes": 5359181,
+      "role": "Solver-free v2 candidate selector; used by waveforge.lab.mcl.solver_free_v2 and demo/server.py",
+      "import_path": "waveforge.lab.mcl.solver_free_v2.SelectorV2"
     }
   ],
   "note": "Stage5.2 reuses the Stage5 weights; no duplicate checkpoint is needed. Flow-penalty steps are additional fine-tuning steps, not total training steps.",
@@ -100,5 +151,7 @@
       64
     ]
   },
-  "example": "python examples/evaluate_pretrained_ribbed.py --mode multi25 --output artifacts/ribbed_example"
+  "example": "python examples/evaluate_pretrained_ribbed.py --mode multi25 --output artifacts/ribbed_example",
+  "experimental_r0_example": "python examples/evaluate_pretrained_ribbed.py --checkpoint models/manifold_unet_amortized_r0.pt --mode r0 --device cuda --sparse-backend cudss --output artifacts/amortized_r0",
+  "experimental_solver_free_example": "python examples/infer_solver_free.py --checkpoint models/solver_free_20261030/model_frozen.pt --cuda-graphs --output artifacts/solver_free_example"
 }

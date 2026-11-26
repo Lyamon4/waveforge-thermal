@@ -22,6 +22,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+accelerate = ["numba>=0.68,<0.69"]
+solver-free = ["numba>=0.68,<0.69", "scikit-learn>=1.9,<1.10", "joblib>=1.6,<1.7", "threadpoolctl>=3.7,<3.8"]
+demo = ["numba>=0.68,<0.69", "scikit-learn>=1.9,<1.10", "joblib>=1.6,<1.7", "threadpoolctl>=3.7,<3.8", "lightgbm>=4.7,<4.8"]
 dev = [
     "pytest>=9.1,<9.2",
     "ruff>=0.16,<0.17",

@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WaveForge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0f1115;--soft:#6b7280;--line:#e7e8ec;--card:#ffffffee;--accent:#1a73ff;--warm:#ff5a3c}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#fff;color:var(--ink);font-family:"Instrument Sans",system-ui,sans-serif;overflow:hidden}
+#three{position:fixed;inset:0}
+.title{position:fixed;top:34px;left:0;right:0;text-align:center;pointer-events:none}
+.title h1{margin:0;font-weight:600;font-size:40px;letter-spacing:-.8px}
+.title p{margin:6px 0 0;color:var(--soft);font-size:15px;letter-spacing:.2px}
+.dock{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);display:flex;gap:10px;align-items:center}
+.pill{border:0;background:var(--ink);color:#fff;font:600 15px "Instrument Sans";padding:14px 28px;border-radius:999px;cursor:pointer;box-shadow:0 8px 24px #0f111522;transition:.2s}
+.pill:hover{transform:translateY(-1px)}
+.icon{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 14px #0f11150f;transition:.2s}
+.icon svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:1.7}
+.icon.on{background:var(--ink);border-color:var(--ink)} .icon.on svg{stroke:#fff}
+.icon:hover{transform:translateY(-1px)}
+.sheet{position:fixed;right:24px;top:110px;width:320px;background:var(--card);backdrop-filter:blur(16px);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:0 20px 50px #0f111518;display:none}
+.sheet.open{display:block}
+.sheet h3{margin:0 0 12px;font-size:15px;font-weight:600}
+.chips{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:500 13px "Instrument Sans";cursor:pointer}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.row{display:grid;grid-template-columns:40px 1fr 40px;gap:8px;align-items:center;margin:4px 0;font-size:13px;color:var(--soft)}
+.row output{text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--ink)}
+.go{width:100%;margin-top:12px;border:0;border-radius:12px;padding:11px;background:var(--ink);color:#fff;font:600 14px "Instrument Sans";cursor:pointer}
+.go:disabled{opacity:.4}
+.warn{font-size:12px;color:#b45309;margin-top:6px;min-height:16px}
+.m{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.m:last-child{border:0}
+.m .dot{width:10px;height:10px;border-radius:50%}
+.m .n{font-weight:500;font-size:14px}.m .s{font-size:12px;color:var(--soft)}
+.m .t{font-weight:600;font-size:18px;font-variant-numeric:tabular-nums;text-align:right}
+.m.sel .n{text-decoration:underline;text-underline-offset:3px}
+.run{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font:500 12px "Instrument Sans";cursor:pointer}
+.bar{height:3px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--ink)}
+.probe{position:fixed;pointer-events:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 12px;box-shadow:0 10px 24px #0f111520;font-size:13px;display:none;white-space:nowrap}
+.probe b{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.pin{position:fixed;pointer-events:none;transform:translate(-50%,-100%);background:var(--ink);color:#fff;border-radius:10px;padding:4px 9px;font:600 13px "Instrument Sans";white-space:nowrap}
+.pin:after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink);border-bottom:0}
+.scale{position:fixed;left:28px;bottom:36px;font-size:12px;color:var(--soft);display:none}
+.scale .g{width:180px;height:8px;border-radius:4px;margin:6px 0 4px}
+.scale .k{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.busy{position:fixed;left:50%;top:104px;transform:translateX(-50%);color:var(--soft);font-size:13px;display:none;letter-spacing:.2px}
+@media (max-width:700px){.title h1{font-size:30px}.sheet{left:16px;right:16px;width:auto;top:auto;bottom:100px}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<div id="three"></div>
+<div class="title"><h1>AMD EPYC</h1><p id="sub">8 CCD · I/O · 360 W</p></div>
+<div class="busy" id="busy">Нейросеть проектирует каналы…</div>
+
+<div class="dock">
+  <button class="icon" id="tLoad" title="Нагрузка"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></button>
+  <button class="icon" id="tHeat" title="Тепло"><svg viewBox="0 0 24 24"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg></button>
+  <button class="pill" id="explode">Разобрать</button>
+  <button class="icon" id="tTherm" title="Термометр"><svg viewBox="0 0 24 24"><path d="M14 14.5V5a2 2 0 0 0-4 0v9.5a4 4 0 1 0 4 0z"/><path d="M12 9v7"/></svg></button>
+  <button class="icon" id="tCmp" title="Сравнение"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></button>
+</div>
+
+<div class="sheet" id="sLoad">
+  <h3>Нагрузка</h3>
+  <div class="chips" id="presets"><span class="chip on" data-v="all">Все ядра</span><span class="chip" data-v="turbo">Турбо</span><span class="chip" data-v="left">Половина</span></div>
+  <div id="sliders"></div>
+  <div class="warn" id="warn"></div>
+  <button class="go" id="go">Пересчитать</button>
+</div>
+<div class="sheet" id="sCmp"><h3>Сравнение · пик кристаллов</h3><div id="methods"></div></div>
+
+<div class="probe" id="probe"></div>
+<div class="scale" id="scale"><div id="scaleName">Кристаллы, °C</div><div class="g" id="grad"></div><div class="k"><span id="s0"></span><span id="s1"></span></div></div>
+
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
+
+// ---------------- state ----------------
+const CH=['CCD1','CCD2','CCD3','CCD4','CCD5','CCD6','CCD7','CCD8','I/O'];
+const PRE={all:[38.75,38.75,38.75,38.75,38.75,38.75,38.75,38.75,50],turbo:[80,80,25,25,25,25,25,25,50],left:[58.125,58.125,19.375,19.375,58.125,58.125,19.375,19.375,50]};
+const NAME={WaveForge:'WaveForge',WaveForge_v1:'WaveForge v1',straight:'Прямые каналы',MMA600:'MMA600'};
+const DOT={WaveForge:'#1a73ff',WaveForge_v1:'#8fb4ff',straight:'#9ca3af',MMA600:'#a855f7'};
+const S={powers:PRE.all.slice(),data:null,methods:{},view:'WaveForge',scen:1,heat:false,therm:false,exploded:false};
+const N=64,W=75.4,H=72,DX=W/N,DY=H/N;
+const DEFAULT_CHIPS=[[4,10],[20,10],[36,10],[52,10],[4,47],[20,47],[36,47],[52,47]].map(([x,y])=>({x,y,w:8,h:7})).concat([{x:26,y:26,w:12,h:12}]);
+function straight(){const d=Array.from({length:N},()=>Array(N).fill(0));
+  for(const y of[7,19,31,43,55])for(let i=0;i<N;i++){d[i][y]=1;d[i][y+1]=1}
+  for(let j=7;j<57;j++)for(const i of[0,1,2,3,60,61,62,63])d[i][j]=1;
+  for(let i=4;i<60;i++)d[i][33]=1;for(let i=28;i<36;i++)d[i][34]=1;return d}
+
+// ---------------- three ----------------
+const host=document.getElementById('three');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.3;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#ffffff');
+scene.environment=new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(),.03).texture;
+const camera=new THREE.PerspectiveCamera(32,1,.1,2000);camera.position.set(118,112,150);
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,8,0);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.49;controls.minDistance=60;controls.maxDistance=420;
+scene.add(new THREE.HemisphereLight('#ffffff','#e8ecf3',1.1));const fill=new THREE.DirectionalLight('#eaf2ff',.7);fill.position.set(-90,60,-40);scene.add(fill);
+const key=new THREE.DirectionalLight('#ffffff',1.6);key.position.set(80,160,60);key.castShadow=true;
+key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-90,right:90,top:90,bottom:-90,near:10,far:400});key.shadow.radius=6;scene.add(key);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(600,600),new THREE.ShadowMaterial({opacity:.09}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();
+
+// layer thicknesses (mm, gently exaggerated for legibility)
+const TH={sub:2.0,die:1.1,tim:.35,base:2.2,ch:2.4,cov:2.8};
+const STACK=['sub','die','tim','base','ch','cov'];
+const OFF={sub:0,die:10,tim:20,base:34,ch:50,cov:70}; // exploded lift
+const G={};STACK.forEach(k=>{G[k]=new THREE.Group();scene.add(G[k])});
+const cx=i=>-W/2+(i+.5)*DX, cz=j=>-H/2+(j+.5)*DY;
+const MAT={
+  sub:new THREE.MeshPhysicalMaterial({color:'#1f7a4d',roughness:.5,clearcoat:.8,clearcoatRoughness:.25}),
+  pad:new THREE.MeshStandardMaterial({color:'#f2c14e',metalness:1,roughness:.22}),
+  cap:new THREE.MeshStandardMaterial({color:'#c08552',roughness:.4}),
+  die:new THREE.MeshPhysicalMaterial({color:'#2a3142',roughness:.12,metalness:.45,clearcoat:1,clearcoatRoughness:.05,iridescence:1,iridescenceIOR:1.9,iridescenceThicknessRange:[200,600]}),
+  tim:new THREE.MeshStandardMaterial({color:'#dfe3ea',roughness:.7,transparent:true,opacity:.9}),
+  nickel:new THREE.MeshPhysicalMaterial({color:'#f4f6f9',metalness:.85,roughness:.18,clearcoat:.6,envMapIntensity:1.8}),
+  fin:new THREE.MeshPhysicalMaterial({color:'#f6f7f9',metalness:.8,roughness:.22,envMapIntensity:1.8}),
+  water:new THREE.MeshPhysicalMaterial({color:'#ffffff',roughness:.05,transparent:true,opacity:.96,clearcoat:1}),
+  acrylic:new THREE.MeshPhysicalMaterial({color:'#eef6ff',roughness:0,metalness:0,clearcoat:1,transparent:true,opacity:.07,depthWrite:false}),
+  pom:new THREE.MeshPhysicalMaterial({color:'#101114',roughness:.28,clearcoat:.8}),
+  chrome:new THREE.MeshStandardMaterial({color:'#ffffff',metalness:1,roughness:.08,envMapIntensity:2}),
+  hose:new THREE.MeshPhysicalMaterial({color:'#ffffff',roughness:.08,clearcoat:1,transparent:true,opacity:.28,depthWrite:false}),
+};
+function box(w,h,d,mat,x=0,y=0,z=0,shadow=true){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=shadow;m.receiveShadow=true;return m}
+function clear(g){while(g.children.length){const c=g.children.pop();c.geometry?.dispose()}}
+
+let coolant=[],heatTex,dies=[],tims=[],waterMesh,finMesh,points,parts=[],waterCells=[],finCells=[],base;
+function buildStatic(chips){
+  STACK.forEach(k=>clear(G[k]));dies=[];tims=[];
+  // substrate with gold edge pads and a few capacitors
+  G.sub.add(box(W+6,TH.sub,H+6,MAT.sub,0,TH.sub/2,0));
+  const pads=new THREE.InstancedMesh(new THREE.BoxGeometry(1.2,.12,2.2),MAT.pad,64);let n=0;const M=new THREE.Matrix4();
+  for(let k=0;k<16;k++){for(const s of[-1,1]){M.makeTranslation(-W/2+3+k*(W-6)/15,TH.sub+.06,s*(H/2+1.6));pads.setMatrixAt(n++,M)}}
+  for(let k=0;k<16;k++){for(const s of[-1,1]){M.makeRotationY(Math.PI/2).setPosition(s*(W/2+1.6),TH.sub+.06,-H/2+3+k*(H-6)/15);pads.setMatrixAt(n++,M)}}
+  G.sub.add(pads);
+  for(let k=0;k<10;k++){G.sub.add(box(1.4,.8,.8,MAT.cap,-12+k*2.7,TH.sub+.4,23,false))}
+  // dies, each its own piece; UVs sample the shared silicon heat texture by position
+  heatTex=new THREE.DataTexture(new Uint8Array(N*N*4).fill(255),N,N);heatTex.magFilter=THREE.LinearFilter;heatTex.colorSpace=THREE.SRGBColorSpace;heatTex.needsUpdate=true;
+  chips.forEach((c,idx)=>{const w=c.w*DX,d=c.h*DY,x=cx(c.x)+(c.w-1)*DX/2,z=cz(c.y)+(c.h-1)*DY/2;
+    const g=new THREE.BoxGeometry(w,TH.die,d),p=g.attributes.position,uv=g.attributes.uv;
+    for(let k=0;k<p.count;k++)uv.setXY(k,(x+p.getX(k)+W/2)/W,(z+p.getZ(k)+H/2)/H);
+    const m=new THREE.Mesh(g,MAT.die.clone());m.position.set(x,TH.die/2,z);m.castShadow=true;m.userData={layer:0,piece:idx};
+    G.die.add(m);dies.push(m);
+    const p2=box(w+1.2,TH.tim,d+1.2,MAT.tim,x,TH.tim/2,z);p2.userData={layer:1};G.tim.add(p2);tims.push(p2)});
+  base=box(W,TH.base,H,MAT.nickel,0,TH.base/2,0);base.userData={layer:2};G.base.add(base);
+  // acrylic cover + fittings above the inlet/outlet manifolds
+  G.cov.add(box(W,TH.cov,H,MAT.acrylic,0,TH.cov/2,0,false));
+  const edge=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(W,TH.cov,H)),new THREE.LineBasicMaterial({color:'#c9d3e0'}));edge.position.y=TH.cov/2;G.cov.add(edge);
+  // G1/4 compression fittings (chrome hex + black body + chrome nut) and soft clear hoses
+  // that bend away from the block; the coolant core shows inlet/outlet temperature.
+  coolant=[];
+  for(const s of[-1,1]){const x=s*(W/2-2*DX),z=cz(32),y0=TH.cov;
+    const hex=new THREE.Mesh(new THREE.CylinderGeometry(3.9,3.9,1.6,6),MAT.chrome);hex.position.set(x,y0+.8,z);hex.castShadow=true;G.cov.add(hex);
+    const body=new THREE.Mesh(new THREE.CylinderGeometry(3.2,3.4,4.2,48),MAT.pom);body.position.set(x,y0+3.7,z);body.castShadow=true;G.cov.add(body);
+    for(let k=0;k<4;k++){const g=new THREE.Mesh(new THREE.TorusGeometry(3.25,.12,8,48),MAT.chrome);g.rotation.x=Math.PI/2;g.position.set(x,y0+2.2+k*1.05,z);G.cov.add(g)}
+    const nut=new THREE.Mesh(new THREE.CylinderGeometry(3.6,3.6,2.4,48),MAT.chrome);nut.position.set(x,y0+7,z);nut.castShadow=true;G.cov.add(nut);
+    const path=new THREE.CatmullRomCurve3([new THREE.Vector3(x,y0+8,z),new THREE.Vector3(x,y0+15,z),
+      new THREE.Vector3(x+s*9,y0+22,z),new THREE.Vector3(x+s*26,y0+20,z),new THREE.Vector3(x+s*40,y0+8,z),new THREE.Vector3(x+s*48,y0+1,z)]);
+    const hose=new THREE.Mesh(new THREE.TubeGeometry(path,120,2.5,32),MAT.hose);G.cov.add(hose);
+    const core=new THREE.Mesh(new THREE.TubeGeometry(path,120,1.85,24),new THREE.MeshPhysicalMaterial({color:'#2f8bff',roughness:.1,clearcoat:1,transparent:true,opacity:.9}));
+    core.castShadow=true;G.cov.add(core);coolant.push(core)}
+  // channel layer meshes (filled per design)
+  finMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(DX,TH.ch,DY),MAT.fin,N*N);finMesh.castShadow=true;finMesh.receiveShadow=true;
+  waterMesh=new THREE.InstancedMesh(new THREE.BoxGeometry(DX,TH.ch*.9,DY),MAT.water,N*N);
+  waterMesh.instanceColor=new THREE.InstancedBufferAttribute(new Float32Array(N*N*3).fill(1),3);
+  G.ch.add(finMesh,waterMesh);
+  const P=4200,pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.BufferAttribute(new Float32Array(P*3),3));
+  pg.setAttribute('color',new THREE.BufferAttribute(new Float32Array(P*3),3));
+  const dot=document.createElement('canvas');dot.width=dot.height=64;const c2=dot.getContext('2d');const gr=c2.createRadialGradient(32,32,0,32,32,32);
+  gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.5,'rgba(255,255,255,.8)');gr.addColorStop(1,'rgba(255,255,255,0)');c2.fillStyle=gr;c2.fillRect(0,0,64,64);
+  points=new THREE.Points(pg,new THREE.PointsMaterial({size:.9,map:new THREE.CanvasTexture(dot),vertexColors:true,transparent:true,depthWrite:false}));
+  G.ch.add(points);parts=Array.from({length:P},()=>({x:0,y:0,a:0}));
+  placeStack(0);
+}
+function placeStack(t){let y=0;STACK.forEach(k=>{G[k].position.y=y+OFF[k]*t;y+=TH[k]});
+  dies.forEach((d,i)=>{d.position.y=TH.die/2+t*(3+((i*37)%5));d.rotation.z=t*.04*((i%3)-1);d.rotation.x=t*.03*((i%2)?1:-1)})}
+
+// ---------------- colours ----------------
+const HEAT=[[0,[255,255,255]],[.15,[255,236,170]],[.4,[255,170,60]],[.7,[240,80,40]],[1,[150,20,40]]];
+function heat(t){t=Math.min(1,Math.max(0,t));for(let i=1;i<HEAT.length;i++)if(t<=HEAT[i][0]){const[a,A]=HEAT[i-1],[b,B]=HEAT[i],f=(t-a)/(b-a);return A.map((v,k)=>v+(B[k]-v)*f)}return HEAT.at(-1)[1]}
+const WAT=[[0,[20,110,255]],[.3,[40,190,255]],[.55,[255,190,70]],[.8,[255,90,40]],[1,[220,20,30]]];
+const W0=25,W1=45; // water colour scale, °C: blue = cold inlet, red = hot
+function wcol(T){const t=Math.min(1,Math.max(0,(T-W0)/(W1-W0)));let i=1;while(i<WAT.length-1&&t>WAT[i][0])i++;const[a,A]=WAT[i-1],[b,B]=WAT[i],f=Math.min(1,(t-a)/(b-a));return A.map((v,k)=>v+(B[k]-v)*f)}
+document.getElementById('grad').style.background='linear-gradient(90deg,'+HEAT.map(([s,c])=>`rgb(${c})`).join(',')+')';
+
+// ---------------- data -> scene ----------------
+let F=null;
+const cur=()=>S.methods[S.view]||S.methods.WaveForge;
+function apply(){
+  const m=cur(),f=m.fields.nominal,d=m.design,L=f.layers[S.scen];
+  const si=L[0],wt=L[3],lo=25,hi=Math.max(...si.flat());
+  const buf=heatTex.image.data;for(let i=0;i<N;i++)for(let j=0;j<N;j++){const c=heat((si[i][j]-lo)/(hi-lo)),k=4*(j*N+i);buf[k]=c[0];buf[k+1]=c[1];buf[k+2]=c[2];buf[k+3]=255}
+  heatTex.needsUpdate=true;
+  dies.forEach(x=>{const mt=x.material;if(S.heat){mt.map=heatTex;mt.color.set('#ffffff');mt.emissiveMap=heatTex;mt.emissive.set('#ffffff');mt.emissiveIntensity=.55;mt.iridescence=0}else{mt.map=null;mt.emissiveMap=null;mt.color.set('#2a3142');mt.emissive.set('#000000');mt.iridescence=1}mt.needsUpdate=true});
+  let wl=1e9,wh=-1e9;for(let i=0;i<N;i++)for(let j=0;j<N;j++)if(d[i][j]){wl=Math.min(wl,wt[i][j]);wh=Math.max(wh,wt[i][j])}
+  const M=new THREE.Matrix4(),col=new THREE.Color();let a=0,b=0;waterCells=[];finCells=[];
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){M.makeTranslation(cx(i),TH.ch/2,cz(j));
+    if(d[i][j]){waterMesh.setMatrixAt(a,M);const c=wcol(wt[i][j]);col.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace);waterMesh.setColorAt(a,col);waterCells.push([i,j]);a++}
+    else{finMesh.setMatrixAt(b,M);finCells.push([i,j]);b++}}
+  waterMesh.count=a;finMesh.count=b;waterMesh.instanceMatrix.needsUpdate=finMesh.instanceMatrix.needsUpdate=waterMesh.instanceColor.needsUpdate=true;
+  waterMesh.computeBoundingSphere();finMesh.computeBoundingSphere();
+  const u=[],v=[];let vm=1e-9;
+  for(let i=0;i<N;i++){u.push([]);v.push([]);for(let j=0;j<N;j++){
+    const A=i>0?f.qx[i-1][j]:f.qx[0][j],B=i<N-1?f.qx[i][j]:f.qx[N-2][j],C=j>0?f.qy[i][j-1]:f.qy[i][0],D=j<N-1?f.qy[i][j]:f.qy[i][N-2];
+    u[i].push(d[i][j]?(A+B)/2:0);v[i].push(d[i][j]?(C+D)/2:0);vm=Math.max(vm,Math.hypot(u[i][j],v[i][j]))}}
+  let so=0,no=0;for(let j=0;j<N;j++)if(d[N-1][j]){so+=wt[N-1][j];no++}
+  [W0,no?so/no:W0].forEach((T,k)=>{const c=wcol(T);coolant[k]?.material.color.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace)});
+  F={u,v,vm,d,wt,wl,wh};parts.forEach(p=>spawn(p,true));
+  document.getElementById('scale').style.display=S.heat?'block':'none';
+  document.getElementById('s0').textContent=lo.toFixed(0)+'°';document.getElementById('s1').textContent=hi.toFixed(0)+'°';
+  renderMethods();redrawPins();
+}
+function spawn(p,any){for(let t=0;t<200;t++){const x=any?Math.random()*N:Math.random()*1.5,y=any?Math.random()*N:24+Math.random()*16;
+  if(F.d[Math.floor(x)]?.[Math.floor(y)]){p.x=x;p.y=y;p.a=0;return}}}
+const at=(a,x,y)=>a[Math.min(N-1,Math.max(0,Math.floor(x)))][Math.min(N-1,Math.max(0,Math.floor(y)))];
+
+// ---------------- animation ----------------
+let ex=0,exTarget=0;const clock=new THREE.Clock();
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+let ty=8,zoom0=1;function lift(){const e=ease(ex),y=8+e*30,dy=y-ty;ty=y;controls.target.y+=dy;camera.position.y+=dy;
+  const off=camera.position.clone().sub(controls.target),z=1+.45*e;off.multiplyScalar(z/zoom0);zoom0=z;camera.position.copy(controls.target).add(off)}
+function loop(){requestAnimationFrame(loop);const dt=Math.min(.05,clock.getDelta());controls.update();
+  if(Math.abs(ex-exTarget)>1e-4){ex+=Math.sign(exTarget-ex)*Math.min(Math.abs(exTarget-ex),dt/1.1);placeStack(ease(ex));lift();redrawPins()}
+  if(F&&points){const P=points.geometry.attributes.position.array,C=points.geometry.attributes.color.array,s=24/F.vm;
+    parts.forEach((p,k)=>{const u=at(F.u,p.x,p.y),v=at(F.v,p.x,p.y);p.x+=u*s*dt;p.y+=v*s*dt;p.a++;
+      if(p.x<0||p.x>=N||p.y<0||p.y>=N||!F.d[Math.floor(p.x)][Math.floor(p.y)]||p.a>1200||Math.hypot(u,v)<F.vm*.003)spawn(p,false);
+      P[3*k]=-W/2+p.x*DX;P[3*k+1]=TH.ch+.15;P[3*k+2]=-H/2+p.y*DY;
+      const w=wcol(at(F.wt,p.x,p.y)),c=w.map(v=>v+(255-v)*.12);C[3*k]=c[0]/255;C[3*k+1]=c[1]/255;C[3*k+2]=c[2]/255});
+    points.geometry.attributes.position.needsUpdate=points.geometry.attributes.color.needsUpdate=true}
+  renderer.render(scene,camera)}
+loop();
+window.__wf={render:()=>{renderer.render(scene,camera)},S,camera,controls,G,getDies:()=>dies,setEx:t=>{ex=exTarget=t;placeStack(ease(t));lift()}};
+
+// ---------------- thermometer ----------------
+const ray=new THREE.Raycaster(),mouse=new THREE.Vector2(),probe=document.getElementById('probe');let pins=[];
+const LAYER=['Кристалл','Термоинтерфейс','Медное основание','Вода','Ребро канала'];
+function read(ev){mouse.set(ev.clientX/innerWidth*2-1,-ev.clientY/innerHeight*2+1);ray.setFromCamera(mouse,camera);
+  const hit=ray.intersectObjects([...dies,...tims,base,waterMesh,finMesh],false)[0];if(!hit)return null;
+  const i=Math.min(N-1,Math.max(0,Math.floor((hit.point.x+W/2)/DX))),j=Math.min(N-1,Math.max(0,Math.floor((hit.point.z+H/2)/DY)));
+  const L=cur().fields.nominal.layers[S.scen];let layer,name;
+  if(hit.object===waterMesh){[layer,name]=[3,LAYER[3]];const c=waterCells[hit.instanceId];return {t:L[3][c[0]][c[1]],name,point:hit.point.clone(),obj:hit.object}}
+  if(hit.object===finMesh){const c=finCells[hit.instanceId];return {t:L[3][c[0]][c[1]],name:LAYER[4],point:hit.point.clone(),obj:hit.object}}
+  layer=hit.object.userData.layer;return {t:L[layer][i][j],name:LAYER[layer],point:hit.point.clone(),obj:hit.object}}
+renderer.domElement.addEventListener('pointermove',ev=>{if(!S.therm||!S.data){probe.style.display='none';return}
+  const r=read(ev);if(!r){probe.style.display='none';return}
+  probe.innerHTML=`<div style="color:var(--soft)">${r.name}</div><b>${r.t.toFixed(1)} °C</b>`;probe.style.display='block';probe.style.left=(ev.clientX+16)+'px';probe.style.top=(ev.clientY+16)+'px'});
+renderer.domElement.addEventListener('click',ev=>{if(!S.therm||!S.data)return;const r=read(ev);if(!r)return;
+  const el=document.createElement('div');el.className='pin';document.body.appendChild(el);
+  pins.push({el,obj:r.obj,local:r.obj.worldToLocal(r.point.clone()),t:r.t});redrawPins()});
+function redrawPins(){pins.forEach(p=>{const v=p.obj.localToWorld(p.local.clone()).project(camera);p.el.style.left=((v.x+1)/2*innerWidth)+'px';p.el.style.top=((1-v.y)/2*innerHeight)+'px';p.el.textContent=`${p.t.toFixed(1)}°`})}
+controls.addEventListener('change',redrawPins);
+function clearPins(){pins.forEach(p=>p.el.remove());pins=[]}
+
+// ---------------- UI ----------------
+const $=id=>document.getElementById(id);
+function toggleSheet(id,btn){const open=!$(id).classList.contains('open');['sLoad','sCmp'].forEach(s=>$(s).classList.remove('open'));['tLoad','tCmp'].forEach(b=>$(b).classList.remove('on'));
+  if(open){$(id).classList.add('open');$(btn).classList.add('on')}}
+$('tLoad').onclick=()=>toggleSheet('sLoad','tLoad');$('tCmp').onclick=()=>toggleSheet('sCmp','tCmp');
+$('tHeat').onclick=()=>{S.heat=!S.heat;$('tHeat').classList.toggle('on',S.heat);if(S.data)apply()};
+$('tTherm').onclick=()=>{S.therm=!S.therm;$('tTherm').classList.toggle('on',S.therm);renderer.domElement.style.cursor=S.therm?'crosshair':'';if(!S.therm){probe.style.display='none';clearPins()}};
+$('explode').onclick=()=>{S.exploded=!S.exploded;exTarget=S.exploded?1:0;$('explode').textContent=S.exploded?'Собрать':'Разобрать';clearPins()};
+const sl=$('sliders');CH.forEach((n,i)=>{const r=document.createElement('div');r.className='row';
+  r.innerHTML=`<span>${n}</span><input type="range" min="0" max="${i===8?100:150}" value="${S.powers[i]}" data-i="${i}"><output>${Math.round(S.powers[i])}</output>`;sl.appendChild(r)});
+sl.oninput=e=>{const i=e.target.dataset.i;if(i==null)return;S.powers[+i]=+e.target.value;e.target.nextElementSibling.textContent=e.target.value;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));check()};
+$('presets').onclick=e=>{const v=e.target.dataset.v;if(!v)return;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.v===v));
+  S.powers=PRE[v].slice();sl.querySelectorAll('input').forEach((s,i)=>{s.value=S.powers[i];s.nextElementSibling.textContent=Math.round(S.powers[i])});check()};
+function check(){const c=S.powers.slice(0,8),tot=S.powers.reduce((a,b)=>a+b,0);
+  const ok=Math.abs(c.reduce((a,b)=>a+b,0)-310)<=2&&Math.max(...c)<=80&&Math.abs(S.powers[8]-50)<=1;
+  $('warn').textContent=ok?'':'Вне обученного диапазона — сеть может ошибаться';$('sub').textContent=`8 CCD · I/O · ${tot.toFixed(0)} W`}
+$('go').onclick=design;
+async function design(){$('busy').style.display='block';$('go').disabled=true;clearPins();
+  try{const d=await(await fetch('/api/design',{method:'POST',body:JSON.stringify({powers:S.powers})})).json();if(d.error)throw new Error(d.error);
+    S.data=d;S.methods={WaveForge:d.wf,WaveForge_v1:d.wf1,straight:d.straight};S.view='WaveForge';
+    points.visible=true;apply()}catch(e){alert(e.message)}finally{$('busy').style.display='none';$('go').disabled=false}}
+const rise=t=>t-25;
+function renderMethods(){const el=$('methods');el.innerHTML='';const st=S.methods.straight.official.nominal_c;
+  ['WaveForge','straight','MMA600'].forEach(k=>{const m=S.methods[k],row=document.createElement('div');row.className='m'+(S.view===k?' sel':'');
+    if(!m){const kind='mma';row.innerHTML=`<span class="dot" style="background:${DOT[k]}"></span><div><div class="n">${NAME[k]}</div><div class="s" id="${kind}S">~100 с</div><div class="bar"><i id="${kind}B"></i></div></div><button class="run" data-k="${kind}">Запустить</button>`;
+      row.querySelector('.run').onclick=e=>{e.stopPropagation();runOpt(kind)};el.appendChild(row);return}
+    const g=100*(rise(st)-rise(m.official.nominal_c))/rise(st),tm=k==='straight'?'шаблон':m.seconds<1?(m.seconds*1000).toFixed(0)+' мс':m.seconds.toFixed(0)+' с';
+    row.innerHTML=`<span class="dot" style="background:${DOT[k]}"></span><div><div class="n">${NAME[k]}</div><div class="s">${k==='straight'?tm:`−${g.toFixed(1)}% перегрева · ${tm}`}</div></div><div class="t">${m.official.nominal_c.toFixed(1)}°</div>`;
+    row.onclick=()=>{S.view=k;clearPins();apply()};el.appendChild(row)})}
+async function runOpt(kind){const btn=document.querySelector(`.run[data-k="${kind}"]`);btn.disabled=true;btn.textContent='…';
+  const {job}=await(await fetch('/api/'+kind,{method:'POST',body:JSON.stringify({powers:S.powers})})).json();
+  const name='MMA600';
+  const tick=async()=>{const s=await(await fetch('/api/job/'+job)).json();const sEl=$(kind+'S'),bEl=$(kind+'B');
+    if(sEl)sEl.textContent=s.state==='error'?'ошибка':`${s.steps}/600 · ${s.elapsed.toFixed(0)} с`;if(bEl)bEl.style.width=(100*s.steps/600)+'%';
+    if(s.state==='done'){S.methods[name]=s.result;renderMethods();return}if(s.state!=='error')setTimeout(tick,1000)};tick()}
+check();buildStatic(DEFAULT_CHIPS);placeholder();design();
+function placeholder(){const d=straight(),M=new THREE.Matrix4(),col=new THREE.Color();let a=0,b=0;
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++){M.makeTranslation(cx(i),TH.ch/2,cz(j));
+    if(d[i][j]){waterMesh.setMatrixAt(a,M);const c=wcol(25+8*i/N);col.setRGB(c[0]/255,c[1]/255,c[2]/255,THREE.SRGBColorSpace);waterMesh.setColorAt(a++,col)}
+    else finMesh.setMatrixAt(b++,M)}
+  waterMesh.count=a;finMesh.count=b;waterMesh.instanceMatrix.needsUpdate=finMesh.instanceMatrix.needsUpdate=waterMesh.instanceColor.needsUpdate=true;points.visible=false}
+</script>
+</body>
+</html>

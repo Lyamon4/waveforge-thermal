@@ -21,3 +21,6 @@ docs/
 .env
 .env.*
 !/README.md
+demo/work/
+demo/*.log
+demo/*.err
