@@ -1,0 +1,22 @@
+{
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "fixture_ids": [
+    "uniform_k1",
+    "uniform_k20",
+    "smooth_random_seed_9401",
+    "high_contrast_random_seed_9402",
+    "straight_path_binary",
+    "dispersed_binary",
+    "projected_beta_1",
+    "projected_beta_2",
+    "projected_beta_4",
+    "projected_beta_8"
+  ],
+  "maximum_explicit_relative_residual": 9.967153332904605e-07,
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "reason_codes": [],
+  "record_count": 60,
+  "run_namespace": "gate2a_mixed_precision_v1",
+  "schema_version": 2,
+  "status": "PASS"
+}

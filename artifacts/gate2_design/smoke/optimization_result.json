@@ -1,0 +1,14 @@
+{
+  "binary_material_fraction": 0.0,
+  "completed_iterations": 10,
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "continuous_material_fraction": 0.25,
+  "final_logits_sha256": "059145b2081fcefbda5fc287467e7ad8ef56bb81b667c549e5e20c94e5b84c2b",
+  "initial_logits_sha256": "ec405b9815dab810be8a3b5a3488be487771056607a91df667609d59bc10ef50",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "reason_codes": [],
+  "run_id": "gate2a_mixed_precision_v1_smoke_seed_20260828",
+  "schema_version": 2,
+  "seed": 20260828,
+  "status": "PASS"
+}

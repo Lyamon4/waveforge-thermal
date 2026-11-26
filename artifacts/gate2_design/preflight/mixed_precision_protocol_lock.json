@@ -1,0 +1,16 @@
+{
+  "schema_version": 2,
+  "status": "LOCKED_BEFORE_PRODUCTION",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "previous_protocol_tag": "v0.2-gate2a-inverse-design-locked",
+  "run_namespace": "gate2a_mixed_precision_v1",
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "specification_sha256": "2ac31164574b985f708d4f430bc0ea1c371027005d65ef049b489d7e964638c7",
+  "design_dtype": "float32",
+  "physics_solve_dtype": "float64",
+  "explicit_relative_residual_tolerance": 1e-6,
+  "maximum_cg_iterations": 2000,
+  "cuda_directional_gradient_tolerance": 0.005,
+  "rejected_float32_preflight_preserved": true,
+  "production_optimization_started": false
+}

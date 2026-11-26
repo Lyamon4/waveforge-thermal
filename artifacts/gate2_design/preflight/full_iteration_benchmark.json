@@ -1,0 +1,18 @@
+{
+  "adjoint_solve_count": 3,
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "design_dtype": "float32",
+  "forward_solve_count": 3,
+  "gradient_dtype": "float32",
+  "maximum_cg_iterations": 298,
+  "maximum_explicit_relative_residual": 9.961008434944852e-07,
+  "peak_cuda_memory_bytes": 18694144,
+  "peak_cuda_reserved_bytes": 23068672,
+  "physics_solve_dtype": "float64",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "reason_codes": [],
+  "run_id": "gate2a_mixed_precision_v1_benchmark_robust_seed_20260828",
+  "schema_version": 2,
+  "status": "PASS",
+  "step_wall_seconds": 2.799938900003326
+}

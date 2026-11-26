@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "status": "INVALID_RUN",
+  "reason": "LOCKED_CUDA_FLOAT32_RESIDUAL_TOLERANCE_BELOW_REPRESENTATION_FLOOR",
+  "locked_relative_residual_tolerance": 1e-6,
+  "method": "SciPy float64 solution cast to CUDA float32, followed by explicit PyTorch flux-operator residual",
+  "source_bounds": [0.4, 0.6, 0.62, 0.82],
+  "source_integrated_power": 1.0,
+  "measurements": [
+    {"grid": 32, "conductivity": 1.0, "relative_residual": 1.2220596545375884e-5},
+    {"grid": 32, "conductivity": 1.296875, "relative_residual": 1.3692429092770908e-5},
+    {"grid": 32, "conductivity": 20.0, "relative_residual": 1.2867323675891384e-5},
+    {"grid": 64, "conductivity": 1.0, "relative_residual": 4.77649737149477e-5},
+    {"grid": 64, "conductivity": 1.296875, "relative_residual": 5.406502532423474e-5},
+    {"grid": 64, "conductivity": 20.0, "relative_residual": 5.3073090384714305e-5}
+  ],
+  "float64_cuda_probe": {
+    "grid": 64,
+    "conductivity_fixture": "random_uniform_1_20_seed_8102",
+    "iterations": 312,
+    "relative_residual": 9.571643907718392e-7,
+    "wall_seconds": 0.4097544999967795
+  },
+  "production_optimization_started": false
+}

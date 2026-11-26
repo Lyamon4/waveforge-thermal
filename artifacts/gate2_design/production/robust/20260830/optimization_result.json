@@ -1,0 +1,16 @@
+{
+  "binary_design_sha256": "19d003c4f130686c719a821decf5cde0cab398131056681d84c925a8a8ecd612",
+  "binary_material_fraction": 0.251220703125,
+  "completed_iterations": 600,
+  "config_sha256": "ee426827258ec7823be58e1a03a438ff8884ee9df16b187a3e09ec0da7415eec",
+  "continuous_design_sha256": "bd6652db90902c046228f5528948015a185ee27e3f5e04077ffc33ec1308de91",
+  "continuous_material_fraction": 0.25,
+  "final_logits_sha256": "685878f043d0d661736bf5bd8ebaf2a17f4c139e40094deb1f7526b1c73f473d",
+  "initial_logits_sha256": "2e9a6dcd5337ec5ecaa9b978afccc841d430206b370d488b18b12c3357dd566e",
+  "protocol_tag": "v0.2.1-gate2a-mixed-precision-physics-locked",
+  "reason_codes": [],
+  "run_id": "gate2a_mixed_precision_v1_production_robust_seed_20260830",
+  "schema_version": 2,
+  "seed": 20260830,
+  "status": "PASS"
+}

@@ -1,0 +1,120 @@
+schema_version: 2
+gate: gate2a
+scope: steady_multi_scenario_inverse_design
+run_namespace: gate2a_mixed_precision_v1
+
+precision:
+  design_dtype: float32
+  filtering_dtype: float32
+  projection_dtype: float32
+  optimizer_state_dtype: float32
+  physics_input_cast_dtype: float64
+  conductivity_dtype: float64
+  forward_solve_dtype: float64
+  adjoint_solve_dtype: float64
+  preconditioner_dtype: float64
+  residual_evaluation_dtype: float64
+  thermal_objective_dtype: float64
+  gradient_return_dtype: float32
+
+physics:
+  domain: [1.0, 1.0]
+  optimization_grid: [64, 64]
+  verification_grids: [[128, 128], [256, 256]]
+  k_low: 1.0
+  k_high: 20.0
+  interpolation_power: 3.0
+  harmonic_epsilon: 1.0e-12
+  boundary_conditions:
+    bottom: {kind: dirichlet, value: 0.0}
+    left: {kind: neumann, value: 0.0}
+    right: {kind: neumann, value: 0.0}
+    top: {kind: neumann, value: 0.0}
+
+scenarios:
+  source_size: [0.2, 0.2]
+  integrated_power: 1.0
+  definitions:
+    - {id: A, center: [0.50, 0.72]}
+    - {id: B, center: [0.28, 0.72]}
+    - {id: C, center: [0.72, 0.72]}
+  protected_zone: [0.40, 0.60, 0.85, 1.00]
+  source_rasterization:
+    rule: exact_area_overlap
+    interval: half_open
+
+cg:
+  preconditioner: Jacobi
+  initial_guess: zeros
+  relative_residual_tolerance: 1.0e-6
+  maximum_iterations: 2000
+  forward_and_adjoint_same_policy: true
+  nonconvergence: invalidate_run
+
+parameterization:
+  latent_grid: [16, 16]
+  simulation_grid: [64, 64]
+  upsample: {mode: bilinear, align_corners: false}
+  filter:
+    sigma: 1.0
+    radius: 3
+    padding: reflect
+    normalization: unit_sum
+  volume_projection:
+    target: 0.25
+    bracket: [-40.0, 40.0]
+    maximum_iterations: 80
+    mean_tolerance: 1.0e-6
+  binary_threshold: 0.5
+  binary_budget_tolerance: 0.01
+  beta_schedule:
+    - {start: 0, stop: 199, value: 1.0}
+    - {start: 200, stop: 349, value: 2.0}
+    - {start: 350, stop: 499, value: 4.0}
+    - {start: 500, stop: 599, value: 8.0}
+
+objective:
+  tv_weight: 1.0e-3
+  alpha_schedule:
+    - {start: 0, stop: 199, value: 50.0}
+    - {start: 200, stop: 349, value: 200.0}
+    - {start: 350, stop: 599, value: 500.0}
+  binarization_weight_schedule:
+    - {start: 0, stop: 199, value: 0.0}
+    - {start: 200, stop: 349, value: 0.005}
+    - {start: 350, stop: 499, value: 0.01}
+    - {start: 500, stop: 599, value: 0.02}
+
+optimization:
+  optimizer: Adam
+  learning_rate: 0.05
+  iterations: 600
+  gradient_clip_norm: 1.0
+  checkpoint_interval: 50
+  early_stopping: false
+  initial_logits: {distribution: normal, mean: 0.0, standard_deviation: 0.1}
+  production_seeds: [20260828, 20260829, 20260830]
+
+gradient_validation:
+  direction_seeds: [7201, 7202, 7203, 7204, 7205]
+  cpu_float64: {steps: [1.0e-2, 3.0e-3, 1.0e-3, 3.0e-4], tolerance: 1.0e-4}
+  cuda_mixed_precision: {steps: [1.0e-2, 3.0e-3, 1.0e-3], tolerance: 5.0e-3}
+  adjacent_passing_steps_required: 2
+
+baselines:
+  random_filtered_seeds: [9101, 9102, 9103]
+  binary_cell_count: 1024
+  straight_path_x: [0.375, 0.625]
+  dispersed_pattern: even_row_even_column
+
+verification:
+  primary_grid: [256, 256]
+  mandatory_secondary_grid: [128, 128]
+  transfer: exact_nearest_neighbor_replication
+  effect_threshold: 0.05
+  passing_seeds_required: 2
+  robustness_effect_threshold: 0.02
+  robustness_cases_required: 23
+  robustness_cases_total: 28
+
+statuses: [PASS, NO_GO_EFFECT, INVALID_RUN]

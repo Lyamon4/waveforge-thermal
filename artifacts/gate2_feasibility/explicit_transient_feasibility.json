@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-08-29",
+  "status": "EXPLICIT_FULL_BACKPROP_NOT_FEASIBLE",
+  "scope": "Feasibility measurement only; not a Gate 2 solver implementation",
+  "environment": {
+    "os": "Windows 11 Pro build 26200",
+    "gpu": "NVIDIA GeForce RTX 4060",
+    "vram_bytes": 8585740288,
+    "torch": "2.13.0+cu130",
+    "torch_cuda_build": "13.0",
+    "execution": "PyTorch eager CUDA",
+    "dtype": "float32",
+    "scenarios": 3
+  },
+  "locked_discretization": {
+    "grid": [64, 64],
+    "domain": [1.0, 1.0],
+    "rho_c": 1.0,
+    "k_max": 20.0,
+    "boundary": "bottom Dirichlet T=0; other faces zero-flux Neumann",
+    "face_conductivity": "harmonic",
+    "explicit_scheme": "forward Euler",
+    "max_operator_diagonal": 409599.99999999383,
+    "dt_monotone": 2.441406250000037e-06,
+    "safety_factor": 0.9,
+    "dt_measured": 2.1972656250000333e-06
+  },
+  "horizons": [
+    {
+      "t_final": 0.2,
+      "steps_at_monotone_limit": 81920,
+      "steps_at_safe_dt": 91023,
+      "forward_runtime_seconds": 35.08769849999953,
+      "forward_runtime_kind": "measured",
+      "estimated_autograd_peak_bytes": 13375840768.000006,
+      "estimated_autograd_peak_gib": 12.457222
+    },
+    {
+      "t_final": 1.0,
+      "steps_at_monotone_limit": 409600,
+      "steps_at_safe_dt": 455112,
+      "forward_runtime_seconds": 175.43734,
+      "forward_runtime_kind": "linear extrapolation from measured 91023-step runtime",
+      "estimated_autograd_peak_bytes": 66876534784.00002,
+      "estimated_autograd_peak_gib": 62.283627
+    },
+    {
+      "t_final": 4.0,
+      "steps_at_monotone_limit": 1638400,
+      "steps_at_safe_dt": 1820445,
+      "forward_runtime_seconds": 701.74819,
+      "forward_runtime_kind": "linear extrapolation from measured 91023-step runtime",
+      "estimated_autograd_peak_bytes": 267504027136.0001,
+      "estimated_autograd_peak_gib": 249.13254
+    }
+  ],
+  "forward_measurements": {
+    "method": "Three static equal-power source maps batched in one tensor; fixed k=20; no_grad; CUDA synchronize around wall-clock timed region; fixed face coefficients precomputed outside trajectory",
+    "microbenchmark": [
+      {
+        "steps": 1000,
+        "samples_seconds": [0.3947503000017605, 0.3963399999993271, 0.39445010000054026],
+        "median_seconds": 0.3947503000017605
+      },
+      {
+        "steps": 5000,
+        "samples_seconds": [2.0059540000002016, 1.9766858000002685, 1.9852087999970536],
+        "median_seconds": 1.9852087999970536
+      },
+      {
+        "steps": 10000,
+        "samples_seconds": [3.9150418999997783, 3.8613457000028575, 3.854735200002324],
+        "median_seconds": 3.8613457000028575
+      }
+    ],
+    "full_shortest_horizon": {
+      "steps": 91023,
+      "horizon_reached": 0.200001708984375,
+      "wall_seconds": 35.08769849999953,
+      "seconds_per_step": 0.00038548167496126837,
+      "peak_temperature": 0.0469016507267952,
+      "finite": true
+    }
+  },
+  "autograd_memory_measurements": {
+    "method": "Relaxed design requires_grad=True; k=1+19*D^3; same three-scenario batch; final smooth objective backward; peak CUDA allocated bytes above pre-run baseline",
+    "samples": [
+      {"steps": 25, "peak_bytes": 4230656, "backward_seconds": 0.037302500000805594},
+      {"steps": 50, "peak_bytes": 7904256, "backward_seconds": 0.03876459999446524},
+      {"steps": 100, "peak_bytes": 15251456, "backward_seconds": 0.07646999999997206},
+      {"steps": 200, "peak_bytes": 29945856, "backward_seconds": 0.15376239999750396},
+      {"steps": 400, "peak_bytes": 59334656, "backward_seconds": 0.31505530000140425},
+      {"steps": 800, "peak_bytes": 118112256, "backward_seconds": 0.6185298999989755}
+    ],
+    "linear_fit": {
+      "slope_bytes_per_step": 146944.00000000006,
+      "intercept_bytes": 557056.0000000073,
+      "r_squared": 1.0,
+      "warning": "Estimates beyond 800 steps are extrapolations; they exclude optimizer state and unrelated CUDA allocations."
+    }
+  },
+  "decision": {
+    "gate2a": "Proceed with steady multi-scenario inverse design first.",
+    "gate2b": "Do not use uncheckpointed eager explicit trajectory differentiation. Reassess implicit-adjoint, matrix-free, or checkpointed alternatives after Gate 2A review.",
+    "neural_surrogate": "Not authorized and not assessed by this experiment."
+  }
+}

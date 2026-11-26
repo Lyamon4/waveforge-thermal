@@ -1,0 +1,141 @@
+schema: epyc-native-unet-v1
+experiment: epyc_native_unet_v1
+stack: default-virtual-lab-v1
+geometry:
+  grid: 64
+  ccd_origins_x: [4, 20, 36, 52]
+  ccd_origins_y: [10, 47]
+  ccd_size: [8, 7]
+  iod_origin: [26, 26]
+  iod_size: [12, 12]
+  id_jitter: 2
+  ood_jitter: 5
+  margin: 2
+  gap: 2
+  attempts: 10000
+  near_duplicate_cells: 2
+  demo_exclusion: exact_geometry_only
+workloads:
+  scenarios: 3
+  total_w: 360.0
+  iod_w: 50.0
+  uniform_ccd_w: 38.75
+  dirichlet_alpha: 2.0
+  id_ccd_max_w: 80.0
+  row_high_w: 58.125
+  row_low_w: 19.375
+  ood_high_count: 2
+  ood_high_w: 100.0
+splits:
+  dev_count: 16
+  validation_count: 32
+  test_id_count: 64
+  test_ood_count: 32
+  dev_seed: 2026091531
+  validation_seed: 2026091532
+  test_id_seed: 2026091533
+  test_ood_seed: 2026091534
+  ood_order: geometry16_then_power16
+conditioning:
+  channels: [power_flux, initial_temperature, initial_sensitivity, chip_mask, cooling_mask]
+  power_scale_w_m2: 1000000.0
+  temperature_scale_k: 100.0
+  sensitivity_scale: task_mean_absolute
+  sensitivity_floor: 1.0e-12
+  sensitivity_clip: [-8.0, 8.0]
+  initial_material: 0.25
+training:
+  variants: [AGG, SET]
+  batch_size: 4
+  initialization: from_scratch_paired
+  heads: 4
+  network_dtype: float32
+  physics_dtype: float64
+  pilot_updates: 500
+  pilot_boundaries: [100, 200, 500]
+  pilot_validation_interval: 100
+  pilot_model_seed: 2026091501
+  pilot_task_seed: 2026091502
+  production_updates: 4000
+  production_boundaries: [800, 1600, 4000]
+  model_seeds: [2026091511, 2026091512, 2026091513]
+  task_seeds: [2026091521, 2026091522, 2026091523]
+  validation_interval: 500
+  checkpoint_interval: 100
+  betas: [2.0, 4.0, 8.0]
+  alphas: [100.0, 250.0, 500.0]
+  learning_rates: [0.0001, 0.00003, 0.00001]
+  binary_weights: [0.0, 0.01, 0.02]
+  tv_weight: 0.001
+  adam_betas: [0.9, 0.999]
+  adam_eps: 1.0e-8
+  adam_weight_decay: 0.0
+  gradient_clip: 1.0
+  softmin_tau: 0.01
+  diversity_weight: 0.002
+  diversity_distance: 0.1
+baselines:
+  adam_learning_rates: [0.01, 0.05, 0.1]
+  adam_selection: median_peak_then_p90_then_lower_lr
+  seed: 2026091540
+  steps: 600
+  extended_steps: 1200
+  convergence_layouts: 8
+  upgrade_median: 0.01
+  upgrade_tail: 0.03
+  upgrade_tail_count: 2
+  engineering_selection: lowest_finest_peak_then_name
+  multistart_seeds: [2026091541, 2026091542, 2026091543, 2026091544]
+  multistart_first_id: 12
+  multistart_first_ood: 12
+mesh:
+  levels: [[64, [1, 1, 2]], [64, [2, 2, 4]], [128, [2, 2, 4]], [256, [2, 2, 4]]]
+  z_relative_tolerance: 0.02
+  xy_relative_tolerance: 0.01
+  residual_tolerance: 1.0e-8
+  energy_tolerance: 0.00001
+headroom:
+  minimum_k: 0.5
+  sensitivity_multiplier: 5.0
+  sensitivity: max_layout_sum_of_pair_mesh_sensitivities
+refinement:
+  steps: 25
+  selected_heads: 1
+  learning_rate: 0.01
+  beta: 8.0
+  alpha: 500.0
+  tv_weight: 0.001
+  binary_weight: 0.02
+  fallback_to_r0: false
+evaluation:
+  path: scipy_binary64
+  selection: median_gap_p90_gap_median_rise_earlier_update
+  bootstrap_resamples: 10000
+  bootstrap_seed: 2026091535
+  shuffled_seed: 2026091536
+  bootstrap_unit: paired_layout_mean_across_seeds
+  bootstrap_statistic: median
+  bootstrap_percentiles: [2.5, 97.5]
+  pilot_median_gap: 0.1
+  pilot_p90_gap: 0.2
+  pilot_matched_wins: 24
+  r0_median_gap: 0.05
+  r0_p90_gap: 0.1
+  r25_median_gap: 0.02
+  r25_p90_gap: 0.05
+  r25_worst_gap: 0.1
+  end_to_end_speedup: 5.0
+runtime:
+  device: cuda
+  cloud: false
+  cuda_graph: true
+  vram_limit_gib: 6.5
+  warmups: 20
+  measured_updates: 200
+demo:
+  model: SET
+  seed: 2026091511
+  durations_s: [20, 20, 20, 30]
+  timestep_checks_s: [0.1, 0.05, 0.025]
+  snapshot_s: 0.5
+  held_out_claim: false
