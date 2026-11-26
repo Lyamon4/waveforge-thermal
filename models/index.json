@@ -53,7 +53,8 @@
       "state_dict_key": "model",
       "weight_dtype": "torch.float32",
       "role": "Previous chiplet-locked checkpoint; Stage5.4",
-      "portable_model": "manifold_unet_chiplet_locked.torchscript.pt"
+      "portable_model": "manifold_unet_chiplet_locked.torchscript.pt",
+      "import_path": "waveforge.lab.mcl.joint_design.LockedUNet"
     },
     {
       "file": "manifold_unet_ribbed.pt",
@@ -63,7 +64,8 @@
       "state_dict_key": "model",
       "weight_dtype": "torch.float32",
       "role": "Stage5.5 checkpoint used in the published comparison",
-      "portable_model": "manifold_unet_ribbed.torchscript.pt"
+      "portable_model": "manifold_unet_ribbed.torchscript.pt",
+      "import_path": "waveforge.lab.mcl.ribbed_channels.RibbedUNet"
     }
   ],
   "note": "Stage5.2 reuses the Stage5 weights; no duplicate checkpoint is needed. Flow-penalty steps are additional fine-tuning steps, not total training steps.",
@@ -97,5 +99,6 @@
       64,
       64
     ]
-  }
+  },
+  "example": "python examples/evaluate_pretrained_ribbed.py --mode multi25 --output artifacts/ribbed_example"
 }

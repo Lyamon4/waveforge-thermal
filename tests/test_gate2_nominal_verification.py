@@ -20,7 +20,9 @@ def test_nominal_orchestration_verifies_all_locked_fidelities(
     tmp_path: Path,
 ) -> None:
     """Conditional 256 verification or a binary/continuous omission must fail."""
-    registry = build_candidate_registry(Path("artifacts/gate2_design/production"))
+    registry = build_candidate_registry(
+        Path("tests/fixtures/legacy_inverse_design/production")
+    )
     calls: list[tuple[str, str]] = []
 
     def fake_verifier(candidate_id: str, design, *, fidelity, **kwargs):

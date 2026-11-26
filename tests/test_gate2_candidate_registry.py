@@ -16,7 +16,7 @@ from waveforge.experiments.verify_gate2a import (
 
 def test_registry_contains_every_locked_binary_and_continuous_design() -> None:
     """Dropping a seed/comparator or thresholding uniform relaxed must fail."""
-    root = Path("artifacts/gate2_design/production")
+    root = Path("tests/fixtures/legacy_inverse_design/production")
 
     registry = build_candidate_registry(root)
 
@@ -68,7 +68,7 @@ def test_loading_production_candidate_rejects_corrupt_frozen_array(
     tmp_path: Path,
 ) -> None:
     """An array whose content differs from optimization_result is invalid."""
-    source = Path("artifacts/gate2_design/production/robust/20260828")
+    source = Path("tests/fixtures/legacy_inverse_design/production/robust/20260828")
     run_dir = tmp_path / "run"
     run_dir.mkdir()
     for name in (

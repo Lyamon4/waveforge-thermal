@@ -23,7 +23,9 @@ def test_robustness_evaluates_every_candidate_case_and_reselects_baseline(
     tmp_path: Path,
 ) -> None:
     """Reusing nominal baseline identity or skipping registered cases must fail."""
-    registry = build_candidate_registry(Path("artifacts/gate2_design/production"))
+    registry = build_candidate_registry(
+        Path("tests/fixtures/legacy_inverse_design/production")
+    )
     nominal = NominalVerificationBundle(
         binary=(),
         continuous=(),
@@ -115,7 +117,9 @@ def test_robustness_evaluates_every_candidate_case_and_reselects_baseline(
 
 def test_nominal_no_go_seed_is_reported_without_running_perturbations() -> None:
     """A scientific nominal failure must not become a missing-artifact invalidity."""
-    registry = build_candidate_registry(Path("artifacts/gate2_design/production"))
+    registry = build_candidate_registry(
+        Path("tests/fixtures/legacy_inverse_design/production")
+    )
     nominal = NominalVerificationBundle(
         binary=(),
         continuous=(),
