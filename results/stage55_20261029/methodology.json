@@ -1,0 +1,111 @@
+{
+  "stage": "5.5",
+  "steps": 300,
+  "batch": 4,
+  "seed": 202610295501,
+  "physics": {
+    "nx": 64,
+    "ny": 64,
+    "width_m": 0.0754,
+    "height_m": 0.072,
+    "dz": [
+      0.0005,
+      0.0001,
+      0.001,
+      0.001
+    ],
+    "pressure_drop_pa": 10000.0,
+    "mu_pa_s": 0.00089,
+    "rho_cp": 4180000.0,
+    "density_kg_m3": 997.0,
+    "q_bp": 0.02,
+    "resistance_ratio": 10000.0,
+    "h_fluid": 25830.0,
+    "h_air": 10.0,
+    "port_start": 24,
+    "port_stop": 40,
+    "channel_width_m": 0.00028,
+    "scaled_refinement": true,
+    "compensated_refinement": true,
+    "reduced_order_homogenized_model": true
+  },
+  "k_tim": 40.0,
+  "r25": {
+    "single_steps": 25,
+    "multi_steps": "3x8+1=25",
+    "beta": [
+      3.0,
+      6.0
+    ],
+    "lr_geometry": [
+      0.12,
+      0.03
+    ],
+    "lr_pixels": [
+      0.06,
+      0.015
+    ],
+    "rollback": false
+  },
+  "geometry": {
+    "rib_cells": 2,
+    "channel_count": 5,
+    "raw_y_amplitude": 5.5,
+    "io_x_amplitude": 2.0,
+    "core_bound": 955,
+    "budget": 1024,
+    "discrete_rule": "bounded nonintersecting +/-1-row transitions; actual ribs reserved",
+    "bounds": "anchors+5.5*tanh followed by ordered/rib-safe geometric projection"
+  },
+  "evaluation": {
+    "tasks": 16,
+    "diagnostic_tasks": 8,
+    "development_tasks": 8,
+    "split": "open development; used during method development",
+    "closed_test_opened": false,
+    "coarse_grid": [
+      64,
+      64
+    ],
+    "evaluation_grid": [
+      128,
+      128
+    ],
+    "fine_grid_used_for_selection": true,
+    "same_design_in_both_pump_regimes": true,
+    "selection": "Lowest nominal 128x128 silicon peak among candidates jointly admitted on 64x64 and 128x128 in both regimes",
+    "pump_hydraulic_power_w": 0.11090112476467685,
+    "inlet_water_c": 25,
+    "percentage_formula": "100 * (baseline_peak_rise_K - candidate_peak_rise_K) / baseline_peak_rise_K",
+    "baseline_per_case": "Best of Adam and MMA within each separately reported baseline family"
+  },
+  "gates": {
+    "reynolds_strictly_below": 1200,
+    "silicon_peak_at_most_c": 95,
+    "open_water_strictly_below_c": 60,
+    "linear_relative_residual_strictly_below": 1e-12,
+    "mass_and_heat_relative_error_strictly_below": 1e-10,
+    "channel_cells": 1024,
+    "connected": true
+  },
+  "baselines": {
+    "Standard": "One exact Uniform-Parallel start, 600 objective queries per optimizer; legacy geometric decoder",
+    "Matched": "Same separated-channel decoder as the neural model; score four analytic starts, then one selected 600-query trajectory per optimizer",
+    "MultiStart": "Preserved Stage5.4 references; four starts x600 objective queries per optimizer, older decoder"
+  },
+  "training": {
+    "updates": 300,
+    "task_exposures": 1200,
+    "elapsed_seconds": 574.0827977000008,
+    "weights_frozen_before_comparison": true,
+    "initialization": "Backbone transferred from prior checkpoint, geometry and pixel output heads reset",
+    "source_checkpoint_sha256": "51781bf9636a193cd0aeb4736f78923d37a7e5b1a14c607c74a377f43226a2fe",
+    "model_sha256": "3e431a8ad2e2bcd55a0a17a8c3917417cdc08db12a5006f6c31182088c7b4922"
+  },
+  "limitations": [
+    "Reduced depth-averaged Darcy/thermal model; not resolved 3D CFD or device measurements.",
+    "The open 16-case set does not establish blind-test generalization.",
+    "Gain over Standard includes the geometric representation change; Matched separates this contribution.",
+    "No measured complete-system speedup or industrial SOTA claim."
+  ]
+}
