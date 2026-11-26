@@ -1,0 +1,67 @@
+{
+  "method": "head-aligned distillation of 3x8+1 refinement",
+  "teacher_free": false,
+  "source_sha256": "3e431a8ad2e2bcd55a0a17a8c3917417cdc08db12a5006f6c31182088c7b4922",
+  "seed": 2026103001,
+  "train_tasks": 64,
+  "validation_tasks": 8,
+  "updates": 800,
+  "batch_size": 8,
+  "physics": {
+    "nx": 64,
+    "ny": 64,
+    "width_m": 0.0754,
+    "height_m": 0.072,
+    "dz": [
+      0.0005,
+      0.0001,
+      0.001,
+      0.001
+    ],
+    "pressure_drop_pa": 10000.0,
+    "mu_pa_s": 0.00089,
+    "rho_cp": 4180000.0,
+    "density_kg_m3": 997.0,
+    "q_bp": 0.02,
+    "resistance_ratio": 10000.0,
+    "h_fluid": 25830.0,
+    "h_air": 10.0,
+    "port_start": 24,
+    "port_stop": 40,
+    "channel_width_m": 0.00028,
+    "scaled_refinement": true,
+    "compensated_refinement": true,
+    "reduced_order_homogenized_model": true
+  },
+  "tim_conductivity_w_m_k": 40.0,
+  "acceptance": "unchanged joint64/128 nominal and equal pump power",
+  "optimizer_queries_at_inference": 0,
+  "candidate_heads": 4,
+  "head_learning_rate": 0.0001,
+  "backbone_learning_rate": 2e-05,
+  "selection": "median gap to teacher, p90 gap, fallback count, earlier update",
+  "quality_target": {
+    "median_gap_to_teacher_percent_at_most": 0.5,
+    "p90_gap_to_teacher_percent_at_most": 2.0
+  },
+  "geometry_hygiene": {
+    "geometry_file_sha256": "b5a7fa6dee947a611c32abad981cc15c9f62f06b940c391965c646a62a379708",
+    "geometry_content_sha256": "1ffec9c18c9cc1392afa4c2b8cacf8ed11fee634632aef4359a17e8699acc4e2",
+    "registry_manifest_sha256": "92f3cb7459bbf6975184013f2a13b7cd058069403133a988be3d23f7ef40beab",
+    "protected_count": 344,
+    "near_duplicate_radius_cells": 2,
+    "closed_workloads_read": false,
+    "proof": "No protected geometry match implies no protected task hash match."
+  },
+  "previous_train_hashes_excluded": 2400,
+  "source_exclusion_logs_sha256": [
+    "8b090dbaaeee689528c99ed1bafec7e8165b89fd7fdf78f0ab6aa46835fd2659",
+    "22d23af84271c56dd84db6088d937885de8db0c76bb50bb96c9e807e64dfb258"
+  ],
+  "closed_test_opened": false,
+  "training_loss": "binary_topology",
+  "topology_beta": 6.0,
+  "parameter_loss_weight": 0.25,
+  "warm_start_checkpoint": "C:\\Users\\gazan\\Desktop\\WaveForge\\WaveForge_AMORTIZED_20261030\\run_001\\training\\model_frozen.pt",
+  "warm_start_sha256": "5eb56617e86e43f396700bf9c256a38d43dd071cc696f17a12b04912added7b2"
+}

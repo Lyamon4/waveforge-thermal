@@ -1,0 +1,199 @@
+{
+  "task": 0,
+  "repeats": 3,
+  "neural_candidate_count": 8,
+  "classical_initial_candidates_per_method": 8,
+  "neural_optimizer_queries": 0,
+  "classical_optimizer_queries_per_method": 600,
+  "scope": "cold process, input preparation, model loading, every physical check and export",
+  "same_sparse_backend": "cudss FP64 with unchanged compensated gates",
+  "neural_median_seconds": 7.895409399992786,
+  "speedups": {
+    "MMA600": 8.73188502423438
+  },
+  "gains_to_best_same_budget_control_percent": {
+    "nominal_c": 9.742880948094875,
+    "equal_power_c": 11.40745892542901
+  },
+  "rows": [
+    {
+      "wall_seconds": 8.821928499994101,
+      "output": "..\\WaveForge_AMORTIZED_20261030\\timing_eight_case00\\neural_0",
+      "binary_sha256": "0ccd4210067925a18d303b107d7b155f661d01568c961dffa733afa4fd46a590",
+      "gate": {
+        "admissible": true,
+        "rejection_reasons": [],
+        "checks": {
+          "64:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "64:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        }
+      },
+      "nominal_c": 65.26898254671869,
+      "equal_power_c": 64.08135821381367,
+      "objective_queries": 0,
+      "method": "R0",
+      "repeat": 0
+    },
+    {
+      "wall_seconds": 7.895409399992786,
+      "output": "..\\WaveForge_AMORTIZED_20261030\\timing_eight_case00\\neural_1",
+      "binary_sha256": "0ccd4210067925a18d303b107d7b155f661d01568c961dffa733afa4fd46a590",
+      "gate": {
+        "admissible": true,
+        "rejection_reasons": [],
+        "checks": {
+          "64:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "64:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        }
+      },
+      "nominal_c": 65.26898254671869,
+      "equal_power_c": 64.08135821381367,
+      "objective_queries": 0,
+      "method": "R0",
+      "repeat": 1
+    },
+    {
+      "wall_seconds": 7.513650500011863,
+      "output": "..\\WaveForge_AMORTIZED_20261030\\timing_eight_case00\\neural_2",
+      "binary_sha256": "0ccd4210067925a18d303b107d7b155f661d01568c961dffa733afa4fd46a590",
+      "gate": {
+        "admissible": true,
+        "rejection_reasons": [],
+        "checks": {
+          "64:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "64:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        }
+      },
+      "nominal_c": 65.26898254671869,
+      "equal_power_c": 64.08135821381367,
+      "objective_queries": 0,
+      "method": "R0",
+      "repeat": 2
+    },
+    {
+      "wall_seconds": 68.94180709999637,
+      "output": "..\\WaveForge_AMORTIZED_20261030\\timing_eight_case00\\MMA600",
+      "binary_sha256": "61af84e09c414dcc2b880303a276a982d0570666b9dad6e8439bd31915bfe8fe",
+      "gate": {
+        "admissible": true,
+        "rejection_reasons": [],
+        "checks": {
+          "64:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "64:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:nominal": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          },
+          "128:power": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        }
+      },
+      "nominal_c": 69.61585187929694,
+      "equal_power_c": 69.11359888742521,
+      "objective_queries": 600,
+      "method": "MMA600",
+      "repeat": 0
+    }
+  ],
+  "checkpoint_sha256": "48162fa3540e56b9fdf79681a3c94ed4468262fd8b78f231828401f9915563bf",
+  "limitations": "one case; repeated cold neural requests; one run per classical method",
+  "reference": "MMA600"
+}

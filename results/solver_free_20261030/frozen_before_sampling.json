@@ -1,0 +1,16 @@
+{
+  "model_sha256": "e83fea4937f3d9eb6ed6c8af430141e39487ec33d51f49cffc604d133975783e",
+  "seed": 202610303902,
+  "tasks": 32,
+  "geometry_hygiene": {
+    "geometry_file_sha256": "b5a7fa6dee947a611c32abad981cc15c9f62f06b940c391965c646a62a379708",
+    "geometry_content_sha256": "1ffec9c18c9cc1392afa4c2b8cacf8ed11fee634632aef4359a17e8699acc4e2",
+    "registry_manifest_sha256": "92f3cb7459bbf6975184013f2a13b7cd058069403133a988be3d23f7ef40beab",
+    "protected_count": 2040,
+    "near_duplicate_radius_cells": 2,
+    "closed_workloads_read": false,
+    "proof": "No protected geometry match implies no protected task hash match."
+  },
+  "official_test_workloads_opened": false,
+  "used_for_training": false
+}

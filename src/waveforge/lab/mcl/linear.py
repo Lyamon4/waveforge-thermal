@@ -1,7 +1,7 @@
 """Reusable sparse-LU implicit autograd, including nonsymmetric transpose solves.
 
-Factorization runs on CPU/SciPy. CUDA tensors are explicitly bridged; this is
-NOT a native GPU Krylov backend. No dense production matrices are allocated.
+Factorization uses CPU/SciPy by default, with an optional FP64 cuDSS path.
+No dense production matrices are allocated.
 """
 
 import numpy as np
@@ -70,7 +70,7 @@ class _SparseSolve(torch.autograd.Function):
                 "size": size,
                 "rhs": b.shape[1],
                 "relative_residual": residual,
-                "backend": "scipy_lu",
+                "backend": lu.backend,
                 "refinement_steps": lu.refinement_steps,
                 "compensated_relative_residual": compensated_residual,
                 "residual_system": "original_unscaled",
@@ -122,7 +122,7 @@ class _SparseSolve(torch.autograd.Function):
                 "size": a.shape[0],
                 "rhs": b.shape[1],
                 "relative_residual": residual,
-                "backend": "scipy_lu",
+                "backend": lu.backend,
                 "factorization_reused": True,
                 "refinement_steps": lu.refinement_steps,
                 "compensated_relative_residual": compensated_residual,

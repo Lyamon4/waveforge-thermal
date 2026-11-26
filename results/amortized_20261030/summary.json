@@ -1,0 +1,145 @@
+{
+  "checkpoint": "models/manifold_unet_amortized_r0.pt",
+  "checkpoint_sha256": "48162fa3540e56b9fdf79681a3c94ed4468262fd8b78f231828401f9915563bf",
+  "portable_sha256": "eaaa6c42359d12358a352314e7555e5d5e13207c624d4fb13343a706f515f547",
+  "old_checkpoint_unchanged": true,
+  "unique_training_tasks": 64,
+  "validation_tasks": 8,
+  "selected_student_training_path_updates": 1600,
+  "selected_student_task_presentations": 12800,
+  "teacher_free": false,
+  "targets": "qualified per-head outputs of the source model's 25-query refinement",
+  "inference": {
+    "neural_models": 2,
+    "neural_candidates": 8,
+    "refinement_updates": 0,
+    "physical_selection_and_all_original_gates": true
+  },
+  "physics": "unchanged Stage5 reduced coupled flow/thermal model",
+  "candidate_selection": "nominal objective subject to joint nominal/equal-pump gates",
+  "fresh_audit": {
+    "tasks": 8,
+    "weights_frozen_before_sampling": true,
+    "used_for_training_or_checkpoint_selection": false,
+    "primary_prespecified_variant": "four candidates",
+    "primary_four_result": {
+      "median_gap_to_teacher_percent": 1.1578156853493102,
+      "p90_gap_to_teacher_percent": 1.725906195250701,
+      "worst_gap_to_teacher_percent": 2.3399209630162314,
+      "median_gain_vs_original_r0_percent": 0.38600337509403243,
+      "gaps_to_teacher_percent": [
+        0.5776107599104262,
+        0.6605553257499179,
+        1.1715593151233445,
+        -0.056057643865678256,
+        1.386294444897552,
+        2.3399209630162314,
+        1.144072055575276,
+        1.4627570090654742
+      ],
+      "gains_vs_original_r0_percent": [
+        0.0,
+        2.216022726969579,
+        2.3722057118018474,
+        6.078846415493945,
+        0.0,
+        -0.6229994470893861,
+        0.7720067501880649,
+        -1.0152202524012648
+      ],
+      "fallback_count": 0,
+      "jointly_admissible": true,
+      "median_equal_power_gap_to_teacher_percent": 0.8988786044504748
+    },
+    "secondary_eight_result": {
+      "median_gap_to_teacher_percent": 0.9023136906625969,
+      "p90_gap_to_teacher_percent": 1.4822935105401527,
+      "worst_gap_to_teacher_percent": 1.706291330372888,
+      "median_gain_vs_original_r0_percent": 0.792875286771187,
+      "gaps_to_teacher_percent": [
+        -0.24083333532568407,
+        0.6605553257499179,
+        1.1715593151233445,
+        -0.056057643865678256,
+        1.386294444897552,
+        1.706291330372888,
+        1.144072055575276,
+        0.20466667098454525
+      ],
+      "gains_vs_original_r0_percent": [
+        0.8137438233543093,
+        2.216022726969579,
+        2.3722057118018474,
+        6.078846415493945,
+        0.0,
+        0.0,
+        0.7720067501880649,
+        0.23732084095093092
+      ],
+      "fallback_count": 0,
+      "jointly_admissible": true,
+      "median_equal_power_gap_to_teacher_percent": 0.7310337988075524
+    },
+    "eight_improvements": 6,
+    "eight_ties": 2,
+    "eight_losses": 0,
+    "median_extra_temperature_vs_source_multi25_c": 0.35726039984238867
+  },
+  "quality_target": {
+    "median_gap_at_most_percent": 0.5,
+    "p90_gap_at_most_percent": 2.0,
+    "fully_met_on_fresh_audit": false
+  },
+  "open_development": {
+    "tasks": 16,
+    "results": {
+      "nominal": {
+        "median_gain_vs_matched_percent": 0.9634480345884964,
+        "wins": 10,
+        "median_gain_vs_source_r0_percent": 1.5189252143139376,
+        "median_gap_to_source_multi25_percent": 0.39888405153462486,
+        "worst_gain_vs_matched_percent": -4.136508195681255,
+        "fallbacks": 0
+      },
+      "power": {
+        "median_gain_vs_matched_percent": 2.012343955243727,
+        "wins": 11,
+        "median_gain_vs_source_r0_percent": 1.7699892451918466,
+        "median_gap_to_source_multi25_percent": 0.42147952791529175,
+        "worst_gain_vs_matched_percent": -1.9742342824225565,
+        "fallbacks": 0
+      }
+    },
+    "comparator_initial_candidates": 4,
+    "neural_candidates": 8,
+    "equal_candidate_budget": false,
+    "note": "development evidence, not a new blinded test"
+  },
+  "complete_request_runtime": {
+    "tasks": 1,
+    "neural_repeats": 3,
+    "classical_repeats_per_method": 1,
+    "same_initial_candidate_count": 8,
+    "neural_median_seconds": 7.895409399992786,
+    "speedups": {
+      "MMA600": 8.73188502423438
+    },
+    "measured_times_seconds": {
+      "R0": [
+        8.821928499994101,
+        7.895409399992786,
+        7.513650500011863
+      ],
+      "MMA600": [
+        68.94180709999637
+      ]
+    },
+    "includes": "process startup, preparation, load, prediction, physical checks, export",
+    "gains_to_mma_reference_percent": {
+      "nominal_c": 9.742880948094875,
+      "equal_power_c": 11.40745892542901
+    }
+  },
+  "original_registered_id_ood_tests_opened": false,
+  "achieved_1000x": false
+}

@@ -110,7 +110,7 @@ class Flow:
     compensated_residual: float
 
 
-def solve_flow(alpha, s, pressure_pa):
+def solve_flow(alpha, s, pressure_pa, *, return_linear_system=False):
     n = s.nx * s.ny
     ids = np.arange(n).reshape(s.nx, s.ny)
     port = slice(s.port_start, s.port_stop)
@@ -131,7 +131,7 @@ def solve_flow(alpha, s, pressure_pa):
     lu = _factor(matrix)
     p = lu.solve(rhs)
     pressure = p.reshape(s.nx, s.ny)
-    return Flow(
+    result = Flow(
         pressure,
         gx * (pressure[:-1] - pressure[1:]),
         gy * (pressure[:, :-1] - pressure[:, 1:]),
@@ -140,6 +140,7 @@ def solve_flow(alpha, s, pressure_pa):
         float(_residual(matrix, p, rhs)),
         float(lu.relative_residual(p, rhs)),
     )
+    return (result, matrix, rhs, lu) if return_linear_system else result
 
 
 def cell_velocities(flow, s):

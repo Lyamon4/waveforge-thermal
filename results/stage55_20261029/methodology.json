@@ -77,7 +77,7 @@
     "pump_hydraulic_power_w": 0.11090112476467685,
     "inlet_water_c": 25,
     "percentage_formula": "100 * (baseline_peak_rise_K - candidate_peak_rise_K) / baseline_peak_rise_K",
-    "baseline_per_case": "Best of Adam and MMA within each separately reported baseline family"
+    "baseline_per_case": "MMA within each separately reported baseline family"
   },
   "gates": {
     "reynolds_strictly_below": 1200,
@@ -89,9 +89,9 @@
     "connected": true
   },
   "baselines": {
-    "Standard": "One exact Uniform-Parallel start, 600 objective queries per optimizer; legacy geometric decoder",
-    "Matched": "Same separated-channel decoder as the neural model; score four analytic starts, then one selected 600-query trajectory per optimizer",
-    "MultiStart": "Preserved Stage5.4 references; four starts x600 objective queries per optimizer, older decoder"
+    "Standard": "One exact Uniform-Parallel start, 600 MMA objective queries; legacy geometric decoder",
+    "Matched": "Same separated-channel decoder as the neural model; score four analytic starts, then one selected 600-query MMA trajectory",
+    "MultiStart": "Preserved Stage5.4 references; four starts x600 MMA objective queries, older decoder"
   },
   "training": {
     "updates": 300,

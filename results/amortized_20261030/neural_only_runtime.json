@@ -1,0 +1,9 @@
+{
+  "scope": "two frozen U-Nets only, input already on GPU, excludes all preparation/physics/selection/export",
+  "batch": 1,
+  "repeats": 50,
+  "warmup": 10,
+  "median_milliseconds": 13.634650007588789,
+  "p90_milliseconds": 22.9654599854257,
+  "note": "not a complete-system timing; do not use to claim an end-to-end speedup"
+}

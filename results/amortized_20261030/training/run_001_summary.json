@@ -1,0 +1,100 @@
+{
+  "selected_step": 800,
+  "training_updates": 800,
+  "unique_training_tasks": 64,
+  "task_presentations": 6400,
+  "validation_tasks": 8,
+  "teacher_free": false,
+  "original_r0": {
+    "median_gap_to_teacher_percent": 2.5780661672828424,
+    "p90_gap_to_teacher_percent": 5.093414512021654,
+    "worst_gap_to_teacher_percent": 8.126126296054826,
+    "median_gain_vs_original_r0_percent": 0.0,
+    "gaps_to_teacher_percent": [
+      3.7936808902931527,
+      0.8173172376316477,
+      8.126126296054826,
+      3.497776718282747,
+      1.8063424089523465,
+      0.7111924387046472,
+      2.9365886188679666,
+      2.2195437156977187
+    ],
+    "gains_vs_original_r0_percent": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "fallback_count": 0,
+    "jointly_admissible": true,
+    "median_equal_power_gap_to_teacher_percent": 2.7058022930775003
+  },
+  "student_r0": {
+    "median_gap_to_teacher_percent": 0.9421329725664526,
+    "p90_gap_to_teacher_percent": 5.016555538685963,
+    "worst_gap_to_teacher_percent": 5.4520931120987495,
+    "median_gain_vs_original_r0_percent": 1.6411439760148805,
+    "gaps_to_teacher_percent": [
+      0.6025300401120058,
+      4.829896578651911,
+      5.4520931120987495,
+      3.9818261413451492,
+      -0.31660404963435756,
+      0.8882991380421315,
+      0.237359478814838,
+      0.9959668070907737
+    ],
+    "gains_vs_original_r0_percent": [
+      3.0745136147104164,
+      -3.9800497086848736,
+      2.473068513186571,
+      -0.4676906484474225,
+      2.0852791764769485,
+      -0.17585602458761057,
+      2.622225174031431,
+      1.1970087755528125
+    ],
+    "fallback_count": 0,
+    "jointly_admissible": true,
+    "median_equal_power_gap_to_teacher_percent": 1.0178624581448572
+  },
+  "fixed_correction": {
+    "median_gap_to_teacher_percent": 1.9607856591871098,
+    "p90_gap_to_teacher_percent": 7.053404761599878,
+    "worst_gap_to_teacher_percent": 7.080158587103067,
+    "median_gain_vs_original_r0_percent": 0.8140792846361923,
+    "gaps_to_teacher_percent": [
+      7.041938836384226,
+      0.3431092235927653,
+      7.080158587103067,
+      2.443011148838858,
+      0.8507053718189347,
+      2.4068081828722687,
+      0.5806437021967646,
+      1.514763135501951
+    ],
+    "gains_vs_original_r0_percent": [
+      -3.1295334342409395,
+      0.47036365084100534,
+      0.967358902776048,
+      1.0191190602237994,
+      0.9386812398137758,
+      -1.6836418109135343,
+      2.288734208391441,
+      0.6894773294586087
+    ],
+    "fallback_count": 0,
+    "jointly_admissible": true,
+    "median_equal_power_gap_to_teacher_percent": 1.968416898833124
+  },
+  "refinement_objective_queries_at_inference": 0,
+  "model_sha256": "5eb56617e86e43f396700bf9c256a38d43dd071cc696f17a12b04912added7b2",
+  "source_unchanged": true,
+  "closed_test_opened": false,
+  "elapsed_seconds": 80.98879480001051
+}

@@ -1,0 +1,49 @@
+{
+  "checkpoint_sha256": "e83fea4937f3d9eb6ed6c8af430141e39487ec33d51f49cffc604d133975783e",
+  "tasks": 3,
+  "task_indices": [
+    0,
+    1,
+    2
+  ],
+  "pairs": [
+    {
+      "task_index": 0,
+      "neural_ms": 29.801700002280995,
+      "speedups": {
+        "MMA600": 2180.0770692628184
+      },
+      "all_methods_valid": true,
+      "nominal_gain_percent": 10.639084163394145,
+      "power_gain_percent": 11.02543131733901
+    },
+    {
+      "task_index": 1,
+      "neural_ms": 23.3960500190733,
+      "speedups": {
+        "MMA600": 2739.5110690797987
+      },
+      "all_methods_valid": true,
+      "nominal_gain_percent": 7.763762869312066,
+      "power_gain_percent": 9.23672105986274
+    },
+    {
+      "task_index": 2,
+      "neural_ms": 31.667000002926216,
+      "speedups": {
+        "MMA600": 2098.272437991078
+      },
+      "all_methods_valid": true,
+      "nominal_gain_percent": -1.9337340255157751,
+      "power_gain_percent": -2.35858418806446
+    }
+  ],
+  "scope": "warm complete algorithm: raw task to one binary; imports, one-time loading and final independent audit excluded for all methods",
+  "classical_budget": "eight fixed starts plus shared Uniform, best start then one 600-query MMA trajectory; binary incumbent every 50 queries",
+  "neural_budget": "eight decoded neural proposals plus shared Uniform; learned selection; zero online physical solves",
+  "same_physics": true,
+  "physics_verification": "same independent SciPy 64/128 nominal/equal-power path",
+  "limitations": "selected-by-index fresh cases, one trajectory per classical method per case; not a 32-case quality claim",
+  "independent_factorization_backend": "scipy_lu",
+  "max_backend_temperature_difference_k": 0.0
+}

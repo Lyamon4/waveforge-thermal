@@ -1,0 +1,12 @@
+{
+  "status": "stopped_after_three_validation_regressions",
+  "actual_updates": 88,
+  "last_validation_steps": [
+    25,
+    50,
+    75
+  ],
+  "original_best_preserved": true,
+  "selected_best_step": 0,
+  "reason": "all validation checks worse than warm start; no physics or tolerances changed"
+}

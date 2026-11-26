@@ -4,11 +4,29 @@ This changes neither equations nor acceptance thresholds. In particular, one
 refinement is NOT assumed to pass an arbitrarily stringent residual test.
 """
 
+import os
+from contextlib import contextmanager
+from contextvars import ContextVar
+
 import numpy as np
 import scipy.sparse as sp
 import scipy.sparse.linalg as spla
 
 from .compensated import CompensatedCSR
+
+_backend_override = ContextVar("waveforge_factorization_backend", default=None)
+
+
+@contextmanager
+def factorization_backend(name):
+    """Choose an independent backend locally, without racing process environment."""
+    if name not in ("scipy", "cudss"):
+        raise ValueError("unknown sparse factorization backend")
+    token = _backend_override.set(name)
+    try:
+        yield
+    finally:
+        _backend_override.reset(token)
 
 
 class Factorization:
@@ -27,7 +45,24 @@ class Factorization:
             raise ValueError("finite nonzero matrix diagonal required")
         self.scale = 1 / diagonal if refine else np.ones_like(diagonal)
         scaled = (sp.diags(self.scale) @ matrix).tocsc() if refine else matrix
-        self.lu = spla.splu(scaled, permc_spec=ordering)
+        backend = _backend_override.get() or os.environ.get(
+            "WAVEFORGE_SPARSE_BACKEND", "scipy"
+        )
+        if backend not in ("scipy", "cudss"):
+            raise ValueError("unknown sparse factorization backend")
+        minimum_size = int(os.environ.get("WAVEFORGE_CUDSS_MIN_SIZE", "16384"))
+        if (
+            backend == "cudss"
+            and matrix.dtype == np.float64
+            and matrix.shape[0] >= minimum_size
+        ):
+            from .cudss_backend import CudssLU
+
+            self.lu = CudssLU(scaled)
+            self.backend = "nvidia_cudss"
+        else:
+            self.lu = spla.splu(scaled, permc_spec=ordering)
+            self.backend = "scipy_lu"
 
     def _solve(self, rhs, transpose):
         scale = self.scale if rhs.ndim == 1 else self.scale[:, None]

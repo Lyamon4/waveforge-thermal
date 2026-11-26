@@ -5,6 +5,8 @@ no dense N-by-N matrix and no Python loop over cells. This is double-double-styl
 accumulation, NOT IEEE binary128. Intended for finite normal-range MCL operands.
 """
 
+import os
+
 import numpy as np
 
 
@@ -48,7 +50,20 @@ def _add(hi, lo, product, error):
 class CompensatedCSR:
     """Cache a padded sparse-row layout, O(nnz + max_row_nnz*N) storage."""
 
-    def __init__(self, matrix):
+    def __init__(self, matrix, *, backend=None):
+        if backend is None:
+            backend = os.environ.get("WAVEFORGE_RESIDUAL_BACKEND", "auto")
+        if backend not in ("auto", "numpy", "numba"):
+            raise ValueError("unknown compensated residual backend")
+        self.compiled = None
+        if backend != "numpy":
+            try:
+                from ._compiled_residual import real_residual
+
+                self.compiled = real_residual
+            except ImportError:
+                if backend == "numba":
+                    raise
         matrix = matrix.tocsr(copy=True)
         matrix.sum_duplicates()
         matrix.eliminate_zeros()
@@ -117,6 +132,14 @@ class CompensatedCSR:
             or np.any(abs(x) > 1e280)
         ):
             raise ValueError("finite compatible FP64 solution and RHS required")
+        if (
+            self.compiled is not None
+            and self.values.dtype == np.float64
+            and x.dtype == np.float64
+            and rhs.dtype == np.float64
+        ):
+            result = self.compiled(self.values, self.indices, *self.real_parts, x, rhs)
+            return result[:, 0] if vector else result
         real = self._real_residual(x, rhs.real)
         if np.iscomplexobj(x) or np.iscomplexobj(self.values) or np.iscomplexobj(rhs):
             real = real + 1j * self._real_residual(x, rhs.imag, imaginary_output=True)

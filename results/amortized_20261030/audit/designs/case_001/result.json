@@ -1,0 +1,333 @@
+{
+  "selected": {
+    "binary_sha256": "46c7700d7670f7c3e0acfd6201546ff8cb0495e7312740980f14b70e0be935b8",
+    "valid": true,
+    "violation": 0.0,
+    "peak_c": 66.44927073035407,
+    "modes": {
+      "64": {
+        "nominal": {
+          "accepted": true,
+          "peak_rise_k": 42.46874201789187,
+          "silicon_peak_c": 67.46874201789187,
+          "flow_ml_s": 7.777025977604715,
+          "pressure_pa": 10000.0,
+          "diagnostics": {
+            "pressure_residual": 7.581256693123232e-16,
+            "compensated_pressure_residual": 5.236331277076263e-16,
+            "thermal_residual": [
+              2.1474071406395167e-14,
+              1.723631717840947e-14,
+              1.7185535176584614e-14
+            ],
+            "compensated_thermal_residual": [
+              1.2837888541652e-14,
+              1.0542271939987916e-14,
+              1.0645406544465728e-14
+            ],
+            "mass_relative_error": 8.18603364563289e-13,
+            "energy_relative_error": [
+              3.473764485938268e-14,
+              3.0000693287648675e-14,
+              2.968489651619974e-14
+            ],
+            "outlet_heat_w": [
+              359.06057182459375,
+              359.15949875812146,
+              359.16016169107195
+            ],
+            "air_heat_w": [
+              0.9394281753937552,
+              0.8405012418677399,
+              0.8398383089173418
+            ],
+            "water_heat_fraction": [
+              0.9973904772905382,
+              0.9976652743281151,
+              0.9976671158085332
+            ],
+            "air_heat_fraction": [
+              0.0026095227094270978,
+              0.0023347256718548332,
+              0.0023328841914370606
+            ],
+            "peak_silicon_temperature_c": 67.46874201789187,
+            "peak_open_water_temperature_c": 55.90339342489001,
+            "max_local_reynolds_estimate": 773.4883230486213,
+            "max_local_speed_m_s": 1.5782309385603048,
+            "flowing_open_fraction": 0.9638671875,
+            "wall_touching_internal_abs_face_flux_fraction": 0.0006508110954498273,
+            "wall_outlet_flow_fraction": 0.0,
+            "pump_hydraulic_power_w": 0.07777025977604715,
+            "physical_validation": false,
+            "flow_model": "depth-averaged Darcy; empirical thermal exchange",
+            "h_air": 10.0,
+            "pressure_drop_pa": 10000.0,
+            "tim_conductivity_w_m_k": 40.0,
+            "tim_contact_resistance_each_m2_k_w": 2e-06,
+            "training_operator_qualified": false
+          },
+          "admission": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        },
+        "power": {
+          "accepted": true,
+          "peak_rise_k": 40.617209816877526,
+          "silicon_peak_c": 65.61720981687753,
+          "flow_ml_s": 9.286985131034038,
+          "pressure_pa": 11941.563726002089,
+          "diagnostics": {
+            "pressure_residual": 8.97436107142457e-16,
+            "compensated_pressure_residual": 6.844653961137535e-16,
+            "thermal_residual": [
+              2.004047796936531e-14,
+              1.6226322574896887e-14,
+              1.6640858331379463e-14
+            ],
+            "compensated_thermal_residual": [
+              1.1880114269759543e-14,
+              9.822902384245936e-15,
+              1.0397978248198447e-14
+            ],
+            "mass_relative_error": 8.183042715735913e-13,
+            "energy_relative_error": [
+              3.331655938786248e-14,
+              2.873750620185294e-14,
+              2.905330297330187e-14
+            ],
+            "outlet_heat_w": [
+              359.11599676760073,
+              359.2119406361862,
+              359.2119684640012
+            ],
+            "air_heat_w": [
+              0.8840032323872642,
+              0.7880593638034317,
+              0.7880315359883627
+            ],
+            "water_heat_fraction": [
+              0.9975444354655576,
+              0.9978109462116284,
+              0.9978110235111144
+            ],
+            "air_heat_fraction": [
+              0.0024555645344090673,
+              0.0021890537883428656,
+              0.0021889764888565633
+            ],
+            "peak_silicon_temperature_c": 65.61720981687753,
+            "peak_open_water_temperature_c": 53.86535794873991,
+            "max_local_reynolds_estimate": 923.6660101003603,
+            "max_local_speed_m_s": 1.8846545327165969,
+            "flowing_open_fraction": 0.9638671875,
+            "wall_touching_internal_abs_face_flux_fraction": 0.0006508110954498272,
+            "wall_outlet_flow_fraction": 0.0,
+            "pump_hydraulic_power_w": 0.11090112476467683,
+            "physical_validation": false,
+            "flow_model": "depth-averaged Darcy; empirical thermal exchange",
+            "h_air": 10.0,
+            "pressure_drop_pa": 11941.563726002089,
+            "tim_conductivity_w_m_k": 40.0,
+            "tim_contact_resistance_each_m2_k_w": 2e-06,
+            "training_operator_qualified": false
+          },
+          "admission": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        }
+      },
+      "128": {
+        "nominal": {
+          "accepted": true,
+          "peak_rise_k": 41.44927073035408,
+          "silicon_peak_c": 66.44927073035407,
+          "flow_ml_s": 8.15637371146097,
+          "pressure_pa": 10000.0,
+          "diagnostics": {
+            "pressure_residual": 1.1277100680590422e-15,
+            "compensated_pressure_residual": 7.6495873976940515e-16,
+            "thermal_residual": [
+              6.056410660768257e-14,
+              5.0037661898807326e-14,
+              5.1871467219694056e-14
+            ],
+            "compensated_thermal_residual": [
+              3.8517097015503807e-14,
+              3.17299961883461e-14,
+              3.353767025584503e-14
+            ],
+            "mass_relative_error": 4.961292046398723e-12,
+            "energy_relative_error": [
+              6.837000101869408e-14,
+              6.205406558971541e-14,
+              6.173826881826648e-14
+            ],
+            "outlet_heat_w": [
+              359.1070308994698,
+              359.20135580966024,
+              359.2022016413311
+            ],
+            "air_heat_w": [
+              0.8929691005055771,
+              0.7986441903174362,
+              0.7977983586466566
+            ],
+            "water_heat_fraction": [
+              0.997519530276305,
+              0.9977815439157229,
+              0.997783893448142
+            ],
+            "air_heat_fraction": [
+              0.002480469723626603,
+              0.0022184560842151003,
+              0.002216106551796268
+            ],
+            "peak_silicon_temperature_c": 66.44927073035407,
+            "peak_open_water_temperature_c": 54.83097109534526,
+            "max_local_reynolds_estimate": 989.9960022952213,
+            "max_local_speed_m_s": 2.0199947087955223,
+            "flowing_open_fraction": 0.967529296875,
+            "wall_touching_internal_abs_face_flux_fraction": 0.0005842969997974179,
+            "wall_outlet_flow_fraction": 0.0,
+            "pump_hydraulic_power_w": 0.08156373711460971,
+            "physical_validation": false,
+            "flow_model": "depth-averaged Darcy; empirical thermal exchange",
+            "h_air": 10.0,
+            "pressure_drop_pa": 10000.0,
+            "tim_conductivity_w_m_k": 40.0,
+            "tim_contact_resistance_each_m2_k_w": 2e-06,
+            "training_operator_qualified": false
+          },
+          "admission": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        },
+        "power": {
+          "accepted": true,
+          "peak_rise_k": 39.870020383480394,
+          "silicon_peak_c": 64.8700203834804,
+          "flow_ml_s": 9.510788708630129,
+          "pressure_pa": 11660.560250281316,
+          "diagnostics": {
+            "pressure_residual": 1.3244884395877522e-15,
+            "compensated_pressure_residual": 1.0609763441981178e-15,
+            "thermal_residual": [
+              5.826050316320555e-14,
+              4.776562131738978e-14,
+              4.8817330650944323e-14
+            ],
+            "compensated_thermal_residual": [
+              3.6107895372692403e-14,
+              3.031669315842442e-14,
+              3.1473821736888026e-14
+            ],
+            "mass_relative_error": 4.961188688476736e-12,
+            "energy_relative_error": [
+              6.426464298985795e-14,
+              5.810660594660374e-14,
+              5.842240271805268e-14
+            ],
+            "outlet_heat_w": [
+              359.15311465670993,
+              359.2450520565082,
+              359.24535269777925
+            ],
+            "air_heat_w": [
+              0.8468853432669317,
+              0.7549479434708671,
+              0.7546473021996974
+            ],
+            "water_heat_fraction": [
+              0.9976475407130831,
+              0.9979029223791894,
+              0.9979037574938313
+            ],
+            "air_heat_fraction": [
+              0.002352459286852588,
+              0.002097077620752409,
+              0.0020962425061102708
+            ],
+            "peak_silicon_temperature_c": 64.8700203834804,
+            "peak_open_water_temperature_c": 53.17416167889332,
+            "max_local_reynolds_estimate": 1154.3908032301067,
+            "max_local_speed_m_s": 2.355427000715965,
+            "flowing_open_fraction": 0.967529296875,
+            "wall_touching_internal_abs_face_flux_fraction": 0.000584296999797418,
+            "wall_outlet_flow_fraction": 0.0,
+            "pump_hydraulic_power_w": 0.11090112476467684,
+            "physical_validation": false,
+            "flow_model": "depth-averaged Darcy; empirical thermal exchange",
+            "h_air": 10.0,
+            "pressure_drop_pa": 11660.560250281316,
+            "tim_conductivity_w_m_k": 40.0,
+            "tim_contact_resistance_each_m2_k_w": 2e-06,
+            "training_operator_qualified": false
+          },
+          "admission": {
+            "admissible": true,
+            "rejection_reasons": [],
+            "numerical": true,
+            "conservation": true,
+            "physical_validation": false
+          }
+        }
+      }
+    },
+    "gate": {
+      "admissible": true,
+      "rejection_reasons": [],
+      "checks": {
+        "64:nominal": {
+          "admissible": true,
+          "rejection_reasons": [],
+          "numerical": true,
+          "conservation": true,
+          "physical_validation": false
+        },
+        "64:power": {
+          "admissible": true,
+          "rejection_reasons": [],
+          "numerical": true,
+          "conservation": true,
+          "physical_validation": false
+        },
+        "128:nominal": {
+          "admissible": true,
+          "rejection_reasons": [],
+          "numerical": true,
+          "conservation": true,
+          "physical_validation": false
+        },
+        "128:power": {
+          "admissible": true,
+          "rejection_reasons": [],
+          "numerical": true,
+          "conservation": true,
+          "physical_validation": false
+        }
+      }
+    },
+    "search_objective": 0.4347655069093293,
+    "flow_penalty": 0.02293991588259661
+  },
+  "original_binary_sha256": "46c7700d7670f7c3e0acfd6201546ff8cb0495e7312740980f14b70e0be935b8",
+  "canonical_y_flip": false,
+  "selection": "lowest nominal128 silicon temperature, jointly admissible in both modes",
+  "method": "distilled-R0",
+  "objective_evaluations": 0,
+  "fallback_used": false,
+  "parameter_space": "physical offsets, half-widths, IO-x shifts, bounded pixel scores"
+}

@@ -2,6 +2,7 @@
 
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -11,14 +12,14 @@ from .baselines import uniform_parallel
 from .design_gradient_cache import DesignGradientCache
 from .joint_design import JointObjective
 from .locked_evaluation import JointEvaluator, ranking, write
-from .ribbed_channels import RibbedDecoder, RibbedGeometry
+from .ribbed_channels import RIB_ROWS, RibbedDecoder, RibbedGeometry
 from .stage3_training import worker_init
 from .stage5_physics import Stage5Solver
 
 
 class RibbedEvaluator(JointEvaluator):
-    def __init__(self, task, output):
-        super().__init__(task, output)
+    def __init__(self, task, output, *, forward_backend="fast"):
+        super().__init__(task, output, forward_backend=forward_backend)
         self.decoder = RibbedDecoder(RibbedGeometry.from_task(self.frame.task))
 
     def parameters(self, q, head):
@@ -80,8 +81,8 @@ class LegacyDecoder:
 
 
 class LegacyEvaluator(JointEvaluator):
-    def __init__(self, task, output):
-        super().__init__(task, output)
+    def __init__(self, task, output, *, forward_backend="fast"):
+        super().__init__(task, output, forward_backend=forward_backend)
         self.decoder = LegacyDecoder()
 
 
@@ -267,6 +268,7 @@ def select_and_export(evaluator, folder, trajectories, uniform, *, method, **ext
             t.get("physical_objective_solves", 0) for t in trajectories
         ),
         elapsed_seconds=sum(t.get("elapsed_seconds", 0) for t in trajectories),
+        elapsed_seconds_scope="sum of trajectory times, not complete request latency",
         trajectories=[
             {k: v for k, v in t.items() if k != "parameters"} for t in trajectories
         ],
@@ -274,18 +276,88 @@ def select_and_export(evaluator, folder, trajectories, uniform, *, method, **ext
     )
 
 
-def matched_reference(task, output, *, kind):
-    worker_init()
-    output = Path(output)
-    if (output / "result.json").exists():
-        return json.loads((output / "result.json").read_text())
-    evaluator = RibbedEvaluator(task, output)
-    uniform = evaluator.evaluate(uniform_parallel())
-    seeds = []
+def refine_independent_starts(evaluator, starts, *, steps=8, workers=1):
+    """Parallelize independent trajectories; preserve order and all incumbents.
+
+    Workers own their optimizers and caches. Merge only after joining, so the
+    parent evaluator is never concurrently mutated. This does not parallelize or
+    reorder steps within any trajectory.
+    """
+    if workers < 1:
+        raise ValueError("positive worker count required")
+    if workers == 1:
+        return [
+            optimize_physical(
+                evaluator, start["parameters"], start["head"], kind="Adam", steps=steps
+            )
+            for start in starts
+        ]
+
+    def refine(item):
+        index, start = item
+        local = type(evaluator)(
+            evaluator.frame.task,
+            evaluator.output / f"trajectory_{index}",
+            forward_backend=evaluator.forward_backend,
+        )
+        local.cache = dict(evaluator.cache)
+        local.designs = dict(evaluator.designs)
+        local.fields = dict(evaluator.fields)
+        result = optimize_physical(
+            local, start["parameters"], start["head"], kind="Adam", steps=steps
+        )
+        return result, local
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        completed = list(pool.map(refine, enumerate(starts)))
+    for _, local in completed:
+        evaluator.cache.update(local.cache)
+        evaluator.designs.update(local.designs)
+        if local.fields:
+            key = next(iter(local.fields))
+            previous = next(iter(evaluator.fields), None)
+            if previous is None or ranking(local.cache[key]) < ranking(
+                evaluator.cache[previous]
+            ):
+                evaluator.fields = local.fields
+    return [result for result, _ in completed]
+
+
+def analytic_reference_starts(count=4):
+    """Fixed geometric starts, without neural predictions or validation tuning."""
+    if count not in (4, 8):
+        raise ValueError("four or eight analytic starts required")
+    starts = []
     for h in range(4):
         q = RibbedDecoder.to_physical(torch.tensor(RibbedDecoder.initial(h)[None]))[
             0
         ].numpy()
+        starts.append((q, h))
+    if count == 8:
+        for q, h in tuple(starts):
+            other = q.copy()
+            # A contrast, rather than an additive shift of every width: the
+            # latter cancels under the exact material projection.
+            delta = np.array(
+                [0.2 if kind == "bottom" else -0.15 for kind in RIB_ROWS[h]]
+            )
+            other[20:25] = (other[20:25] + delta).clip(0.6, 2.2)
+            starts.append((other, h))
+    return starts
+
+
+def matched_reference(task, output, *, kind, initial_starts=4):
+    worker_init()
+    output = Path(output)
+    if (output / "result.json").exists():
+        saved = json.loads((output / "result.json").read_text())
+        if saved["initial_physics_scores"] != initial_starts:
+            raise ValueError("stored reference has a different initialization budget")
+        return saved
+    evaluator = RibbedEvaluator(task, output)
+    uniform = evaluator.evaluate(uniform_parallel())
+    seeds = []
+    for q, h in analytic_reference_starts(initial_starts):
         seeds.append((q, h, evaluator.parameters(q, h)))
     q, h, _ = min(seeds, key=lambda v: ranking(v[2]))
     trajectory = optimize_physical(
@@ -297,12 +369,12 @@ def matched_reference(task, output, *, kind):
         [trajectory],
         uniform,
         method="Matched-" + kind + "600",
-        initial_physics_scores=4,
+        initial_physics_scores=initial_starts,
         budget_label="1x600",
     )
 
 
-def neural_case(task, predictions, output):
+def neural_case(task, predictions, output, *, workers=1):
     worker_init()
     output = Path(output)
     if (output / "complete.json").exists():
@@ -342,10 +414,7 @@ def neural_case(task, predictions, output):
         method="R25-smooth-single",
     )
     top = sorted(starts, key=lambda v: ranking(v["raw"]))[:3]
-    segments = [
-        optimize_physical(evaluator, t["parameters"], t["head"], kind="Adam", steps=8)
-        for t in top
-    ]
+    segments = refine_independent_starts(evaluator, top, steps=8, workers=workers)
     leader = min(segments, key=lambda v: ranking(v["raw"]))
     final = optimize_physical(
         evaluator, leader["parameters"], leader["head"], kind="Adam", steps=1

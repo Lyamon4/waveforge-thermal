@@ -1,0 +1,19 @@
+{
+  "pytest": {
+    "passed": 364,
+    "skipped": 7,
+    "failed": 0,
+    "seconds": 166.11
+  },
+  "amortized_tests": {
+    "passed": 9,
+    "failed": 0,
+    "seconds": 6.46
+  },
+  "ruff": "all 21 changed Python files passed",
+  "git_diff_check": true,
+  "portable_export": "CPU batches 1 and 2 bit-exact to loaded policy",
+  "source_sha256": "3e431a8ad2e2bcd55a0a17a8c3917417cdc08db12a5006f6c31182088c7b4922",
+  "original_weights_unchanged": true,
+  "registered_id_ood_tests_opened": false
+}

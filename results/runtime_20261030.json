@@ -1,0 +1,92 @@
+{
+  "date": "2026-10-30",
+  "hardware": {
+    "cpu": "AMD Ryzen 5 7600",
+    "gpu": "NVIDIA GeForce RTX 4060 8GB"
+  },
+  "software": {
+    "python": "3.11.9",
+    "torch": "2.13.0+cu130",
+    "scipy": "1.17.1",
+    "numpy": "2.4.6",
+    "numba": "0.68.1",
+    "cudss": "1.0.0.35"
+  },
+  "timing_scope": "fresh process, loads, conditioning, all 25 updates and all gates",
+  "settings": {
+    "sparse_backend": "cudss",
+    "min_size": 16384,
+    "parallel_trajectories": 3,
+    "residual": "numba_fp64_no_fastmath",
+    "cpu_threads_per_trajectory": 1
+  },
+  "model_sha256": "3e431a8ad2e2bcd55a0a17a8c3917417cdc08db12a5006f6c31182088c7b4922",
+  "model_weight_updates": 0,
+  "physics_and_acceptance_thresholds_unchanged": true,
+  "selected_binaries_unchanged": true,
+  "median_acceleration_vs_original_pipeline": 5.264029956592841,
+  "median_complete_request_seconds": 14.014173799980199,
+  "same_case_classical_comparison": {
+    "task_index": 0,
+    "seconds": {
+      "MultiR25": 17.982898899994325,
+      "MMA600": 62.92182509999839
+    },
+    "speedups": {
+      "MMA600": 3.498981195963808
+    },
+    "same_accelerated_physics_solver_for_all_methods": true,
+    "neural_objective_queries": 25,
+    "classical_objective_queries_per_method": 600
+  },
+  "paired_cases": [
+    {
+      "task_index": 0,
+      "original_seconds": [
+        59.57853480000631,
+        74.13350239998545
+      ],
+      "accelerated_seconds": 17.982898899994325,
+      "selected_binary_sha256": "8c38f053fe5f124c8dff8f94bef71dbbd389305facf65e12fb52adcfd57ae882",
+      "maximum_temperature_difference_k": 0.0,
+      "jointly_admissible": true
+    },
+    {
+      "task_index": 8,
+      "original_seconds": [
+        73.71393860000535,
+        73.82812279998325
+      ],
+      "accelerated_seconds": 14.014173799980199,
+      "selected_binary_sha256": "e98a6719ba94dea2633057a10a3df4e71f8ec61cd75b767d99049c0e861277d6",
+      "maximum_temperature_difference_k": 0.0,
+      "jointly_admissible": true
+    },
+    {
+      "task_index": 12,
+      "original_seconds": [
+        72.11515709999367,
+        74.88739629997872
+      ],
+      "accelerated_seconds": 13.535354399995413,
+      "selected_binary_sha256": "2d59482208ff8666784d8688301361f54bd48c68afefb711b9e12b6f484e97f7",
+      "maximum_temperature_difference_k": 7.105427357601002e-15,
+      "jointly_admissible": true
+    }
+  ],
+  "limitations": [
+    "3 open cases; one new repeat per case; classical comparison only task 0",
+    "1000x complete-system speedup has NOT been achieved",
+    "End-to-end training acceleration has not been measured."
+  ],
+  "verification": {
+    "pytest_passed": 355,
+    "pytest_skipped": 7,
+    "pytest_seconds": 136.4,
+    "ruff": "passed",
+    "frozen_weights_sha256_verified": true,
+    "classical_selected_binaries_match_published": {
+      "MMA600": true
+    }
+  }
+}

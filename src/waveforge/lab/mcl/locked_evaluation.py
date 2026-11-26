@@ -11,6 +11,7 @@ import torch
 
 from waveforge.experiments.audit_mcl_stage5_admission import record
 from waveforge.lab.hydraulic_probe import (
+    FlowResult,
     HydraulicProbe,
     refined_spec,
     replicated_design,
@@ -19,6 +20,7 @@ from waveforge.lab.hydraulic_probe import (
 from .baselines import uniform_parallel
 from .contracts import problem_from_task
 from .design_gradient_cache import DesignGradientCache
+from .dual_profile import record_result, solve_dual_profile
 from .high_fidelity_eval import refine_problem
 from .joint_design import JointObjective, joint_admission, joint_flow_penalty
 from .locked_channels import LockedDecoder, LockedGeometry, canonical_frame
@@ -39,7 +41,10 @@ def ranking(row):
 
 
 class JointEvaluator:
-    def __init__(self, task, output):
+    def __init__(self, task, output, *, forward_backend="fast"):
+        if forward_backend not in ("reference", "fast"):
+            raise ValueError("unknown candidate evaluation backend")
+        self.forward_backend = forward_backend
         self.frame = canonical_frame(task)
         self.problem = problem_from_task(self.frame.task, stage5_spec())
         self.decoder = LockedDecoder(LockedGeometry.from_task(self.frame.task))
@@ -60,15 +65,25 @@ class JointEvaluator:
         coarse_temperature = None
         for grid in (64, 128):
             p, tiled = refine_problem(self.problem, d, grid // 64)
-            nominal, nom_fields = record(tiled, p)
+            if self.forward_backend == "fast":
+                nom_fields, pow_fields = solve_dual_profile(
+                    tiled, p, pump_power_w=PUMP_W
+                )
+                nominal = record_result(tiled, p, nom_fields)
+                pressure = np.sqrt(
+                    PUMP_W * p.spec.pressure_drop_pa / (nominal["flow_ml_s"] * 1e-6)
+                )
+                power = record_result(tiled, p, pow_fields, pressure)
+            else:
+                nominal, nom_fields = record(tiled, p)
+                pressure = np.sqrt(
+                    PUMP_W * p.spec.pressure_drop_pa / (nominal["flow_ml_s"] * 1e-6)
+                )
+                power, pow_fields = record(tiled, p, pressure)
             if grid == 64:
                 coarse_temperature = (
                     nom_fields.temperature[:, 0, p.chip_mask].ravel() / 100
                 )
-            pressure = np.sqrt(
-                PUMP_W * p.spec.pressure_drop_pa / (nominal["flow_ml_s"] * 1e-6)
-            )
-            power, pow_fields = record(tiled, p, pressure)
             modes[str(grid)] = dict(nominal=nominal, power=power)
             for row in (nominal, power):
                 diag = row["diagnostics"]
@@ -87,9 +102,20 @@ class JointEvaluator:
         # search parents. Independent nominal128 temperature still selects finals.
         with torch.no_grad():
             tensor = torch.tensor(d[None], dtype=torch.float64)
-            penalty = joint_flow_penalty(
-                self.probe(replicated_design(tensor)), self.fine_spec
-            ).item()
+            if self.forward_backend == "fast":
+                f = fields["nominal"]
+                flow = FlowResult(
+                    *(
+                        torch.from_numpy(np.asarray(v)[None])
+                        for v in (f.pressure, f.qx, f.qy, f.qin, f.qout)
+                    ),
+                    torch.tensor(
+                        [self.fine_spec.pressure_drop_pa], dtype=torch.float64
+                    ),
+                )
+            else:
+                flow = self.probe(replicated_design(tensor))
+            penalty = joint_flow_penalty(flow, self.fine_spec).item()
             thermal = (
                 torch.logsumexp(500 * torch.tensor(coarse_temperature), 0)
                 - np.log(len(coarse_temperature))

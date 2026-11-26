@@ -1,0 +1,154 @@
+{
+  "model_sha256": "e83fea4937f3d9eb6ed6c8af430141e39487ec33d51f49cffc604d133975783e",
+  "selector_sha256": "749440a60d8b54ae1d5a5adb4892a76635f1eb756c848eb0bdf5bfc53779c339",
+  "online_physical_solves": 0,
+  "output": "one binary 64x64 channel map, exactly 1024 fluid cells",
+  "architecture": "raw-input U-Net bridge, frozen eight-proposal U-Net portfolio, learned tree selector",
+  "proposal_count": 8,
+  "input": "three 360W workloads, eight CCD regions plus I/O; seven raw input maps",
+  "training": {
+    "raw_adapter_layouts": 1280,
+    "additional_updates": 4000,
+    "teacher_free": false
+  },
+  "physics_unchanged": true,
+  "old_weights_preserved": true,
+  "paid_gpu_used": false,
+  "timings": {
+    "median_ms": 29.031250000116415,
+    "p90_ms": 32.85780000442173,
+    "tasks": 32,
+    "repeats_per_task": 3,
+    "physical_factorizations_forbidden": true,
+    "online_physical_solves": 0,
+    "scope": "loaded raw-task to one binary design, no exports or physical checks"
+  },
+  "quality": {
+    "nominal": {
+      "median_gap_percent": 0.23142019259806632,
+      "p90_gap_percent": 3.0394353048326352,
+      "worst_gap_percent": 5.11435520280606,
+      "invalid_count": 0,
+      "gaps_percent": [
+        0.22443066465717174,
+        0.004114702202507983,
+        0.0,
+        0.14156126364504013,
+        1.9978057828276827,
+        1.5251595590235791,
+        2.0246911356431507,
+        0.15997073690076796,
+        0.055544910561599777,
+        -0.0014352164113457652,
+        0.04814532507710266,
+        1.4420138807459102,
+        5.11435520280606,
+        -0.034660075846760285,
+        3.100884100049149,
+        0.0,
+        2.5844378138782544,
+        0.17680062288399567,
+        0.004070741604476486,
+        1.3012997214862867,
+        0.14725165670180554,
+        0.0,
+        0.04849763991851782,
+        0.851778285109049,
+        0.2384097205389609,
+        1.8912195553273454,
+        3.2035725061786158,
+        -0.27963422967606383,
+        0.3052642483197499,
+        2.0133274509762313,
+        1.009332352067742,
+        3.0899905816053432
+      ],
+      "near_quality_target_passed": false,
+      "no_median_loss_observed": false
+    },
+    "power": {
+      "median_gap_percent": 0.3258767350142072,
+      "p90_gap_percent": 2.372327617188169,
+      "worst_gap_percent": 4.666604988850836,
+      "invalid_count": 0,
+      "gaps_percent": [
+        0.2772262786746791,
+        -0.012180321975525122,
+        0.0,
+        -0.5328250888810956,
+        1.9093839567308735,
+        1.6325948325463084,
+        1.7479475585774218,
+        0.33437411974273445,
+        -0.4966826236327066,
+        0.0004275334861419949,
+        0.0531524841396617,
+        1.6770111094887077,
+        4.666604988850836,
+        -0.013134947110810832,
+        2.3849645304224083,
+        0.0,
+        0.8506528587586429,
+        0.13100440732735635,
+        -0.01030194495604781,
+        2.224324231672006,
+        0.14668830406550296,
+        0.0,
+        0.034796870502848284,
+        0.42396609218159487,
+        0.3215123007639104,
+        1.621237110769083,
+        3.1268717861913053,
+        -0.360614731297906,
+        0.3302411692645041,
+        2.258595398080013,
+        0.6594179195687119,
+        3.881754962005088
+      ],
+      "near_quality_target_passed": false,
+      "no_median_loss_observed": false
+    }
+  },
+  "benchmark_three_tasks": [
+    {
+      "task_index": 0,
+      "neural_ms": 29.801700002280995,
+      "speedups": {
+        "MMA600": 2180.0770692628184
+      },
+      "all_methods_valid": true,
+      "nominal_gain_percent": 10.639084163394145,
+      "power_gain_percent": 11.02543131733901
+    },
+    {
+      "task_index": 1,
+      "neural_ms": 23.3960500190733,
+      "speedups": {
+        "MMA600": 2739.5110690797987
+      },
+      "all_methods_valid": true,
+      "nominal_gain_percent": 7.763762869312066,
+      "power_gain_percent": 9.23672105986274
+    },
+    {
+      "task_index": 2,
+      "neural_ms": 31.667000002926216,
+      "speedups": {
+        "MMA600": 2098.272437991078
+      },
+      "all_methods_valid": true,
+      "nominal_gain_percent": -1.9337340255157751,
+      "power_gain_percent": -2.35858418806446
+    }
+  ],
+  "strict_no_quality_loss": false,
+  "near_quality_gate_passed": false,
+  "status": "experimental: speed target reached, quality target not reached",
+  "startup_excluded_from_warm_timings": true,
+  "online_physical_certification": false,
+  "tests": {
+    "passed": 381,
+    "skipped": 7
+  },
+  "official_test_workloads_opened": false
+}

@@ -56,6 +56,14 @@ def solve_profile(design, problem, *, k_tim, pressure_drop_pa=None):
     if not np.isfinite(dp) or dp <= 0:
         raise ValueError("positive finite pressure required")
     flow = solve_flow(base_resistance(d, s), s, dp)
+    return profile_from_flow(d, problem, flow, k_tim=k_tim, pressure_drop_pa=dp)
+
+
+def profile_from_flow(design, problem, flow, *, k_tim, pressure_drop_pa):
+    """Same thermal assembly and diagnostics for an already qualified flow."""
+    s = problem.spec
+    d = problem.checked_design(design)
+    dp = pressure_drop_pa
     matrix, rhs = thermal_with_tim(d, problem, flow, k_tim=k_tim)
     lu = _factor(matrix)
     theta = lu.solve(rhs).T.reshape(-1, 4, s.nx, s.ny)
