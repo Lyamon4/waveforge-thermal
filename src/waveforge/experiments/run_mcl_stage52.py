@@ -62,6 +62,26 @@ def validate_control(manifest, baselines, task_hashes):
         raise ValueError("Cached classical budget is not complete600")
 
 
+def verify_cached_control_sources(root, manifest):
+    """Keep both numerical paths and shared neural/decoder dependencies sealed."""
+    paths = list((root / "src/waveforge/lab/mcl").glob("*.py"))
+    paths += [
+        root / relative
+        for relative in (
+            "src/waveforge/experiments/audit_mcl_stage5_admission.py",
+            "src/waveforge/ml/mt3_unet.py",
+            "src/waveforge/design/parameterization.py",
+            "src/waveforge/design/batched_parameterization.py",
+            "src/waveforge/design/binary_readout.py",
+            "src/waveforge/runtime.py",
+            "src/waveforge/lab/contracts.py",
+        )
+    ]
+    seal = {str(p): manifest["source_sha256"][str(p)] for p in paths}
+    verify_seal(seal)
+    return seal
+
+
 def row_key(row):
     return row["task"], row["grid"], row["regime"], row["method"]
 
@@ -244,30 +264,7 @@ def run(args):
     model_path = source / "old_model_frozen.pt"
     if digest(model_path) != OLD_SHA:
         raise ValueError("Original Stage5 model hash mismatch")
-    # No reused baseline may be silently paired with changed physics/loss code.
-    names = (
-        "stage5_physics",
-        "stage5_reference",
-        "stage5_admission",
-        "stage5_decoder",
-        "stage5_preflight",
-        "linear",
-        "factorization",
-        "contracts",
-        "high_fidelity_eval",
-        "stage51",
-        "stage51_evaluation",
-        "stage3_training",
-        "stage5_training",
-        "stage5_evaluation",
-    )
-    unchanged = {
-        str(root / f"src/waveforge/lab/mcl/{name}.py"): manifest["source_sha256"][
-            str(root / f"src/waveforge/lab/mcl/{name}.py")
-        ]
-        for name in names
-    }
-    verify_seal(unchanged)
+    unchanged = verify_cached_control_sources(root, manifest)
     paths = [
         *root.glob("src/waveforge/**/*.py"),
         root / "tests/test_mcl_stage52.py",
@@ -314,10 +311,10 @@ def run(args):
             refinement_steps=25,
             refined_heads_per_task=1,
             source_sha256=seal,
+            cache_compatibility_sha256=unchanged,
             old_inputs_sha256=old_seal,
             selection=(
-                "Same Stage51 choose(): both grids admissible, "
-                "lowest nominal128 rise"
+                "Same Stage51 choose(): both grids admissible, lowest nominal128 rise"
             ),
             fine_grid_used_for_selection=True,
             physical_validation=False,

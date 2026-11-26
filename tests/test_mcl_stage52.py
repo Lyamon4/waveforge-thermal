@@ -182,8 +182,10 @@ def test_neural_only_audit_matches_sealed_audit(tmp_path):
         and r["grid"] == 64
         and r["method"].startswith("Manifold-UNet")
     ]
+
     def key(r):
         return r["regime"], r["method"]
+
     assert len(actual) == len(expected) == 8
     for a, b in zip(sorted(actual, key=key), sorted(expected, key=key), strict=True):
         assert a["peak_rise_k"] == pytest.approx(b["peak_rise_k"], abs=1e-10)
@@ -223,3 +225,24 @@ def test_neural_audit_cannot_resurrect_invalid_nominal_selection(tmp_path):
 
 def read_json(path):
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_changed_independent_evaluator_rejects_cached_control_reuse(tmp_path):
+    import hashlib
+
+    m = module()
+    assert hasattr(m, "verify_cached_control_sources"), "evaluator guard missing"
+    repository = Path(__file__).resolve().parents[1]
+    translated = {}
+    for path in (repository / "src").rglob("*.py"):
+        if path.is_relative_to(repository / "src"):
+            target = tmp_path / path.relative_to(repository)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(path.read_bytes())
+            translated[str(target)] = hashlib.sha256(target.read_bytes()).hexdigest()
+    manifest = dict(source_sha256=translated)
+    m.verify_cached_control_sources(tmp_path, manifest)
+    evaluator = tmp_path / "src/waveforge/experiments/audit_mcl_stage5_admission.py"
+    evaluator.write_bytes(evaluator.read_bytes() + b"\n# unexpected evaluator change\n")
+    with pytest.raises(ValueError, match="immutable artifact changed"):
+        m.verify_cached_control_sources(tmp_path, manifest)
