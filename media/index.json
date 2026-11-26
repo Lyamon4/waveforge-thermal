@@ -1,0 +1,25 @@
+{
+  "videos": [
+    "videos/cooling_layers.mp4",
+    "videos/realistic_assembly.mp4"
+  ],
+  "editable_scenes": [
+    "blender/layers.blend",
+    "blender/realistic.blend",
+    "blender/channel_structure.blend"
+  ],
+  "duration_s": 25,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fps": 24,
+  "historical_model": "models/vascular_unet_revised.pt",
+  "source_task_index": 6,
+  "is_latest_stage52_geometry": false,
+  "temperature_field": "steady state",
+  "transient_thermal_simulation": false,
+  "full_3d_CFD": false,
+  "actual_AMD_CAD": false,
+  "description": "Explanatory3D rendering of an earlier computed design. Added package parts and exploded layer separation are illustrative. Raw render frames and duplicate backups are omitted; both finished videos are included."
+}

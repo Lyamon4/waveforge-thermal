@@ -1,0 +1,62 @@
+{
+  "default_checkpoint": "manifold_unet.pt",
+  "models": [
+    {
+      "file": "vascular_unet_initial.pt",
+      "architecture": "VascularUNet",
+      "parameters": 742772,
+      "sha256": "aaa8abff9db960ff758e89d02e726ecff377985a861a72a31af44a49b149481b",
+      "bytes": 3063635,
+      "checkpoint_steps": 400,
+      "role": "earlier initial experiment",
+      "state_dict_key": "model",
+      "weight_dtype": "torch.float32"
+    },
+    {
+      "file": "vascular_unet_revised.pt",
+      "architecture": "VascularUNet",
+      "parameters": 742772,
+      "sha256": "e2737900402317fd29a88f93c0a47eeb5fcf0344e38690cd7813331cdb031b21",
+      "bytes": 3063763,
+      "checkpoint_steps": 800,
+      "role": "earlier model used for the 3D illustration",
+      "state_dict_key": "model",
+      "weight_dtype": "torch.float32"
+    },
+    {
+      "file": "manifold_unet.pt",
+      "architecture": "ManifoldUNet",
+      "parameters": 745352,
+      "sha256": "95701d5448a5ad6845ef2851ed0bf3bd11399cbb6908e9de5ff492cbd068b344",
+      "bytes": 3075219,
+      "checkpoint_steps": 800,
+      "role": "weights used in the latest Stage5.2 control",
+      "state_dict_key": "model",
+      "weight_dtype": "torch.float32"
+    },
+    {
+      "file": "manifold_unet_flow_penalty.pt",
+      "architecture": "ManifoldUNet",
+      "parameters": 745352,
+      "sha256": "00aad2f13a21b3ea04174f7f6e78c38f87ac80ab8b164e51241395ab252a9daa",
+      "bytes": 3075219,
+      "checkpoint_steps": 240,
+      "role": "later fine-tuned checkpoint, inferior nominal median in the matched control",
+      "state_dict_key": "model",
+      "weight_dtype": "torch.float32"
+    }
+  ],
+  "note": "Stage5.2 reuses the Stage5 weights; no duplicate checkpoint is needed. Flow-penalty steps are additional fine-tuning steps, not total training steps.",
+  "load": {
+    "import_path": "waveforge.lab.mcl.stage5_decoder.ManifoldUNet",
+    "torch_load_weights_only": true,
+    "state_dict_key": "model",
+    "input_shape": [
+      "batch",
+      13,
+      64,
+      64
+    ]
+  },
+  "example": "python examples/evaluate_pretrained_mcl.py --output artifacts/pretrained_example"
+}

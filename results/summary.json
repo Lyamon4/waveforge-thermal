@@ -1,0 +1,89 @@
+{
+  "selected_checkpoint": "models/manifold_unet.pt",
+  "training_updates": 800,
+  "unique_training_tasks": 3200,
+  "evaluation_tasks": 8,
+  "evaluation_split": "open development",
+  "evaluation_grid_used_for_selection": 128,
+  "nominal": {
+    "median_gain_percent": 2.4699757108605294,
+    "wins": 5,
+    "losses": 2,
+    "pairs": 8,
+    "per_task_gain_percent": [
+      -0.8625595871321627,
+      -10.029931050426175,
+      10.222997868464933,
+      4.060817308151866,
+      0.0,
+      0.8791341135691926,
+      6.813747272574608,
+      4.286911308834934
+    ]
+  },
+  "equal_pump_power": {
+    "median_gain_percent": -2.729285491837676,
+    "wins": 0,
+    "losses": 5,
+    "pairs": 8,
+    "per_task_gain_percent": [
+      -7.900182667343971,
+      -19.42630333786886,
+      -0.09338493871235161,
+      0.0,
+      0.0,
+      -7.476131375041821,
+      -5.365186044963,
+      0.0
+    ]
+  },
+  "equal_pump_power_raw_neural_r25_admitted": 0,
+  "nominal_raw_neural_r25_admitted": 8,
+  "physical_profile": {
+    "nx": 64,
+    "ny": 64,
+    "width_m": 0.0754,
+    "height_m": 0.072,
+    "dz": [
+      0.0005,
+      0.0001,
+      0.001,
+      0.001
+    ],
+    "pressure_drop_pa": 10000.0,
+    "mu_pa_s": 0.00089,
+    "rho_cp": 4180000.0,
+    "density_kg_m3": 997.0,
+    "q_bp": 0.02,
+    "resistance_ratio": 10000.0,
+    "h_fluid": 25830.0,
+    "h_air": 10.0,
+    "port_start": 24,
+    "port_stop": 40,
+    "channel_width_m": 0.00028,
+    "scaled_refinement": true,
+    "compensated_refinement": true,
+    "reduced_order_homogenized_model": true
+  },
+  "percentage_denominator": "temperature rise above inlet water at25C",
+  "complete_system_speedup_measured": false,
+  "limitations": [
+    "Reduced Darcy/thermal model, not resolved3D CFD.",
+    "No real-device experimental validation.",
+    "Eight development cases are not an unseen-test generalization claim.",
+    "The pressure-only evaluator is not yet connected to model training."
+  ],
+  "reproducibility_example": {
+    "command": "python examples/evaluate_pretrained_mcl.py --task 0 --output artifacts/example",
+    "smoke_result": {
+      "checkpoint_sha256": "95701d5448a5ad6845ef2851ed0bf3bd11399cbb6908e9de5ff492cbd068b344",
+      "task": 0,
+      "model_training_updates": 0,
+      "R0_nominal_128_silicon_c": 77.47400549350559,
+      "R25_nominal_128_silicon_c": 77.47400549350559,
+      "R0_admissible_on_both_grids": true,
+      "R25_admissible_on_both_grids": true,
+      "scope": "Raw nominal designs on one open case; other operating regimes require their own audit."
+    }
+  }
+}

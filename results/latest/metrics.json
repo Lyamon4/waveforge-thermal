@@ -1,0 +1,384 @@
+{
+  "64_nominal": {
+    "Manifold-Adam": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 4,
+      "fallback_count": 4,
+      "median_system_gain_vs_uniform": 0.15714474548069082
+    },
+    "Manifold-MMA": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 6,
+      "fallback_count": 2,
+      "median_system_gain_vs_uniform": 4.174127081025253
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 7,
+      "fallback_count": 1,
+      "median_system_gain_vs_uniform": 6.967874962784166
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 7,
+      "fallback_count": 1,
+      "median_system_gain_vs_uniform": 6.973659882677301
+    },
+    "unet_vs_best": {
+      "median_gain_percent": 2.0785807144878032,
+      "wins": 4,
+      "losses": 3,
+      "pairs": 8,
+      "per_task_gain_percent": [
+        -1.218289082076816,
+        -11.526728615020502,
+        10.622609733302458,
+        4.1571614289756065,
+        0.0,
+        -0.388575411723585,
+        6.613704656180062,
+        4.91566048195926
+      ]
+    }
+  },
+  "64_flow15": {
+    "Manifold-Adam": {
+      "admissible_count": 4,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 1,
+      "fallback_count": 7,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-MMA": {
+      "admissible_count": 2,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 1,
+      "fallback_count": 7,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "unet_vs_best": {
+      "median_gain_percent": 0.0,
+      "wins": 0,
+      "losses": 1,
+      "pairs": 8,
+      "per_task_gain_percent": [
+        0.0,
+        0.0,
+        -0.27079353930849864,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "64_flow16.7": {
+    "Manifold-Adam": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-MMA": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "unet_vs_best": {
+      "median_gain_percent": 0.0,
+      "wins": 0,
+      "losses": 0,
+      "pairs": 8,
+      "per_task_gain_percent": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  },
+  "64_power": {
+    "Manifold-Adam": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 5,
+      "fallback_count": 3,
+      "median_system_gain_vs_uniform": 1.930065903973354
+    },
+    "Manifold-MMA": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 7,
+      "fallback_count": 1,
+      "median_system_gain_vs_uniform": 6.182230379548319
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 7,
+      "fallback_count": 1,
+      "median_system_gain_vs_uniform": 8.501370759625763
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 7,
+      "fallback_count": 1,
+      "median_system_gain_vs_uniform": 8.71538123409075
+    },
+    "unet_vs_best": {
+      "median_gain_percent": 2.3509968999586603,
+      "wins": 5,
+      "losses": 2,
+      "pairs": 8,
+      "per_task_gain_percent": [
+        -1.393332292493084,
+        -10.733840342666863,
+        12.042289590579921,
+        4.998189596595176,
+        0.0,
+        0.6738720924720968,
+        7.076833179815641,
+        4.028121707445224
+      ]
+    }
+  },
+  "128_nominal": {
+    "Manifold-Adam": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 4,
+      "fallback_count": 4,
+      "median_system_gain_vs_uniform": 0.7498972927725831
+    },
+    "Manifold-MMA": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 6,
+      "fallback_count": 2,
+      "median_system_gain_vs_uniform": 4.740234400422446
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 7,
+      "fallback_count": 1,
+      "median_system_gain_vs_uniform": 7.453516829541323
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 8,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 7,
+      "fallback_count": 1,
+      "median_system_gain_vs_uniform": 7.51679660683562
+    },
+    "unet_vs_best": {
+      "median_gain_percent": 2.4699757108605294,
+      "wins": 5,
+      "losses": 2,
+      "pairs": 8,
+      "per_task_gain_percent": [
+        -0.8625595871321627,
+        -10.029931050426175,
+        10.222997868464933,
+        4.060817308151866,
+        0.0,
+        0.8791341135691926,
+        6.813747272574608,
+        4.286911308834934
+      ]
+    }
+  },
+  "128_flow15": {
+    "Manifold-Adam": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "Manifold-MMA": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "unet_vs_best": {
+      "median_gain_percent": null,
+      "wins": 0,
+      "losses": 0,
+      "pairs": 0,
+      "per_task_gain_percent": []
+    }
+  },
+  "128_flow16.7": {
+    "Manifold-Adam": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "Manifold-MMA": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": false,
+      "raw_wins_vs_uniform": null,
+      "fallback_count": null,
+      "median_system_gain_vs_uniform": null
+    },
+    "unet_vs_best": {
+      "median_gain_percent": null,
+      "wins": 0,
+      "losses": 0,
+      "pairs": 0,
+      "per_task_gain_percent": []
+    }
+  },
+  "128_power": {
+    "Manifold-Adam": {
+      "admissible_count": 6,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 3,
+      "fallback_count": 5,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-MMA": {
+      "admissible_count": 5,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 4,
+      "fallback_count": 4,
+      "median_system_gain_vs_uniform": 0.04664890630361419
+    },
+    "Manifold-UNet-R0": {
+      "admissible_count": 1,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "Manifold-UNet-R25-C": {
+      "admissible_count": 0,
+      "task_count": 8,
+      "comparison_available": true,
+      "raw_wins_vs_uniform": 0,
+      "fallback_count": 8,
+      "median_system_gain_vs_uniform": 0.0
+    },
+    "unet_vs_best": {
+      "median_gain_percent": -2.729285491837676,
+      "wins": 0,
+      "losses": 5,
+      "pairs": 8,
+      "per_task_gain_percent": [
+        -7.900182667343971,
+        -19.42630333786886,
+        -0.09338493871235161,
+        0.0,
+        0.0,
+        -7.476131375041821,
+        -5.365186044963,
+        0.0
+      ]
+    }
+  }
+}
